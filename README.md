@@ -3,3 +3,25 @@
 SNEWS2 pointing test harness.
 
 Please see the wiki for discussion and decisions.
+
+## Usage
+
+The `Makefile` contains recipes for initialization, running the
+application, and running unit tests.
+
+Note that so far we've been developing with unit tests.
+The application itself hasn't been tested yet; it will use input
+files (in the `data` directory) and generate some kind of output.
+
+## Development
+
+1. Make a new branch in which you develop your plugin.
+1. Add algorithm code to the `plugins` directory.
+1. You will probably also want to list your plugin in
+   `plugins/__init__.py` so it can be imported easily.
+1. Write unit tests at thes ame time.  See the `tests` directory for examples.
+1. Add the command line for running your tests to the `test` target
+   in the `Makefile`.
+1. When your plugin is ready, push your branch to the SNEWS repository
+   and make a pull request.
+
