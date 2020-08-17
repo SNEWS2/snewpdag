@@ -4,6 +4,16 @@ SNEWS2 pointing test harness.
 
 Please see the wiki for discussion and decisions.
 
+## Installation
+
+Ther `requirements.txt` file now includes `numpy` and `healpy` in
+anticipation of needing these.  They can be installed using `pip`,
+though in the case of `healpy` I needed to install one of its
+dependencies explicitly.  (Details:  this was the `cfitsio` library,
+which supposedly is included in `healpy`.  The build process didn't
+seem to find the resulting local cfitsio library, so instead I
+installed the `libcfitsio-dev` package on my Ubuntu 16 system.)
+
 ## Usage
 
 The `Makefile` contains recipes for initialization, running the
