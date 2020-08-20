@@ -165,3 +165,73 @@ class TestCombineMaps(unittest.TestCase):
     td4 = rv.cdf(d5) * d4 * d3
     self.assertListEqual(tdata['cl'].tolist(), td4.tolist())
 
+  def test_resize_cl(self):
+    spec = [ { 'class': 'CombineMaps', 'name': 'Node1',
+               'kwargs': { 'force_cl': False } } ]
+    nodes = configure(spec)
+    npix1 = hp.nside2npix(2)
+    npix2 = hp.nside2npix(4)
+    d1 = np.arange(npix1) * 0.25 / npix1
+    d2 = np.arange(npix2) * 0.75 / npix2
+    data = [ { 'name': 'Node1', 'action': 'alert', 'history': ('Input1',),
+               'cl': d1.tolist() },
+             { 'name': 'Node1', 'action': 'alert', 'history': ('Input2',),
+               'cl': d2.tolist() }
+           ]
+    inject(nodes, data)
+    tdata = nodes['Node1'].last_data
+    self.assertEqual(tdata['action'], 'alert')
+    self.assertEqual(tdata['history'],
+        ( ('Input1',), ('Input2',), 'Node1' ) )
+    self.assertNotIn('ndof', tdata)
+    self.assertEqual(len(tdata['cl']), npix2)
+    td = hp.ud_grade(d1, 4, order_in='NESTED', order_out='NESTED') * d2
+    self.assertListEqual(tdata['cl'].tolist(), td.tolist())
+
+  def test_resize_chi2(self):
+    spec = [ { 'class': 'CombineMaps', 'name': 'Node1',
+               'kwargs': { 'force_cl': False } } ]
+    nodes = configure(spec)
+    npix1 = hp.nside2npix(4)
+    npix2 = hp.nside2npix(2)
+    d1 = np.arange(npix1) * 2 / npix1
+    d2 = np.arange(npix2) * 3 / npix2
+    data = [ { 'name': 'Node1', 'action': 'alert', 'history': ('Input1',),
+               'ndof': 1, 'chi2': d1.tolist() },
+             { 'name': 'Node1', 'action': 'alert', 'history': ('Input2',),
+               'ndof': 2, 'chi2': d2.tolist() }
+           ]
+    inject(nodes, data)
+    tdata = nodes['Node1'].last_data
+    self.assertEqual(tdata['action'], 'alert')
+    self.assertEqual(tdata['history'],
+        ( ('Input1',), ('Input2',), 'Node1' ) )
+    self.assertNotIn('cl', tdata)
+    self.assertEqual(len(tdata['chi2']), npix1)
+    td1 = d1 + hp.ud_grade(d2, 4, order_in='NESTED', order_out='NESTED')
+    self.assertListEqual(tdata['chi2'].tolist(), td1.tolist())
+
+  def test_resize_mixed(self):
+    spec = [ { 'class': 'CombineMaps', 'name': 'Node1',
+               'kwargs': { 'force_cl': False } } ]
+    nodes = configure(spec)
+    npix1 = hp.nside2npix(4)
+    npix2 = hp.nside2npix(2)
+    d1 = np.arange(npix1) / npix1
+    d2 = np.arange(npix2) * 2 / npix2
+    rv = chi2(2)
+    data = [ { 'name': 'Node1', 'action': 'alert', 'history': ('Input1',),
+               'cl': d1.tolist() },
+             { 'name': 'Node1', 'action': 'alert', 'history': ('Input2',),
+               'ndof': 2, 'chi2': d2.tolist() }
+           ]
+    inject(nodes, data)
+    tdata = nodes['Node1'].last_data
+    self.assertEqual(tdata['action'], 'alert')
+    self.assertEqual(tdata['history'],
+        ( ('Input1',), ('Input2',), 'Node1' ) )
+    self.assertNotIn('ndof', tdata)
+    self.assertEqual(len(tdata['cl']), npix1)
+    td1 = d1 * hp.ud_grade(rv.cdf(d2), 4, order_in='NESTED', order_out='NESTED')
+    self.assertListEqual(tdata['cl'].tolist(), td1.tolist())
+
