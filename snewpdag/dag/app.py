@@ -53,7 +53,7 @@ def configure(nodespecs):
       logging.error('Duplicate node name {}'.format(name))
       sys.exit(2)
 
-    kwargs = spec['kwargs'] if 'kwargs' in nodespecs[spec] else {}
+    kwargs = nodespecs[spec]['kwargs'] if 'kwargs' in nodespecs[spec] else {}
     kwargs['name'] = nodespecs[spec]['name']
     nodes[name] = c(**kwargs)
 
