@@ -48,15 +48,25 @@ class TimeDistDiff(Node):
     # start constructing output data.
     ndata = {}
 
-    # first, see if there is any valid data.  if so, alert. otherwise revoke.
+    # first, see if there are at least two valid data sets.  if so, alert. otherwise revoke.
     hlist = []
     for k in self.map:
       if self.map[k]['valid']:
         hlist.append(self.map[k]['history'])
-    ndata['action'] = 'revoke' if len(hlist) == 0 else 'alert'
+    ndata['action'] = 'revoke' if len(hlist) <= 1 else 'alert'
     ndata['history'] = tuple(hlist)
 
+    ndata['tdelay'] = {}
     # do the calculation
+    for i in self.map:
+        for j in self.map:
+            if i < j:
+                #here the main time difference calculation comes
+                ndata['tdelay'][(i,j)] = gettdelay(self.map[i]['t'],self.map[i]['n'],self.map[j]['t'],self.map[j]['n'])
 
     # notify
     self.notify(ndata)
+
+def gettdelay(t1,n1,t2,n2):
+    #dummy output for now
+    return (len(t1), len(n1), len(t2), len(n2))
