@@ -11,13 +11,15 @@ from snewpdag.plugins import TimeDistFileInput, TimeDistDiff
 class TestTimeDistDiff(unittest.TestCase):
 
   def test_inputs(self):
-    #TimeDistDiffNode = TimeDistDiff(name='TimeDistDiffNode')
-    TimeDistDiffNode = Node(name='TimeDistDiffNode')
+    OutputNode = Node(name='Output')
+    TimeDistDiffNode = TimeDistDiff(name='TimeDistDiffNode')
+    #TimeDistDiffNode = Node(name='TimeDistDiffNode')
 
     n1 = TimeDistFileInput(name='Input1')
     n2 = TimeDistFileInput(name='Input2')
     n1.attach(TimeDistDiffNode)
     n2.attach(TimeDistDiffNode)
+    TimeDistDiffNode.attach(OutputNode)
     
     data = { 'action': 'alert',
              'filename': 'snewpdag/data/fluxparametrisation_22.5kT_0Hz_0.0msT0_1msbin.txt',
@@ -29,6 +31,4 @@ class TestTimeDistDiff(unittest.TestCase):
              'filetype': 'tn' }
     n2.update(data)
 
-    print(TimeDistDiffNode)
-    print(TimeDistDiffNode.last_data['history'])
-    self.assertListEqual(TimeDistDiffNode.last_data['history'], ('Input1','Input2'))
+    self.assertEqual(OutputNode.last_data['history'], (('Input1',), ('Input2',), 'TimeDistDiffNode', 'Output'))

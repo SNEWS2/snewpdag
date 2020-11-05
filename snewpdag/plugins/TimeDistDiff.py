@@ -20,11 +20,30 @@ from snewpdag.dag import Node
 
 class TimeDistDiff(Node):
   def __init__(self, **kwargs):
+    self.map = {}
     super().__init__(**kwargs)
 
   def update(self, data):
     action = data['action']
     source = data['history'][-1]
+ 
+    if action == 'alert':
+      if 't' in data and 'n' in data:
+        self.map[source] = data
+        self.map[source]['valid'] = True
+      else:
+        logging.error('[{}] Expected t and n arrays in time distribution'.format(self.name))
+        return
+    elif action == 'revoke':
+      if source in self.map:
+        self.map[source]['valid'] = False
+      else:
+        logging.error('[{}] Revocation received for unknown source {}'.format(self.name, source))
+        return
+    else:
+      logging.error("[{}] Unrecognized action {}".format(self.name, action))
+      return
+
 
     # start constructing output data.
     ndata = {}
