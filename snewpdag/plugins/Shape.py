@@ -42,7 +42,7 @@ class Shape(Node):
     # update the relevant data.
     # Only issue a downstream revocation if the source revocation
     # is new, i.e., the data was valid before.
-    for i in range(2):
+    for i in range(index+1):
       newrevoke = False
       if action == 'alert':
         self.valid[i] = True
@@ -122,11 +122,11 @@ class Shape(Node):
   def metric_list(self, values1, values2):
     mlist = [0] * self.dt_N
 
-    hist1 = self.fill_hist(values1, self.nbins, self.h_low, self.h_up, 0)
-    hist1 = self.remove_flow(hist1)
+    hist2 = self.fill_hist(values2, self.nbins, self.h_low, self.h_up, 0)
+    hist2 = self.remove_flow(hist2)
     for i in range(self.dt_N):
-      hist2 = self.fill_hist(values2, self.nbins, self.h_low, self.h_up, self.dt_0 + i*self.dt_step)
-      hist2 = self.remove_flow(hist2)
+      hist1 = self.fill_hist(values1, self.nbins, self.h_low, self.h_up, self.dt_0 + i*self.dt_step)
+      hist1 = self.remove_flow(hist1)
       metric = self.diff_hist(hist1, hist2, self.scale)
       mlist[i] = metric
 
