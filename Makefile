@@ -1,4 +1,5 @@
-
+lightcurvesim:
+	cd externals/lightcurve_match && make simulation
 test:
 	python -m unittest snewpdag.tests.test_basic_node
 	python -m unittest snewpdag.tests.test_inputs
