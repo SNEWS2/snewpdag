@@ -67,11 +67,21 @@ class TimeDistDiff(Node):
     # notify
     self.notify(ndata)
 
+def normalizeforchi2(n1):
+    n1 = n1-np.mean(n1[0:int(len(n1)/10)]) #background is concidered in the first 10% of the data
+    mean = np.mean(n1)
+    if mean < 0: print("WARNING: 10% of the data have abnormal even rate")
+    return n1/mean
+
 def gettdelay(t1,n1,t2,n2):
     t1 = np.array(t1)
     n1 = np.array(n1)
+    n1 = normalizeforchi2(n1)
+
     t2 = np.array(t2)
     n2 = np.array(n2) 
+    n2 = normalizeforchi2(n2)
+
     scantmax = 100./1e3 #max window scan in [s]
     scanstep = 0.1/1e3 #scanstep
     windowmax   = 300./1e3 #window where matching is performed
@@ -86,7 +96,7 @@ def gettdelay(t1,n1,t2,n2):
     maxt1 = np.mean(t1resample[tuple([n1resample == np.amax(n1resample)])])
 
     #maxt1 = np.mean(t1[tuple([n1 == np.amax(n1)])])
-    print("maxt1",maxt1)
+    #print("maxt1",maxt1)
     minchi2 = float('nan')
     mintdelay = float('nan')
     for tdelay in np.linspace(-scantmax, scantmax, int(2*scantmax/scanstep)+1):
