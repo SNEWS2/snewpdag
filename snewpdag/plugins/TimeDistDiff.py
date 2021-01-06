@@ -101,7 +101,7 @@ def gettdelay(t1,n1,t2,n2):
     mintdelay = float('nan')
     for tdelay in np.linspace(-scantmax, scantmax, int(2*scantmax/scanstep)+1):
         #print("tdelay",tdelay)
-        cond1 = tuple([(maxt1 - windowmax - tdelay <= t1) & (t1 <= maxt1 + windowmax - tdelay)])
+        cond1 = tuple([(maxt1 - windowmax + tdelay <= t1) & (t1 <= maxt1 + windowmax + tdelay)])
         cond2 = tuple([(maxt1 - windowmax <= t2) & (t2 <= maxt1 + windowmax )]) #the second detector window stays fixed to fix its background variation
         sample1 = n1[cond1]
         sample2 = n2[cond2]
