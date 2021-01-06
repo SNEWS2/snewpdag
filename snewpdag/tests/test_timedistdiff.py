@@ -54,19 +54,22 @@ class TestTimeDistDiff(unittest.TestCase):
         TimeDistDiffNode.attach(OutputNode)
 
         
-        os.system('externals/lightcurve_match/simulation/detectorrate 3500 1548000 0') #IC
+        #os.system('externals/lightcurve_match/simulation/detectorrate 3500 1548000 0') #IC
         os.system('externals/lightcurve_match/simulation/detectorrate 22.5 0 0') #SK
+        
         
         data = { 'action': 'alert',
                  'filename': 'fluxparametrisation_22.5kT_0Hz_0.0msT0_1msbin.txt',
                  'filetype': 'tn' }
         n1.update(data)
 
+        os.system('externals/lightcurve_match/simulation/detectorrate 22.5 0 0') #SK
         data = { 'action': 'alert',
-                 'filename': 'fluxparametrisation_3500kT_1.548e+06Hz_0.0msT0_1msbin.txt',
+                 #'filename': 'fluxparametrisation_3500kT_1.548e+06Hz_0.0msT0_1msbin.txt',
+                 'filename': 'fluxparametrisation_22.5kT_0Hz_0.0msT0_1msbin.txt',
                  'filetype': 'tn' }
         n2.update(data)
 
         tdelayarr.append(OutputNode.last_data['tdelay'][('Input1', 'Input2')][0])
-      print(tdelayarr)
+        print("toy: ", i, "deltaT:", tdelayarr[-1]*1000,"ms")
       print("mean [ms], rms [ms]", np.mean(tdelayarr)*1000, np.std(tdelayarr)*1000)
