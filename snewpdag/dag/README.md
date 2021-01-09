@@ -4,7 +4,25 @@ This module contains the core code.
 
 At this point that just means Node and the application module.
 
-## Application inputs
+## Application
+
+`app.py` contains the stand-alone application, which can be run
+as a python module.  From the root directory of the package,
+```
+  python -m snewpdag [-h] [--input FILE] [--log LOG] config
+```
+The `config` argument is required to be a filename with
+the configuration JSON.
+
+The application takes input JSON from stdin by default,
+but `--input` can be used to specify a file (or just pipe it
+in through stdin).
+
+The logging level is specified using `--log`.  Python logging level
+strings are accepted, e.g.,
+```
+  python -m snewpdag --log=INFO snewpdag/data/test-flux-config.json
+```
 
 ### Configuration JSON
 
@@ -39,7 +57,12 @@ a DAG of inputs.)
 
 ### Input data JSON
 
-The input document consists of an array of dictionaries.
+The input can be provided as a JSON document using the
+`--input` command-line argument with the filename.
+If this optional argument is not provided, the
+application will take input from stdin.
+
+The input consists of an array of dictionaries.
 Each dictionary forms a notification of one input node.
 The fields for each object:
 
@@ -61,3 +84,4 @@ In order to clear the DAG of input state, issue a `revoke` for
 all inputs.  (In fact, this may be a reason to define a master revocation
 node which all input nodes observe for just this message.
 Data is still injected in the same way.)
+
