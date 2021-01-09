@@ -47,15 +47,6 @@ class TimeDistDiff(Node):
 
     # start constructing output data.
     ndata = {}
-
-    # first, see if there are at least two valid data sets.  if so, alert. otherwise revoke.
-    hlist = []
-    for k in self.map:
-      if self.map[k]['valid']:
-        hlist.append(self.map[k]['history'])
-    ndata['action'] = 'revoke' if len(hlist) <= 1 else 'alert'
-    ndata['history'] = tuple(hlist)
-
     ndata['tdelay'] = {}
     # do the calculation
     for i in self.map:
@@ -65,7 +56,12 @@ class TimeDistDiff(Node):
                 ndata['tdelay'][(i,j)] = gettdelay(self.map[i]['t'],self.map[i]['n'],self.map[j]['t'],self.map[j]['n'])
 
     # notify
-    self.notify(ndata)
+    hlist = []
+    for k in self.map:
+      if self.map[k]['valid']:
+        hlist.append(self.map[k]['history'])
+    action_verb = 'revoke' if len(hlist) <= 1 else 'alert'
+    self.notify(action_verb, tuple(hlist), ndata)
 
 def normalizeforchi2(n1):
     n1 = n1-np.mean(n1[0:int(len(n1)/10)]) #background is concidered in the first 10% of the data

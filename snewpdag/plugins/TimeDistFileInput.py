@@ -35,12 +35,12 @@ class TimeDistFileInput(Node):
             tt, nn = self.read_tn(data['filename'])
           data['t'] = tt
           data['n'] = nn
-          self.notify(data)
+          self.notify(data['action'], None, data)
         else:
           logging.error('[{}] Missing filename'.format(self.name))
           return
       else:
-        self.notify(data)
+        self.notify(data['action'], None, data)
     else:
       logging.error('[{}] Expected action field not found'.format(self.name))
 

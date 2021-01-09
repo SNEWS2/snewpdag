@@ -58,14 +58,6 @@ class CombineMaps(Node):
     # start constructing output data.
     ndata = {}
 
-    # first, see if there is any valid data.  if so, alert. otherwise revoke.
-    hlist = []
-    for k in self.map:
-      if self.map[k]['valid']:
-        hlist.append(self.map[k]['history'])
-    ndata['action'] = 'revoke' if len(hlist) == 0 else 'alert'
-    ndata['history'] = tuple(hlist)
-
     # if all maps are chi2, then can output chi2
     use_chi2 = not self.force_cl
     if use_chi2:
@@ -123,5 +115,10 @@ class CombineMaps(Node):
       ndata['cl'] = m
 
     # notify
-    self.notify(ndata)
+    hlist = []
+    for k in self.map:
+      if self.map[k]['valid']:
+        hlist.append(self.map[k]['history'])
+    action_verb = 'revoke' if len(hlist) == 0 else 'alert'
+    self.notify(action_verb, tuple(hlist), ndata)
 

@@ -35,29 +35,29 @@ class TestBasicNode(unittest.TestCase):
     self.n1.attach(self.n2)
     self.n1.attach(self.n3)
     self.n2.attach(self.n4)
-    data = { 'k': 'v' }
+    data = { 'action': 'alert', 'k': 'v' }
     self.n1.update(data)
     self.assertEqual(self.n1.last_data,
-                     { 'k':'v', 'history':('node1',) })
+                     { 'action': 'alert', 'k':'v', 'history':('node1',) })
     self.assertEqual(self.n2.last_data,
-                     { 'k':'v', 'history':('node1','node2') })
+                     { 'action': 'alert', 'k':'v', 'history':('node1','node2') })
     self.assertEqual(self.n3.last_data,
-                     { 'k':'v', 'history':('node1','node3') })
+                     { 'action': 'alert', 'k':'v', 'history':('node1','node3') })
     self.assertEqual(self.n4.last_data,
-                     { 'k':'v', 'history':('node1','node2','node4') })
+                     { 'action': 'alert', 'k':'v', 'history':('node1','node2','node4') })
 
   def test_history_order(self):
     self.n1.attach(self.n3)
     self.n1.attach(self.n2)
     self.n3.attach(self.n4)
-    data = { 'k': 'v' }
+    data = { 'action': 'alert', 'k': 'v' }
     self.n1.update(data)
     self.assertEqual(self.n1.last_data,
-                     { 'k':'v', 'history':('node1',) })
+                     { 'action': 'alert', 'k':'v', 'history':('node1',) })
     self.assertEqual(self.n2.last_data,
-                     { 'k':'v', 'history':('node1','node2') })
+                     { 'action': 'alert', 'k':'v', 'history':('node1','node2') })
     self.assertEqual(self.n3.last_data,
-                     { 'k':'v', 'history':('node1','node3') })
+                     { 'action': 'alert', 'k':'v', 'history':('node1','node3') })
     self.assertEqual(self.n4.last_data,
-                     { 'k':'v', 'history':('node1','node3','node4') })
+                     { 'action': 'alert', 'k':'v', 'history':('node1','node3','node4') })
 

@@ -27,7 +27,7 @@ class TimeDistInput(Node):
         if 't' in data and 'n' in data:
           if len(data['t']) == len(data['n']):
             logging.info("[{}] notify called".format(self.name))
-            self.notify(data)
+            self.notify(data['action'], None, data)
           else:
             logging.error('[{}] t and n length mistmatch'.format(self.name))
         else:
