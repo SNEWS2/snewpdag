@@ -4,9 +4,16 @@ Implemented on observer-observable pattern.
 
 Plugins should subclass Node and override update().
 """
+import logging
+
 class Node:
 
   def __init__(self, name, **kwargs):
+    """
+    Initialize the node.
+    OVERRIDE this method to initialize more instance data.
+    At the end call super().__init__(**kwargs) to continue initialization.
+    """
     self.name = name     # name of the Node
     self.observers = []  # observers of this Node
     self.watch_list = [] # nodes this Node is observing
@@ -41,14 +48,25 @@ class Node:
       self.observers.remove(observer)
       observer.watch_list.remove(self)
 
-  def notify(self, data):
+  def notify(self, action, history, data):
     """
     Notify all observers that they need to update.
     Update history by appending name to data field.
+    Previous history is given by history argument,
+    but if history == None, data['history'] will be used
+    as the starting point.
     """
     self.last_data = data.copy()
+    # record action
+    self.last_data['action'] = action
     # append to history
-    h1 = self.last_data['history'] if 'history' in data else ()
+    if history == None:
+      if 'history' in data:
+        h1 = self.last_data['history']
+      else:
+        h1 = ()
+    else:
+      h1 = history
     h2 = (self.name,)
     self.last_data['history'] = h1 + h2
     # notify all observers
@@ -58,12 +76,15 @@ class Node:
   def update(self, data):
     """
     Update this object with provided data.
-    Calculation goes here.
+    OVERRIDE this method to perform calculations.
     When done, call notify.
     Default method notifies using original data.
     A nontrivial calculation is likely to notify with different data.
     """
-    self.notify(data)
+    if 'action' in data:
+      self.notify(data['action'], None, data)
+    else:
+      logging.error('[{}] Action not specified'.format(self.name))
 
   def watch_index(self, source):
     """

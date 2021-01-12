@@ -15,7 +15,7 @@ class StdOutput(Node):
     print('**** {} ****'.format(self.name))
     self.print_dict('', data)
     print('---- {} ----'.format(self.name))
-    self.notify(data)
+    self.notify(data['action'], None, data)
 
   def print_dict(self, indent, data):
     for k, v in data.items():
