@@ -78,27 +78,29 @@ def gettdelay(t1,n1,t2,n2):
     n2 = np.array(n2) 
     n2 = normalizeforchi2(n2)
 
+    tsstep1 = t1[1]-t1[0] #step of the time series
+    tsstep2 = t2[1]-t2[0] #step of the time series
+
     scantmax = 100./1e3 #max window scan in [s]
     scanstep = 0.1/1e3 #scanstep
     windowmax   = 300./1e3 #window where matching is performed
     binsize     = 50./1e3 #bin size - should be multiple of 2*windowmax
-    nelements   = int(2*windowmax/binsize)
-    #print("elements in",-windowmax, windowmax, binsize, "are",nelements)
+    nelements   = int(2*windowmax/binsize)-1
+    #print("elements in [",-windowmax, windowmax, ")", binsize, "are",nelements)
 
-    t1resample = t1[0:len(t1)-len(t1)%nelements]
-    t1resample = np.mean(np.array(t1resample).reshape(-1, nelements), axis=1)
-    n1resample = n1[0:len(n1)-len(n1)%nelements]
-    n1resample = np.sum(np.array(n1resample).reshape(-1, nelements), axis=1)
-    maxt1 = np.mean(t1resample[tuple([n1resample == np.amax(n1resample)])])
-
-    #maxt1 = np.mean(t1[tuple([n1 == np.amax(n1)])])
+    t1conv = np.convolve(t1, np.ones(nelements+1)/(nelements+1), mode='valid') #running averages - we add +1 to have average in the time series time point
+    n1conv = np.convolve(n1, np.ones(nelements+1)/(nelements+1), mode='valid')
+    maxt1 = np.mean(t1conv[tuple([n1conv == np.amax(n1conv)])])
+    idx = (np.abs(t1 - maxt1)).argmin() #find nearest element to this time
+    maxt1 = t1[idx]
     #print("maxt1",maxt1)
     minchi2 = float('nan')
     mintdelay = float('nan')
-    for tdelay in np.linspace(-scantmax, scantmax, int(2*scantmax/scanstep)+1):
+
+    for tdelay in np.linspace(-scantmax, scantmax, num=int(2*scantmax/scanstep)+1):
         #print("tdelay",tdelay)
-        cond1 = tuple([(maxt1 - windowmax + tdelay <= t1) & (t1 <= maxt1 + windowmax + tdelay)])
-        cond2 = tuple([(maxt1 - windowmax <= t2) & (t2 <= maxt1 + windowmax )]) #the second detector window stays fixed to fix its background variation
+        cond1 = tuple([(maxt1 - windowmax + tdelay - tsstep1/2. <= t1) & (t1 <= maxt1 + windowmax + tdelay - tsstep1/2.)])
+        cond2 = tuple([(maxt1 - windowmax - tsstep2/2. <= t2) & (t2 <= maxt1 + windowmax - tsstep2/2.)]) #the second detector window stays fixed to fix its background variation
         sample1 = n1[cond1]
         sample2 = n2[cond2]
         #print(len(sample1),len(sample2))
@@ -108,14 +110,16 @@ def gettdelay(t1,n1,t2,n2):
         sample2 = sample2[0:minsize]
         #print(len(sample1),len(sample2))
         if len(sample1)%nelements != 0:
-            #print("Warning - dropping",len(sample1)%nelements,"elements from the first data")
+            print("Warning - dropping",len(sample1)%nelements,"last element(s) from the first data")
             sample1 = sample1[0:len(sample1)-len(sample1)%nelements]
         if len(sample2)%nelements != 0:
-            #print("Warning - dropping",len(sample2)%nelements,"last elements from the second data")
+            print("Warning - dropping",len(sample2)%nelements,"last element(s) from the second data")
             sample2 = sample2[0:len(sample2)-len(sample2)%nelements]
         sample1 = np.sum(np.array(sample1).reshape(-1, nelements), axis=1)
         sample2 = np.sum(np.array(sample2).reshape(-1, nelements), axis=1)
+        #print(len(sample1),len(sample2))
         chi2 = np.sum(np.power(sample1-sample2,2))/len(sample1) #chi2 is normalized to the number of elements since for each shift this can vary
+        #print("tdelay",tdelay,"chi2",chi2) 
         if not (minchi2 < chi2):
             mintdelay = tdelay
             minchi2   = chi2
