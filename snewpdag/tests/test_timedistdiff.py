@@ -71,13 +71,18 @@ class TestTimeDistDiff(unittest.TestCase):
 
         tdelayarr.append(OutputNode.last_data['tdelay'][('Input1', 'Input2')][0])
 
+        #p1 = os.popen('./externals/lightcurve_match/matching/getdelay fluxparametrisation_3500kT_1.548e+06Hz_10.0msT0_0.1msbin.txt fluxparametrisation_22.5kT_0Hz_0.0msT0_0.1msbin.txt  chi2 50 50 -300 300 -100 100 0.1')
+        #print(p1.read())
+        #p1.close()
         
         p1 = os.popen('./externals/lightcurve_match/matching/getdelay fluxparametrisation_3500kT_1.548e+06Hz_10.0msT0_0.1msbin.txt fluxparametrisation_22.5kT_0Hz_0.0msT0_0.1msbin.txt  chi2 50 50 -300 300 -100 100 0.1 | grep T0match | cut -f 2 -d " "')
         tdelycpp  = p1.read()
         p1.close()
         tdelycppint = float(tdelycpp)
         tdelaycpparr.append(-tdelycppint)
-        print("toy: ", i, "deltaT:", tdelayarr[-1]*1000,"ms", "deltaT cpp:", tdelaycpparr[-1],"ms")
+        print("toy: ", i, "deltaT:", tdelayarr[-1]*1000,"ms", "chi2",OutputNode.last_data['tdelay'][('Input1', 'Input2')][1], "deltaT cpp:", tdelaycpparr[-1],"ms")
+        print("Det1-Det2 delay python mean [ms], rms [ms]", float(np.mean(tdelayarr)*1000), float(np.std(tdelayarr)*1000))
+        print("Det1-Det2 delay cpp    mean [ms], rms [ms]", float(np.mean(tdelaycpparr)), float(np.std(tdelaycpparr)))
 
 
       mean = float(np.mean(tdelayarr)*1000)
