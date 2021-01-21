@@ -56,10 +56,8 @@ class TestTimeDistDiff(unittest.TestCase):
 
         
         os.system('externals/lightcurve_match/simulation/detectorrate 3500 1548000 0.01 0.1') #IC
-        #os.system('externals/lightcurve_match/simulation/detectorrate 22.5 0 0.01') #SK
         data = { 'action': 'alert',
                  'filename': 'fluxparametrisation_3500kT_1.548e+06Hz_10.0msT0_0.1msbin.txt',
-                 #'filename': 'fluxparametrisation_22.5kT_0Hz_10.0msT0_1msbin.txt',
                  'filetype': 'tn' }
         n1.update(data)
 
@@ -71,10 +69,6 @@ class TestTimeDistDiff(unittest.TestCase):
 
         tdelayarr.append(OutputNode.last_data['tdelay'][('Input1', 'Input2')][0])
 
-        #p1 = os.popen('./externals/lightcurve_match/matching/getdelay fluxparametrisation_3500kT_1.548e+06Hz_10.0msT0_0.1msbin.txt fluxparametrisation_22.5kT_0Hz_0.0msT0_0.1msbin.txt  chi2 50 50 -300 300 -100 100 0.1')
-        #print(p1.read())
-        #p1.close()
-        
         p1 = os.popen('./externals/lightcurve_match/matching/getdelay fluxparametrisation_3500kT_1.548e+06Hz_10.0msT0_0.1msbin.txt fluxparametrisation_22.5kT_0Hz_0.0msT0_0.1msbin.txt  chi2 50 50 -300 300 -100 100 0.1 | grep T0match | cut -f 2 -d " "')
         tdelycpp  = p1.read()
         p1.close()
@@ -94,5 +88,3 @@ class TestTimeDistDiff(unittest.TestCase):
       meancpp = float(np.mean(tdelaycpparr))
       rmscpp = float(np.std(tdelaycpparr))
       print("Det1-Det2 delay from cpp mean [ms], rms [ms]", meancpp, rmscpp)
- 
-
