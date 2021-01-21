@@ -42,6 +42,7 @@ class TestTimeDistDiff(unittest.TestCase):
 
   def test_many(self):
       tdelayarr = []
+      tdelaycpparr = []
       for i in range(1,10):
         OutputNode = Node(name='Output')
         TimeDistDiffNode = TimeDistDiff(name='TimeDistDiffNode')
@@ -69,9 +70,24 @@ class TestTimeDistDiff(unittest.TestCase):
         n2.update(data)
 
         tdelayarr.append(OutputNode.last_data['tdelay'][('Input1', 'Input2')][0])
-        print("toy: ", i, "deltaT:", tdelayarr[-1]*1000,"ms")
+
+        
+        p1 = os.popen('./externals/lightcurve_match/matching/getdelay fluxparametrisation_3500kT_1.548e+06Hz_10.0msT0_0.1msbin.txt fluxparametrisation_22.5kT_0Hz_0.0msT0_0.1msbin.txt  chi2 50 50 -300 300 -100 100 0.1 | grep T0match | cut -f 2 -d " "')
+        tdelycpp  = p1.read()
+        p1.close()
+        tdelycppint = float(tdelycpp)
+        tdelaycpparr.append(-tdelycppint)
+        print("toy: ", i, "deltaT:", tdelayarr[-1]*1000,"ms", "deltaT cpp:", tdelaycpparr[-1],"ms")
+
+
       mean = float(np.mean(tdelayarr)*1000)
       rms = float(np.std(tdelayarr)*1000)
       print("Det1-Det2 delay mean [ms], rms [ms]", mean, rms)
       self.assertTrue( (10 - rms < mean) & (mean< 10 + rms) )
       self.assertTrue( rms < 10)
+
+      meancpp = float(np.mean(tdelaycpparr))
+      rmscpp = float(np.std(tdelaycpparr))
+      print("Det1-Det2 delay from cpp mean [ms], rms [ms]", meancpp, rmscpp)
+ 
+
