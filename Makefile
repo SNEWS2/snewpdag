@@ -1,6 +1,10 @@
+run: init
+	echo python -m snewpdag # needs config and input JSON filenames
+
 lightcurvesim:
 	cd externals/lightcurve_match && make simulation
 	cd externals/lightcurve_match/matching && make getdelay
+
 test: lightcurvesim
 	python -m unittest snewpdag.tests.test_basic_node
 	python -m unittest snewpdag.tests.test_inputs
@@ -11,8 +15,4 @@ test: lightcurvesim
 init:
 	pip install -r requirements.txt
 
-run:
-	python -m snewpdag # needs config and input JSON filenames
-
 .PHONY: init run test
-
