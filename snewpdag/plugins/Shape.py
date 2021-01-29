@@ -257,36 +257,55 @@ class Shape(Node):
     block_width = [block_edge[ie] - block_edge[ie-1] for ie in range(len(block_edge)) if ie > 0]
 
     edge_index = 0
-    for i in range(self.nbis):
-      bin_edge = self.h_low + i * bin_width
+    for i in range(self.nbis): #fill in the bins of the histogram
+      bin_edge = self.h_low + i * bin_width #upper edge of the bin
 
-      if edge_index == 0 and bin_edge <= block_edge[edge_index]:
+      if edge_index == 0 and bin_edge <= block_edge[edge_index]: #if the bin is below the lower end of the blocks
         hist[i] = 0
         continue
 
-      while block_edge[edge_index] < bin_edge:
+      reach_end = False
+      while block_edge[edge_index] < bin_edge: #loop until there's a block whose upper edge covers the bin
         edge_index += 1
 
+        if edge_index == len(block_edge): #flag when the upper bin edge exceeds the upper end of the blocks
+          reach_end = True
+          break
+
+      if reach_end == True: #when the upper bin edge exceeds the upper end of the blocks
+        if bin_edge - bin_width >= block_edge[-2]: #if the bin doesn't include any full blocks
+          hist[i] = (block_content[-1]/block_width[-1]) * (block_edge[-1] - bin_edge + bin_width)
+          break
+        else: #if the bin includes full blocks
+          ib = 1 #number of block edges included in the bin
+          while bin_edge - bin_width < block_edge[-1-ib]:
+            ib += 1
+
+          hist[i] = (block_content[-ib]/block_width[-ib]) * (block_edge[-ib] - bin_edge + bin_width)
+          for iib in range(ib-1):
+            hist[i] += (block_content[-1-iib]/block_width[-1-iib]) * (block_edge[-1-iib] - block_edge[-2-iib])
+          break
+
       if block_edge[edge_index] >= bin_edge:
-        if edge_index == 1:
-          if bin_edge - bin_width < block_edge[edge_index-1]:
-            hist[i] = (block_content[edge_index-1]/block_width[edge_index-1]) * (bin_edge-block_edge[edge_index-1])
+        if edge_index == 1: #if the bin is completely or partially in the first block
+          if bin_edge - bin_width < block_edge[edge_index-1]: #if the bin is partially in the first block
+            hist[i] = (block_content[edge_index-1]/block_width[edge_index-1]) * (bin_edge - block_edge[edge_index-1])
             continue
-          else:
+          else: #if the bin is completely in the first block
             hist[i] = (block_content[edge_index-1]/block_width[edge_index-1]) * bin_width
             continue
-        elif bin_edge - bin_width >= block_edge[edge_index-1]:
+        elif bin_edge - bin_width >= block_edge[edge_index-1]: #if the bin is completely within one single block
           hist[i] = (block_content[edge_index-1]/block_width[edge_index-1]) * bin_width
           continue
-        else:
-          ib = 1
+        else: #if the bin is only partially in a block or even contains several blocks
+          ib = 1 #number of block edges included in the bin
           while bin_edge - bin_width < block_edge[edge_index-1-ib]:
             ib += 1
 
-          hist[i] = (block_content[edge_index-1]/block_width[edge_index-1]) * (bin_edge-block_edge[edge_index-1])
+          hist[i] = (block_content[edge_index-1]/block_width[edge_index-1]) * (bin_edge - block_edge[edge_index-1])
           for iib in range(ib-1):
-            hist[i] += (block_content[edge_index-2-iib]/block_width[edge_index-2-iib]) * (block_edge[edge_index-1-iib]-block_edge[edge_index-2-iib])
-          hist[i] += (block_content[edge_index-1-ib]/block_width[edge_index-1-ib]) * (block_edge[edge_index-ib]-bin_edge+bin_width)
+            hist[i] += (block_content[edge_index-2-iib]/block_width[edge_index-2-iib]) * (block_edge[edge_index-1-iib] - block_edge[edge_index-2-iib])
+          hist[i] += (block_content[edge_index-1-ib]/block_width[edge_index-1-ib]) * (block_edge[edge_index-ib] - bin_edge + bin_width)
           continue
 
     return hist
