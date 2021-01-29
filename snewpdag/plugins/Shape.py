@@ -133,9 +133,11 @@ class Shape(Node):
         metric = self.diff_hist(hist1, hist2, self.scale)
         mlist[i] = metric
     if self.mode == 1:
-      hist2 = self.bayesian_block(values2, 0)
+      block2 = self.bayesian_block(values2, 0)
+      hist2 = self.block_hist(block2[0], block2[1])
       for i in range(self.dt_N):
-        hist1 = self.bayesian_block(values1, 0)
+        block1 = self.bayesian_block(values1, 0)
+        hist1 = self.block_hist(block1[0], block2[1])
         metric = self.diff_hist(hist1, hist2, self.scale)
         mlist[i] = metric
 
@@ -248,6 +250,46 @@ class Shape(Node):
     return bayes_block
 
 
+  def block_hist(self, block_edge, block_content):
+    bin_width = (float(self.h_up) - float(self.h_low)) / float(self.nbins)
+    hist = [0] * (self.nbins)
+
+    block_width = [block_edge[ie] - block_edge[ie-1] for ie in range(len(block_edge)) if ie > 0]
+
+    edge_index = 0
+    for i in range(self.nbis):
+      bin_edge = self.h_low + i * bin_width
+
+      if edge_index == 0 and bin_edge <= block_edge[edge_index]:
+        hist[i] = 0
+        continue
+
+      while block_edge[edge_index] < bin_edge:
+        edge_index += 1
+
+      if block_edge[edge_index] >= bin_edge:
+        if edge_index == 1:
+          if bin_edge - bin_width < block_edge[edge_index-1]:
+            hist[i] = (block_content[edge_index-1]/block_width[edge_index-1]) * (bin_edge-block_edge[edge_index-1])
+            continue
+          else:
+            hist[i] = (block_content[edge_index-1]/block_width[edge_index-1]) * bin_width
+            continue
+        elif bin_edge - bin_width >= block_edge[edge_index-1]:
+          hist[i] = (block_content[edge_index-1]/block_width[edge_index-1]) * bin_width
+          continue
+        else:
+          ib = 1
+          while bin_edge - bin_width < block_edge[edge_index-1-ib]:
+            ib += 1
+
+          hist[i] = (block_content[edge_index-1]/block_width[edge_index-1]) * (bin_edge-block_edge[edge_index-1])
+          for iib in range(ib-1):
+            hist[i] += (block_content[edge_index-2-iib]/block_width[edge_index-2-iib]) * (block_edge[edge_index-1-iib]-block_edge[edge_index-2-iib])
+          hist[i] += (block_content[edge_index-1-ib]/block_width[edge_index-1-ib]) * (block_edge[edge_index-ib]-bin_edge+bin_width)
+          continue
+
+    return hist
 
 
 
