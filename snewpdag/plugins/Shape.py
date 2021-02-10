@@ -13,10 +13,10 @@ class Shape(Node):
     self.h_low = h_low # lower edge of histogram
     self.h_up = h_up # upper edge of histogram
     self.scale = scale # scale factor on the weight for displaced bins
-    self.dt_0 = dt_0 # initial dt value (presumably negative)
+    self.dt_0 = dt_0 # initial dt value for scan (presumably negative)
     self.dt_step = dt_step # dt scan step size
     self.dt_N = dt_N # total number of steps of the dt scan
-    self.polyN = ployN # order of the fit polynomial
+    self.polyN = polyN # order of the fit polynomial
     self.dt_range = dt_range # metric-dt fit range, fitting +-dt_range around the point of minimum metric
     self.mode = mode # shape matching mode, 0) uniform bins 1) Bayesian blocks 2) bins + blocks
     self.gamma = gamma # prior probability used in the Bayesian block method, larger gamma means finer bins
