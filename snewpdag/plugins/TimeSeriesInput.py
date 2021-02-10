@@ -27,7 +27,7 @@ class TimeSeriesInput(Node):
     """
     if 'action' in data:
       if data['action'] != 'alert' or 'times' in data:
-        self.notify(data)
+        self.notify(data['action'], None, data)
       else:
         logging.error('[{}] Expected times field not found'.format(self.name))
     else:

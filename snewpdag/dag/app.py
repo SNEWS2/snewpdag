@@ -9,7 +9,7 @@ import json
 import importlib
 import logging
 
-def run(argv):
+def run():
   """
   Entrypoint for main application program.
   Takes positional command-line arguments:
@@ -18,16 +18,27 @@ def run(argv):
   """
   parser = argparse.ArgumentParser()
   parser.add_argument('config', help='configuration JSON file')
-  parser.add_argument('input', help='input data JSON file')
+  parser.add_argument('--input', help='input data JSON file')
+  parser.add_argument('--log', help='logging level')
   args = parser.parse_args()
+
+  if args.log:
+    numeric_level = getattr(logging, args.log.upper(), None)
+    if not isinstance(numeric_level, int):
+      raise ValueError('Invalid log level {}'.format(args.log))
+    logging.basicConfig(level=numeric_level)
 
   with open(args.config) as f:
     nodespecs = json.loads(f.read())
   nodes = configure(nodespecs)
 
-  with open(args.input) as f:
-    data = json.loads(f.read())
-  inject(nodes, data)
+  if args.input:
+    with open(args.input) as f:
+      data = json.loads(f.read())
+    inject(nodes, data)
+  else:
+    data = json.loads(sys.stdin.read())
+    inject(nodes, data)
 
 def configure(nodespecs):
   """

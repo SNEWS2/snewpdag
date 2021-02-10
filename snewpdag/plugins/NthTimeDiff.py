@@ -50,14 +50,10 @@ class NthTimeDiff(Node):
 
     # do the calculation if we have two valid inputs.
     if self.valid == [ True, True ]:
-      ndata = { 'action': 'alert',
-                'history': ( self.h[0], self.h[1] ),
-                'dt': self.t[0] - self.t[1] }
-      self.notify(ndata)
+      self.notify('alert', ( self.h[0], self.h[1] ),
+                  { 'dt': self.t[0] - self.t[1] } )
     elif newrevoke:
-      ndata = { 'action': 'revoke',
-                'history': ( self.h[0], self.h[1] ) }
-      self.notify(ndata)
+      self.notify('revoke', ( self.h[0], self.h[1] ), {})
 
   def get_nth(self, values):
     """

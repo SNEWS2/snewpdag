@@ -1,0 +1,10 @@
+[
+  { "class": "TimeDistInput", "name": "JUNO" },
+  { "class": "TimeDistInput", "name": "KM3Net" },
+  {
+    "class": "TimeDistDiff", "name": "Diff1",
+    "observe": [ "JUNO", "KM3Net" ]
+  },
+  { "class": "StdOutput", "name": "Out3", "observe": [ "Diff1" ] }
+]
+
