@@ -23,6 +23,24 @@ Note that so far we've been developing with unit tests.
 The application itself hasn't been tested yet; it will use input
 files (in the `data` directory) and generate some kind of output.
 
+### External packages
+
+`lightcurve_match` has been linked as a submodule.
+To clone `lightcurve_match` along with `snewpdag`,
+```
+  git clone --recurse-submodules
+```
+If you've already cloned, you'll see an empty `externals/lightcurve_match`
+subdirectory under `snewpdag`.  The following commands will populate it:
+```
+  git submodule init
+  git submodule update
+```
+This package requires ROOT, so set it up now, and then
+```
+  make lightcurvesim
+```
+
 ## Development
 
 1. Make a new branch in which you develop your plugin.
