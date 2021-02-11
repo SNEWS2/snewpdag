@@ -1,5 +1,6 @@
 """
-Histogram:  a plugin which accumulates a histogram based on its configuration
+Histogram:  a plugin which accumulates a histogram based on its configuration.
+  Only notifies downstream plugins on a `report' action.
 
 Constructor arguments:
   title: string, histogram title
@@ -86,6 +87,6 @@ class Histogram(Node):
       self.reset()
     elif action == 'report':
       data['histogram'] = self.summary()
-    self.notify(action, None, data)
+      self.notify(action, None, data)
 
 

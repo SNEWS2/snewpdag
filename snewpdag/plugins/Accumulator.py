@@ -1,5 +1,6 @@
 """
 Accumulator:  a plugin which simply accumulates a list of numbers
+  Only forwards reports downstream.
 """
 import logging
 
@@ -42,5 +43,5 @@ class Accumulator(Node):
       self.reset()
     elif action == 'report':
       data['histogram'] = self.summary()
-    self.notify(action, None, data)
+      self.notify(action, None, data)
 
