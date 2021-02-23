@@ -3,7 +3,7 @@ Shape: shape comparing methods
 also includes the Bayesian block method
 """
 import logging
-
+import math
 from snewpdag.dag import Node
 import numpy as np
 
@@ -22,6 +22,7 @@ class Shape(Node):
     self.gamma = gamma # prior probability used in the Bayesian block method, larger gamma means finer bins
     self.valid = [ False, False ] # flags indicating valid data from sources
     self.h = [ (), () ] # histories from each source
+    self.history_data = []
     super().__init__(**kwargs)
 
     if self.dt_0 > 0:
@@ -30,44 +31,32 @@ class Shape(Node):
 
   def update(self, data):
     action = data['action']
-    source = data['history'][-1]
 
-    # figure out which source updated
-    index = self.watch_index(source)
-    if index < 0:
-      logging.error("[{}] Unrecognized source {}".format(self.name, source))
-      return
-    if index >= 2:
-      logging.error("[{}] Excess source {} detected".format(self.name, source))
-      return
+    index = len(self.history_data)
 
     # update the relevant data.
     # Only issue a downstream revocation if the source revocation
     # is new, i.e., the data was valid before.
-    for i in range(index+1):
-      newrevoke = False
-      if action == 'alert':
-        self.valid[i] = True
-        self.h[i] = data['history']
-      elif action == 'revoke':
-        newrevoke = self.valid[i]
-        self.valid[i] = False
-      else:
-        logging.error("[{}] Unrecognized action {}".format(self.name, action))
-        return
+    newrevoke = False
+    if action == 'alert':
+      self.valid[index] = True
+      self.h[index] = data['name']
+      self.history_data.append(data['times'])
+    elif action == 'revoke' :
+      newrevoke = self.valid[index]
+      self.valid[index] = False
+    else:
+      logging.error("[{}] Unrecognized action {}".format(self.name, action))
+      return
 
     # do the calculation if we have two valid inputs.
     if self.valid == [ True, True ]:
-      mlist = self.metric_list(data[0]['times'], data[1]['times'])
+      mlist = self.metric_list(data['times'], self.history_data[index-1])
       min_dt = self.minimise(mlist)
-      ndata = { 'action': 'alert',
-                'history': ( self.h[0], self.h[1] ),
-                'dt': min_dt }
-      self.notify(ndata)
+      print("dt = " + str(min_dt))
+      self.notify('alert', (self.h[0], self.h[1]), {'dt': min_dt})
     elif newrevoke:
-      ndata = { 'action': 'revoke',
-                'history': ( self.h[0], self.h[1] ) }
-      self.notify(ndata)
+      self.notify('revoke', (self.h[0], self.h[1]), {})
 
 
   def fill_hist(self, values, dt_offset):
@@ -96,7 +85,7 @@ class Shape(Node):
     return hist
 
 
-  def remove_flow(hist): #remove the flow bins
+  def remove_flow(self, hist): #remove the flow bins
     hist.remove(hist[len(hist)-1])
     hist.remove(hist[0])
 
@@ -130,7 +119,7 @@ class Shape(Node):
       for i in range(self.dt_N):
         hist1 = self.fill_hist(values1, self.dt_0 + i*self.dt_step)
         hist1 = self.remove_flow(hist1)
-        metric = self.diff_hist(hist1, hist2, self.scale)
+        metric = self.diff_hist(hist1, hist2)
         mlist[i] = metric
     if self.mode == 1:
       block2 = self.bayesian_block(values2, 0)
@@ -138,7 +127,7 @@ class Shape(Node):
       for i in range(self.dt_N):
         block1 = self.bayesian_block(values1, 0)
         hist1 = self.block_hist(block1[0], block2[1])
-        metric = self.diff_hist(hist1, hist2, self.scale)
+        metric = self.diff_hist(hist1, hist2)
         mlist[i] = metric
 
     return mlist
@@ -180,7 +169,7 @@ class Shape(Node):
 
 
   def bayesian_block(self, values, dt_offset):
-    log_prior = math.log(gamma)
+    log_prior = math.log(self.gamma)
 
     svalues = []
     for iv in range(len(values)):
@@ -257,7 +246,7 @@ class Shape(Node):
     block_width = [block_edge[ie] - block_edge[ie-1] for ie in range(len(block_edge)) if ie > 0]
 
     edge_index = 0
-    for i in range(self.nbis): #fill in the bins of the histogram
+    for i in range(self.nbins): #fill in the bins of the histogram
       bin_edge = self.h_low + i * bin_width #upper edge of the bin
 
       if edge_index == 0 and bin_edge <= block_edge[edge_index]: #if the bin is below the lower end of the blocks
