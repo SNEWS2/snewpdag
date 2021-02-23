@@ -24,7 +24,7 @@ class Shape(Node):
     self.valid = [ False, False ] # flags indicating valid data from sources
     self.h = [ (), () ] # histories from each source
     self.history_data = []
-    self.hybrid_bin_values = []
+    self.hybrid_bin_value = []
     super().__init__(**kwargs)
 
     if self.dt_0 > 0:
@@ -54,6 +54,7 @@ class Shape(Node):
     # do the calculation if we have two valid inputs.
     if self.valid == [ True, True ]:
       mlist = self.metric_list(data['times'], self.history_data[index-1])
+#      min_dt = np.argmin(mlist) * self.dt_step + self.dt_0
       min_dt = self.minimise(mlist)
       print("dt = " + str(min_dt))
       self.notify('alert', (self.h[0], self.h[1]), {'dt': min_dt})
@@ -122,8 +123,9 @@ class Shape(Node):
         hist1 = self.fill_hist(values1, self.dt_0 + i*self.dt_step)
         hist1 = self.remove_flow(hist1)
         metric = self.diff_hist(hist1, hist2)
+
         mlist[i] = metric
-    if self.mode == 1:
+    if self.mode == 1 or self.mode == 2:
       block2 = self.bayesian_block(values2)
       hist2 = self.block_hist(block2[0], block2[1], 0)
       for i in range(self.dt_N):
@@ -176,12 +178,14 @@ class Shape(Node):
     svalues = []
     for iv in range(len(values)):
       if float(values[iv]) >= self.h_low and float(values[iv]) < self.h_up:
-        if self.mode == 2 and float(values[iv]) > self.division:
-          svalues.append(float(values[iv]))
-        elif self.mode == 2 and float(values[iv]) <= self.division:
-          self.hybrid_bin_value.append(float(values[iv]))
+        if self.mode == 2:
+          self.hybrid_bin_value.append(float(values[iv]))           
+          if float(values[iv]) > self.division:
+            svalues.append(float(values[iv]))
         else:
           svalues.append(float(values[iv]))
+      else:
+        values.remove(values[iv])
     svalues.sort()
 
     edge = [(svalues[i] + svalues[i-1])/2 for i in range(len(svalues)) if i > 0]
@@ -238,8 +242,7 @@ class Shape(Node):
     best_content.reverse()
     best_edge.reverse()
 
-    if self.mode != 2:
-      best_content = [x/(float(len(svalues))) for x in best_content] #normalising the blocks
+    best_content = [x/float(len(values)) for x in best_content]
 
     bayes_block.append(best_edge)
     bayes_block.append(best_content)
@@ -311,10 +314,9 @@ class Shape(Node):
         bin_low_edge = self.h_low + i * bin_width #lower edge of the bin
 
         for ii in range(len(self.hybrid_bin_value)):
-          if self.hybrid_bin_value[ii] > bin_low_edge and self.hybrid_bin_value[ii] <= bin_up_edge:
-            hist[i] += 1
-
-      hist = [x/float(sum(hist)) for x in hist]
+          if self.hybrid_bin_value[ii]+dt_offset > bin_low_edge and self.hybrid_bin_value[ii]+dt_offset <= bin_up_edge and self.hybrid_bin_value[ii] <= self.division:
+            hist[i] += 1/float(len(self.hybrid_bin_value))
+      self.hybrid_bin_value.clear()
 
     return hist
 
