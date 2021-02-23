@@ -122,11 +122,11 @@ class Shape(Node):
         metric = self.diff_hist(hist1, hist2)
         mlist[i] = metric
     if self.mode == 1:
-      block2 = self.bayesian_block(values2, 0)
-      hist2 = self.block_hist(block2[0], block2[1])
+      block2 = self.bayesian_block(values2)
+      hist2 = self.block_hist(block2[0], block2[1], 0)
       for i in range(self.dt_N):
-        block1 = self.bayesian_block(values1, 0)
-        hist1 = self.block_hist(block1[0], block2[1])
+        block1 = self.bayesian_block(values1)
+        hist1 = self.block_hist(block1[0], block1[1], self.dt_0 + i*self.dt_step)
         metric = self.diff_hist(hist1, hist2)
         mlist[i] = metric
 
@@ -168,7 +168,7 @@ class Shape(Node):
     return min_dt
 
 
-  def bayesian_block(self, values, dt_offset):
+  def bayesian_block(self, values):
     log_prior = math.log(self.gamma)
 
     svalues = []
@@ -177,9 +177,9 @@ class Shape(Node):
         svalues.append(float(values[iv]))
     svalues.sort()
 
-    edge = [(svalues[i] + svalues[i-1])/2+dt_offset for i in range(len(svalues)) if i > 0]
-    edge.insert(0, 1.5*svalues[0] - 0.5*svalues[1] + dt_offset) #lower edge of the first cell
-    edge.append(1.5*svalues[-1] - 0.5*svalues[-2] + dt_offset) #upper edge of the last cell
+    edge = [(svalues[i] + svalues[i-1])/2 for i in range(len(svalues)) if i > 0]
+    edge.insert(0, 1.5*svalues[0] - 0.5*svalues[1]) #lower edge of the first cell
+    edge.append(1.5*svalues[-1] - 0.5*svalues[-2]) #upper edge of the last cell
 
     width = [(edge[ii] - edge[ii-1]) for ii in range(len(edge)) if ii > 0]
 
@@ -239,7 +239,7 @@ class Shape(Node):
     return bayes_block
 
 
-  def block_hist(self, block_edge, block_content):
+  def block_hist(self, block_edge, block_content, dt_offset):
     bin_width = (float(self.h_up) - float(self.h_low)) / float(self.nbins)
     hist = [0] * (self.nbins)
 
@@ -249,12 +249,12 @@ class Shape(Node):
     for i in range(self.nbins): #fill in the bins of the histogram
       bin_edge = self.h_low + i * bin_width #upper edge of the bin
 
-      if edge_index == 0 and bin_edge <= block_edge[edge_index]: #if the bin is below the lower end of the blocks
+      if edge_index == 0 and bin_edge <= block_edge[edge_index]+dt_offset: #if the bin is below the lower end of the blocks
         hist[i] = 0
         continue
 
       reach_end = False
-      while block_edge[edge_index] < bin_edge: #loop until there's a block whose upper edge covers the bin
+      while block_edge[edge_index]+dt_offset < bin_edge: #loop until there's a block whose upper edge covers the bin
         edge_index += 1
 
         if edge_index == len(block_edge): #flag when the upper bin edge exceeds the upper end of the blocks
@@ -262,39 +262,39 @@ class Shape(Node):
           break
 
       if reach_end == True: #when the upper bin edge exceeds the upper end of the blocks
-        if bin_edge - bin_width >= block_edge[-2]: #if the bin doesn't include any full blocks
-          hist[i] = (block_content[-1]/block_width[-1]) * (block_edge[-1] - bin_edge + bin_width)
+        if bin_edge - bin_width >= block_edge[-2]+dt_offset: #if the bin doesn't include any full blocks
+          hist[i] = (block_content[-1]/block_width[-1]) * ( (block_edge[-1]+dt_offset) - bin_edge + bin_width)
           break
         else: #if the bin includes full blocks
           ib = 1 #number of block edges included in the bin
-          while bin_edge - bin_width < block_edge[-1-ib]:
+          while bin_edge - bin_width < block_edge[-1-ib]+dt_offset:
             ib += 1
 
-          hist[i] = (block_content[-ib]/block_width[-ib]) * (block_edge[-ib] - bin_edge + bin_width)
+          hist[i] = (block_content[-ib]/block_width[-ib]) * ( (block_edge[-ib]+dt_offset) - bin_edge + bin_width)
           for iib in range(ib-1):
             hist[i] += (block_content[-1-iib]/block_width[-1-iib]) * (block_edge[-1-iib] - block_edge[-2-iib])
           break
 
-      if block_edge[edge_index] >= bin_edge:
+      if block_edge[edge_index]+dt_offset >= bin_edge:
         if edge_index == 1: #if the bin is completely or partially in the first block
-          if bin_edge - bin_width < block_edge[edge_index-1]: #if the bin is partially in the first block
-            hist[i] = (block_content[edge_index-1]/block_width[edge_index-1]) * (bin_edge - block_edge[edge_index-1])
+          if bin_edge - bin_width < block_edge[edge_index-1]+dt_offset: #if the bin is partially in the first block
+            hist[i] = (block_content[edge_index-1]/block_width[edge_index-1]) * (bin_edge - (block_edge[edge_index-1]+dt_offset) )
             continue
           else: #if the bin is completely in the first block
             hist[i] = (block_content[edge_index-1]/block_width[edge_index-1]) * bin_width
             continue
-        elif bin_edge - bin_width >= block_edge[edge_index-1]: #if the bin is completely within one single block
+        elif bin_edge - bin_width >= block_edge[edge_index-1]+dt_offset: #if the bin is completely within one single block
           hist[i] = (block_content[edge_index-1]/block_width[edge_index-1]) * bin_width
           continue
         else: #if the bin is only partially in a block or even contains several blocks
           ib = 1 #number of block edges included in the bin
-          while bin_edge - bin_width < block_edge[edge_index-1-ib]:
+          while bin_edge - bin_width < block_edge[edge_index-1-ib]+dt_offset:
             ib += 1
 
-          hist[i] = (block_content[edge_index-1]/block_width[edge_index-1]) * (bin_edge - block_edge[edge_index-1])
+          hist[i] = (block_content[edge_index-1]/block_width[edge_index-1]) * (bin_edge - (block_edge[edge_index-1]+dt_offset))
           for iib in range(ib-1):
             hist[i] += (block_content[edge_index-2-iib]/block_width[edge_index-2-iib]) * (block_edge[edge_index-1-iib] - block_edge[edge_index-2-iib])
-          hist[i] += (block_content[edge_index-1-ib]/block_width[edge_index-1-ib]) * (block_edge[edge_index-ib] - bin_edge + bin_width)
+          hist[i] += (block_content[edge_index-1-ib]/block_width[edge_index-1-ib]) * ( (block_edge[edge_index-ib]+dt_offset) - bin_edge + bin_width)
           continue
 
     return hist
