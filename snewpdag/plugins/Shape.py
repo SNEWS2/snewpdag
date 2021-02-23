@@ -8,7 +8,7 @@ from snewpdag.dag import Node
 import numpy as np
 
 class Shape(Node):
-  def __init__(self, nbins, h_low, h_up, scale, dt_0, dt_step, dt_N, polyN, dt_range, mode, gamma, **kwargs):
+  def __init__(self, nbins, h_low, h_up, scale, dt_0, dt_step, dt_N, polyN, dt_range, mode, gamma, division, **kwargs):
     self.nbins = nbins # number of bins in histograms
     self.h_low = h_low # lower edge of histogram
     self.h_up = h_up # upper edge of histogram
@@ -20,9 +20,11 @@ class Shape(Node):
     self.dt_range = dt_range # metric-dt fit range, fitting +-dt_range around the point of minimum metric
     self.mode = mode # shape matching mode, 0) uniform bins 1) Bayesian blocks 2) bins + blocks
     self.gamma = gamma # prior probability used in the Bayesian block method, larger gamma means finer bins
+    self.division = division # division between uniform bins and Bayesian blocks if mode == 2
     self.valid = [ False, False ] # flags indicating valid data from sources
     self.h = [ (), () ] # histories from each source
     self.history_data = []
+    self.hybrid_bin_values = []
     super().__init__(**kwargs)
 
     if self.dt_0 > 0:
@@ -174,7 +176,12 @@ class Shape(Node):
     svalues = []
     for iv in range(len(values)):
       if float(values[iv]) >= self.h_low and float(values[iv]) < self.h_up:
-        svalues.append(float(values[iv]))
+        if self.mode == 2 and float(values[iv]) > self.division:
+          svalues.append(float(values[iv]))
+        elif self.mode == 2 and float(values[iv]) <= self.division:
+          self.hybrid_bin_value.append(float(values[iv]))
+        else:
+          svalues.append(float(values[iv]))
     svalues.sort()
 
     edge = [(svalues[i] + svalues[i-1])/2 for i in range(len(svalues)) if i > 0]
@@ -231,7 +238,8 @@ class Shape(Node):
     best_content.reverse()
     best_edge.reverse()
 
-    best_content = [x/(float(len(svalues))) for x in best_content] #normalising the blocks
+    if self.mode != 2:
+      best_content = [x/(float(len(svalues))) for x in best_content] #normalising the blocks
 
     bayes_block.append(best_edge)
     bayes_block.append(best_content)
@@ -247,7 +255,7 @@ class Shape(Node):
 
     edge_index = 0
     for i in range(self.nbins): #fill in the bins of the histogram
-      bin_edge = self.h_low + i * bin_width #upper edge of the bin
+      bin_edge = self.h_low + (i+1) * bin_width #upper edge of the bin
 
       if edge_index == 0 and bin_edge <= block_edge[edge_index]+dt_offset: #if the bin is below the lower end of the blocks
         hist[i] = 0
@@ -263,14 +271,14 @@ class Shape(Node):
 
       if reach_end == True: #when the upper bin edge exceeds the upper end of the blocks
         if bin_edge - bin_width >= block_edge[-2]+dt_offset: #if the bin doesn't include any full blocks
-          hist[i] = (block_content[-1]/block_width[-1]) * ( (block_edge[-1]+dt_offset) - bin_edge + bin_width)
+          hist[i] += (block_content[-1]/block_width[-1]) * ( (block_edge[-1]+dt_offset) - bin_edge + bin_width)
           break
         else: #if the bin includes full blocks
           ib = 1 #number of block edges included in the bin
           while bin_edge - bin_width < block_edge[-1-ib]+dt_offset:
             ib += 1
 
-          hist[i] = (block_content[-ib]/block_width[-ib]) * ( (block_edge[-ib]+dt_offset) - bin_edge + bin_width)
+          hist[i] += (block_content[-ib]/block_width[-ib]) * ( (block_edge[-ib]+dt_offset) - bin_edge + bin_width)
           for iib in range(ib-1):
             hist[i] += (block_content[-1-iib]/block_width[-1-iib]) * (block_edge[-1-iib] - block_edge[-2-iib])
           break
@@ -278,24 +286,35 @@ class Shape(Node):
       if block_edge[edge_index]+dt_offset >= bin_edge:
         if edge_index == 1: #if the bin is completely or partially in the first block
           if bin_edge - bin_width < block_edge[edge_index-1]+dt_offset: #if the bin is partially in the first block
-            hist[i] = (block_content[edge_index-1]/block_width[edge_index-1]) * (bin_edge - (block_edge[edge_index-1]+dt_offset) )
+            hist[i] += (block_content[edge_index-1]/block_width[edge_index-1]) * (bin_edge - (block_edge[edge_index-1]+dt_offset) )
             continue
           else: #if the bin is completely in the first block
-            hist[i] = (block_content[edge_index-1]/block_width[edge_index-1]) * bin_width
+            hist[i] += (block_content[edge_index-1]/block_width[edge_index-1]) * bin_width
             continue
         elif bin_edge - bin_width >= block_edge[edge_index-1]+dt_offset: #if the bin is completely within one single block
-          hist[i] = (block_content[edge_index-1]/block_width[edge_index-1]) * bin_width
+          hist[i] += (block_content[edge_index-1]/block_width[edge_index-1]) * bin_width
           continue
         else: #if the bin is only partially in a block or even contains several blocks
           ib = 1 #number of block edges included in the bin
           while bin_edge - bin_width < block_edge[edge_index-1-ib]+dt_offset:
             ib += 1
 
-          hist[i] = (block_content[edge_index-1]/block_width[edge_index-1]) * (bin_edge - (block_edge[edge_index-1]+dt_offset))
+          hist[i] += (block_content[edge_index-1]/block_width[edge_index-1]) * (bin_edge - (block_edge[edge_index-1]+dt_offset))
           for iib in range(ib-1):
             hist[i] += (block_content[edge_index-2-iib]/block_width[edge_index-2-iib]) * (block_edge[edge_index-1-iib] - block_edge[edge_index-2-iib])
           hist[i] += (block_content[edge_index-1-ib]/block_width[edge_index-1-ib]) * ( (block_edge[edge_index-ib]+dt_offset) - bin_edge + bin_width)
           continue
+
+    if self.mode == 2:
+      for i in range(self.nbins):
+        bin_up_edge = self.h_low + (i+1) * bin_width #upper edge of the bin
+        bin_low_edge = self.h_low + i * bin_width #lower edge of the bin
+
+        for ii in range(len(self.hybrid_bin_value)):
+          if self.hybrid_bin_value[ii] > bin_low_edge and self.hybrid_bin_value[ii] <= bin_up_edge:
+            hist[i] += 1
+
+      hist = [x/float(sum(hist)) for x in hist]
 
     return hist
 
