@@ -66,8 +66,8 @@ class OutputMap(Node):
 
         
         # Define the chi2 function
-        def chi_sq(t0, errs, biases):
-            # Finds the chi squared value for given t0, errors, and biases using the Brdar formula
+        def chi_sq(det_r, errs, biases):
+            # Finds the chi squared value for given detector locations, errors, and biases using the Brdar formula
             # Samples random points across the sky and finds the chi squared value. Using this value
             # determines if the point is in 1, 2, or 3 sigma area
             s1 = []
@@ -79,7 +79,7 @@ class OutputMap(Node):
                 n = -1 * np.array((np.cos(row[0]) * np.cos(row[1]), np.sin(row[0]) * np.cos(row[1]), np.sin(row[1])))
                 chi = 0
                 for i in range(num_det):
-                    for j in range(i + 1, len(t0)):
+                    for j in range(i + 1, num_det):
                         r_1 = det_r[i]
                         r_2 = det_r[j]
                         err = errs[i,j]
@@ -108,7 +108,7 @@ class OutputMap(Node):
         
 
 
-        s1,s2,s3 = chi_sq(self.params[source]['t0'],self.[source]['errs'],self.[source]['biases'])
+        s1,s2,s3 = chi_sq(det_r,self.[source]['errs'],self.[source]['biases'])
         
         # Transpose sigma areas
         s1 = np.transpose(s1)
