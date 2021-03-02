@@ -1,6 +1,9 @@
 """
 Accumulator:  a plugin which simply accumulates a list of numbers
   Only forwards reports downstream.
+
+It would be nice if this kept track of numbers by burst_id.
+That way, if a burst is updated, it'll replace the number.
 """
 import logging
 

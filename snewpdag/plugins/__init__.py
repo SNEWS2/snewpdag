@@ -9,6 +9,6 @@ from .NthTimeDiff import NthTimeDiff
 from .CombineMaps import CombineMaps
 from .TimeDistDiff import TimeDistDiff
 
-from .Histogram import Histogram
+from .Histogram1D import Histogram1D
 from .Accumulator import Accumulator
 

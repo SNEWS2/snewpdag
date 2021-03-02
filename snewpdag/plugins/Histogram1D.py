@@ -1,5 +1,5 @@
 """
-Histogram:  a plugin which accumulates a histogram based on its configuration.
+Histogram1D:  a plugin which accumulates a histogram based on its configuration.
   Only notifies downstream plugins on a `report' action.
 
 Constructor arguments:
@@ -17,7 +17,7 @@ import numpy as np
 
 from snewpdag.dag import Node
 
-class Histogram(Node):
+class Histogram1D(Node):
   def __init__(self, title, nbins, xlow, xhigh, field, **kwargs):
     self.title = title
     self.nbins = nbins

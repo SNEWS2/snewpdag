@@ -5,6 +5,15 @@
     "class": "TimeDistDiff", "name": "Diff1",
     "observe": [ "JUNO", "KM3Net" ]
   },
-  { "class": "StdOutput", "name": "Out3", "observe": [ "Diff1" ] }
+  { "class": "StdOutput", "name": "Out3", "observe": [ "Diff1" ] },
+  {
+    "class": "renderers.TimeProfile",
+    "name": "render", "observe": [ "JUNO", "KM3Net" ],
+    "kwargs": {
+      "xfield": "t", "yfield": "n",
+      "title": "Profile", "xlabel": "Time", "ylabel": "Events",
+      "filename": "flux-test-{}-{}-{}.png"
+    }
+  }
 ]
 
