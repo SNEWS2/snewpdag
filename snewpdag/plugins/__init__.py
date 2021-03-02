@@ -8,3 +8,7 @@ from .StdOutput import StdOutput
 from .NthTimeDiff import NthTimeDiff
 from .CombineMaps import CombineMaps
 from .TimeDistDiff import TimeDistDiff
+
+from .Histogram import Histogram
+from .Accumulator import Accumulator
+
