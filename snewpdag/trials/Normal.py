@@ -18,6 +18,7 @@ def run():
   parser.add_argument('--mean', default=0.0, help='mean value')
   parser.add_argument('--rms', default=1.0, help='rms value')
   parser.add_argument('--field', default='x', help='field name to generate')
+  parser.add_argument('--expt', default='Normal', help='experiment name')
   args = parser.parse_args()
 
   i = 0
@@ -26,7 +27,7 @@ def run():
   rms = float(args.rms)
   rng = np.random.default_rng()
   while i < imax:
-    data = { 'action': 'alert', 'name': args.name }
+    data = { 'action': 'alert', 'name': args.name, 'id': i, 'expt': args.expt }
     data[args.field] = rng.normal(mean, rms)
     print(json.dumps(data))
     i += 1
