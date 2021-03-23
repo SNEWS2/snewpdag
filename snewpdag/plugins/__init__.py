@@ -8,3 +8,5 @@ from .NthTimeDiff import NthTimeDiff
 from .CombineMaps import CombineMaps
 from .TimeDistDiff import TimeDistDiff
 from .Shape import Shape
+from .Bayes import Bayes
+from .ShapeHist import ShapeHist
