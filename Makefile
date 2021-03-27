@@ -18,7 +18,7 @@ runtest:
           snewpdag/data/text-flux-config.json
 
 trial:
-	python snewpdag/trials/Normal.py hist | \
+	python snewpdag/trials/Normal.py hist --expt Newt | \
           python -m snewpdag --jsonlines \
           snewpdag/data/test-dags-hist-config.json
 

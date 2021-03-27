@@ -1,8 +1,19 @@
 """
 Time profile renderer.
 
+Configuration options:
+  title:  profile title (top of plot)
+  xfield:  name of data field for x values
+  yfield:  name of data field for y values
+  xlabel:  x axis label
+  ylabel:  y axis label
+  filename:  output filename, with fields
+             {0} renderer name
+             {1} count index, starting from 0
+             {2} id from update data (default 0 if no such field)
+             {3} source name (which this renderer observes)
+
 Plots y vs x.
-Filename arguments:  name, source, count
 """
 import matplotlib.pyplot as plt
 import numpy as np
@@ -20,7 +31,7 @@ class TimeProfile(Node):
     self.count = 0 # number of histograms made
     super().__init__(**kwargs)
 
-  def render(self, source, x, y, subtitle):
+  def render(self, burst_id, source, x, y, subtitle):
     fig, ax = plt.subplots()
     ax.plot(x, y)
     ax.set_xlabel(self.xlabel)
@@ -28,16 +39,17 @@ class TimeProfile(Node):
     ax.set_title(self.title + '(' + subtitle + ')')
     fig.tight_layout()
 
-    fname = self.filename.format(self.name, source, self.count)
+    fname = self.filename.format(self.name, self.count, burst_id, source)
     plt.savefig(fname)
     self.count += 1
 
   def update(self, data):
     action = data['action']
     if action == 'report' or action == 'alert':
+      burst_id = data['id'] if 'id' in data else 0
       nm = data['name']
       if 'comment' in data:
         nm += ": " + data['comment']
-      self.render(data['history'][-1], data[self.xfield], data[self.yfield], nm)
+      self.render(burst_id, data['history'][-1], data[self.xfield], data[self.yfield], nm)
     self.notify(action, None, data)
 
