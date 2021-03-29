@@ -1,0 +1,241 @@
+[
+  {
+    "name": "Control",
+    "class": "Pass",
+    "kwargs": {
+      "line": 100
+    }
+  },
+
+  {
+    "name": "KM3Net",
+    "class": "gen.TimeSeries",
+    "observe": [ "Control" ],
+    "kwargs": {
+      "mean": 10000.0,
+      "seed": 12345,
+      "filetype": "tn",
+      "filename":
+      "snewpdag/data/fluxparametrisation_3500kT_1.548e+06Hz_0.0msT0_1msbin.txt"
+    }
+  },
+
+  {
+    "name": "JUNO",
+    "class": "gen.TimeSeries",
+    "observe": [ "Control" ],
+    "comment": "do I need to introduce a time delay?",
+    "kwargs": {
+      "mean": 12000.0,
+      "seed": 5831,
+      "filetype": "tn",
+      "filename":
+      "snewpdag/data/fluxparametrisation_22.5kT_0Hz_0.0msT0_1msbin.txt"
+    }
+  },
+
+  {
+    "name": "KM3Net-bin",
+    "class": "SeriesBinner",
+    "observe": [ "KM3Net" ],
+    "kwargs": {
+      "field": "times",
+      "nbins": 100000,
+      "xlow": 0.0,
+      "xhigh": 10.0,
+      "xname": "t",
+      "yname": "n"
+    }
+  },
+
+  {
+    "name": "JUNO-bin",
+    "class": "SeriesBinner",
+    "observe": [ "JUNO" ],
+    "kwargs": {
+      "field": "times",
+      "nbins": 100000,
+      "xlow": 0.0,
+      "xhigh": 10.0,
+      "xname": "t",
+      "yname": "n"
+    }
+  },
+
+  {
+    "name": "Out1",
+    "class": "Pass",
+    "observe": [ "JUNO-bin", "KM3Net-bin" ],
+    "kwargs": {
+      "line": 1,
+      "dump": 1
+    }
+  },
+
+  {
+    "name": "Diff1",
+    "class": "TimeDistDiff",
+    "observe": [ "JUNO-bin", "KM3Net-bin" ]
+  },
+
+  {
+    "name": "Out3",
+    "class": "Pass",
+    "observe": [ "Diff1" ],
+    "kwargs": {
+      "line": 100,
+      "dump": 1
+    }
+  },
+
+  {
+    "name": "Diff1-dt",
+    "class": "Histogram1D",
+    "observe": [ "Diff1" ],
+    "kwargs": {
+      "nbins": 100,
+      "xlow": -0.1,
+      "xhigh": 0.1,
+      "field": "tdelay",
+      "index": [ "JUNO-bin", "KM3Net-bin" ],
+      "index2": 0
+    }
+  },
+
+  {
+    "name": "Diff1-dt-render",
+    "class": "renderers.Histogram1D",
+    "observe": [ "Diff1-dt" ],
+    "kwargs": {
+      "title": "Time difference",
+      "xlabel": "dt [s]",
+      "ylabel": "entries/0.1s",
+      "filename": "output/gen-test-{}-{}-{}.png"
+    }
+  },
+
+  {
+    "name": "Diff1-chi2",
+    "class": "Histogram1D",
+    "observe": [ "Diff1" ],
+    "kwargs": {
+      "nbins": 100,
+      "xlow": 0.0,
+      "xhigh": 10.0,
+      "field": "tdelay",
+      "index": [ "JUNO-bin", "KM3Net-bin" ],
+      "index2": 1
+    }
+  },
+
+  {
+    "name": "Diff1-chi2-render",
+    "class": "renderers.Histogram1D",
+    "observe": [ "Diff1-chi2" ],
+    "kwargs": {
+      "title": "chi2",
+      "xlabel": "chi2",
+      "ylabel": "entries",
+      "filename": "output/gen-test-{}-{}-{}.png"
+    }
+  },
+
+  {
+    "name": "JUNO-t",
+    "class": "SeriesBinner",
+    "observe": [ "JUNO" ],
+    "kwargs": {
+      "field": "times",
+      "nbins": 100,
+      "xlow": 0.0,
+      "xhigh": 10.0,
+      "xname": "t",
+      "yname": "bins",
+      "flags": [ "report", "accumulate", "overflow" ]
+    }
+  },
+
+  {
+    "name": "JUNO-t-render",
+    "class": "renderers.Histogram1D",
+    "observe": [ "JUNO-t" ],
+    "kwargs": {
+      "title": "JUNO time profile",
+      "xlabel": "time [s]",
+      "ylabel": "entries/0.1s",
+      "filename": "output/gen-test-{}-{}-{}.png"
+    }
+  },
+
+  {
+    "name": "KM3Net-t",
+    "class": "SeriesBinner",
+    "observe": [ "KM3Net" ],
+    "kwargs": {
+      "field": "times",
+      "nbins": 100,
+      "xlow": 0.0,
+      "xhigh": 10.0,
+      "xname": "t",
+      "yname": "bins",
+      "flags": [ "report", "accumulate", "overflow" ]
+    }
+  },
+
+  {
+    "name": "KM3Net-t-render",
+    "class": "renderers.Histogram1D",
+    "observe": [ "KM3Net-t" ],
+    "kwargs": {
+      "title": "KM3Net time profile",
+      "xlabel": "time [s]",
+      "ylabel": "entries/0.1s",
+      "filename": "output/gen-test-{}-{}-{}.png"
+    }
+  },
+
+  {
+    "name": "Diff2",
+    "class": "NthTimeDiff",
+    "observe": [ "JUNO", "KM3Net" ],
+    "kwargs": {
+      "nth": 1
+    }
+  },
+
+  {
+    "name": "Out2",
+    "class": "Pass",
+    "observe": [ "Diff2" ],
+    "kwargs": {
+      "line": 100,
+      "dump": 1
+    }
+  },
+
+  {
+    "name": "Diff2-dt",
+    "class": "Histogram1D",
+    "observe": [ "Diff2" ],
+    "kwargs": {
+      "nbins": 100,
+      "xlow": -0.1,
+      "xhigh": 0.1,
+      "field": "dt"
+    }
+  },
+
+  {
+    "name": "Diff2-dt-render",
+    "class": "renderers.Histogram1D",
+    "observe": [ "Diff2-dt" ],
+    "kwargs": {
+      "title": "Time difference",
+      "xlabel": "dt [s]",
+      "ylabel": "entries/0.1s",
+      "filename": "output/gen-test-{}-{}-{}.png"
+    }
+  }
+
+]
+

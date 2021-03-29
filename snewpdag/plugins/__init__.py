@@ -1,4 +1,6 @@
 
+from .Pass import Pass
+
 from .TimeSeriesInput import TimeSeriesInput
 from .TimeDistInput import TimeDistInput
 from .TimeDistFileInput import TimeDistFileInput
@@ -12,3 +14,4 @@ from .TimeDistDiff import TimeDistDiff
 from .Histogram1D import Histogram1D
 from .Accumulator import Accumulator
 
+from .SeriesBinner import SeriesBinner

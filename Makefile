@@ -17,12 +17,16 @@ runtest:
           --input snewpdag/data/text-flux-input.json \
           snewpdag/data/text-flux-config.json
 
-trial:
+histogram:
 	python snewpdag/trials/Normal.py hist --expt Newt | \
           python -m snewpdag --jsonlines \
           snewpdag/data/test-dags-hist-config.json
 
+trial:
+	python snewpdag/trials/Simple.py Control -n 10 | \
+          python -m snewpdag --jsonlines snewpdag/data/test-gen-config.json
+
 init:
 	pip install -r requirements.txt
 
-.PHONY: init run test trial runtest
+.PHONY: init run test histogram trial runtest

@@ -44,6 +44,9 @@ class NthTimeDiff(Node):
     elif action == 'revoke':
       newrevoke = self.valid[index]
       self.valid[index] = False
+    elif action == 'report':
+      self.notify('report', None, data)
+      return
     else:
       logging.error("[{}] Unrecognized action {}".format(self.name, action))
       return

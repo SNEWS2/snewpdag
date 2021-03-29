@@ -33,6 +33,12 @@ class TimeDistDiff(Node):
   def update(self, data):
     action = data['action']
     source = data['history'][-1]
+
+    # construct history (in case just forwarding message)
+    hlist = []
+    for k in self.map:
+      if self.map[k]['valid']:
+        hlist.append(self.map[k]['history'])
  
     if action == 'alert':
       if 't' in data and 'n' in data:
@@ -47,6 +53,9 @@ class TimeDistDiff(Node):
       else:
         logging.error('[{}] Revocation received for unknown source {}'.format(self.name, source))
         return
+    elif action == 'report':
+      self.notify(action, tuple(hlist), data)
+      return
     else:
       logging.error("[{}] Unrecognized action {}".format(self.name, action))
       return
@@ -63,12 +72,11 @@ class TimeDistDiff(Node):
                 ndata['tdelay'][(i,j)] = gettdelay(self.map[i]['t'],self.map[i]['n'],self.map[j]['t'],self.map[j]['n'])
 
     # notify
-    hlist = []
-    for k in self.map:
-      if self.map[k]['valid']:
-        hlist.append(self.map[k]['history'])
-    action_verb = 'revoke' if len(hlist) <= 1 else 'alert'
-    self.notify(action_verb, tuple(hlist), ndata)
+    # (JCT: notify if have a diff to forward)
+    #action_verb = 'revoke' if len(hlist) <= 1 else 'alert'
+    if len(hlist) > 1:
+      action_verb = 'alert'
+      self.notify(action_verb, tuple(hlist), ndata)
 
 #normalise time series for chi2
 #returns err^2 as a second output
