@@ -4,6 +4,9 @@ Pass - a pass-through node
 Configuration parameters:
   'line':  print a line every n events.  0 if no print.  Default 100.
   'dump':  dump data dictionary every n events.  0 if no print.  Default 0.
+
+Output json:
+  input json passed on unmodified
 """
 import logging
 

@@ -10,7 +10,20 @@ Constructor arguments:
   index: int or tuple (from list), element numbers if field is an array
   index2: secondary index if needed (e.g., if a 2D array or dict)
 
-(Could also specify variable-width bins?)
+Output json:
+  alert:  no output
+  reset:  no output
+  revoke:  no output
+  report:  add the following
+    name
+    nbins, xlow, xhigh
+    field, index, index2
+    underflow, overflow
+    sum, sum2
+    count
+    bins
+    (doesn't delete input field, since it's not much data
+    and may be part of an aggregate)
 """
 import logging
 import numpy as np
@@ -31,10 +44,10 @@ class Histogram1D(Node):
     if 'index2' in kwargs:
       v = kwargs.pop('index2')
       self.index2 = tuple(v) if isinstance(v, list) else v
-    self.reset()
+    self.clear()
     super().__init__(**kwargs)
 
-  def reset(self):
+  def clear(self):
     self.bins = np.zeros(self.nbins)
     self.overflow = 0.0
     self.underflow = 0.0
@@ -93,7 +106,7 @@ class Histogram1D(Node):
     if action == 'alert':
       self.fill(data)
     elif action == 'reset':
-      self.reset()
+      self.clear()
     elif action == 'report':
       if self.changed: # only if there has been a change since last report
         data.update(self.summary())

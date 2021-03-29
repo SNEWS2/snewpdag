@@ -34,12 +34,6 @@ class TimeDistDiff(Node):
     action = data['action']
     source = data['history'][-1]
 
-    # construct history (in case just forwarding message)
-    hlist = []
-    for k in self.map:
-      if self.map[k]['valid']:
-        hlist.append(self.map[k]['history'])
- 
     if action == 'alert':
       if 't' in data and 'n' in data:
         self.map[source] = data
@@ -53,8 +47,13 @@ class TimeDistDiff(Node):
       else:
         logging.error('[{}] Revocation received for unknown source {}'.format(self.name, source))
         return
+    elif action == 'reset':
+      for source in self.map:
+        self.map[source]['valid'] = False
+      self.notify(action, None, data)
+      return
     elif action == 'report':
-      self.notify(action, tuple(hlist), data)
+      self.notify(action, None, data)
       return
     else:
       logging.error("[{}] Unrecognized action {}".format(self.name, action))
@@ -74,6 +73,10 @@ class TimeDistDiff(Node):
     # notify
     # (JCT: notify if have a diff to forward)
     #action_verb = 'revoke' if len(hlist) <= 1 else 'alert'
+    hlist = []
+    for k in self.map:
+      if self.map[k]['valid']:
+        hlist.append(self.map[k]['history'])
     if len(hlist) > 1:
       action_verb = 'alert'
       self.notify(action_verb, tuple(hlist), ndata)

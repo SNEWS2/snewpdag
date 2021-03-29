@@ -16,10 +16,10 @@ class Accumulator(Node):
     self.index = None
     if 'index' in kwargs:
       self.index = kwargs.pop('index')
-    self.reset()
+    self.clear()
     super().__init__(**kwargs)
 
-  def reset(self):
+  def clear(self):
     self.series = []
 
   def fill(self, data):
@@ -43,7 +43,7 @@ class Accumulator(Node):
     if action == 'alert':
       self.fill(data)
     elif action == 'reset':
-      self.reset()
+      self.clear()
     elif action == 'report':
       data['histogram'] = self.summary()
       self.notify(action, None, data)

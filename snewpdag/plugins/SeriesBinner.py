@@ -23,7 +23,20 @@ Constructor arguments:
     overflow - calculate overflow/underflow
     stats - calculate statistics
 
-(Could also specify variable-width bins?)
+Output json:
+  alert:
+    add count
+        overflow, underflow (if 'overflow' flag)
+        mean, rms (if 'stats' flag)
+    delete input field
+  report:
+    add count
+        overflow, underflow (if 'overflow' flag)
+        mean, rms (if 'stats' flag)
+  reset:
+    forward unmodified data
+  revoke:
+    forward unmodified data
 """
 import logging
 import math
@@ -48,10 +61,10 @@ class SeriesBinner(Node):
       self.calc_overflow = 'overflow' in flags
       self.calc_stats = 'stats' in flags
       kwargs.pop('flags')
-    self.reset()
+    self.clear()
     super().__init__(**kwargs)
 
-  def reset(self):
+  def clear(self):
     self.bins = np.zeros(self.nbins)
     self.edges = np.zeros(self.nbins+1)
     self.overflow = 0.0
@@ -72,6 +85,7 @@ class SeriesBinner(Node):
       # also note (?) that top edge is inclusive,
       # but lower bins' right edge is exclusive.
       self.edges = edges
+      ndata = data.copy()
       ndata[self.xname] = edges[:-1]
       ndata[self.yname] = h
       n = len(vs)
@@ -99,6 +113,7 @@ class SeriesBinner(Node):
           self.sum += s
           self.sum2 += s2
 
+      del ndata[self.field] # delete time series from data
       self.notify(action, None, ndata)
 
     elif action == 'report':
@@ -113,11 +128,10 @@ class SeriesBinner(Node):
           mean = self.sum / self.count
           ndata['mean'] = mean
           ndata['rms'] = sqrt(self.sum2 / self.count - mean*mean)
-        self.notify(action, None, ndata)
-      else:
-        self.notify(action, None, data)
+        data.update(ndata)
+      self.notify(action, None, data)
 
-    elif action == 'reset':
+    elif action == 'reset' or action == 'revoke':
       #self.reset() # do nothing, but still forward
       self.notify(action, None, data)
 

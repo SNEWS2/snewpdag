@@ -2,4 +2,4 @@
 **.pyc
 .python-version
 
-output/*
+output/**
