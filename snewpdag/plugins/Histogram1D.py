@@ -3,14 +3,27 @@ Histogram1D:  a plugin which accumulates a histogram based on its configuration.
   Only notifies downstream plugins on a `report' action.
 
 Constructor arguments:
-  title: string, histogram title
   nbins: number of bins
   xlow: low edge of histogram
   xhigh: high edge of histogram
   field: string, name of field to extract from alert data
-  index: int or tuple, element numbers if field is an array
+  index: int or tuple (from list), element numbers if field is an array
+  index2: secondary index if needed (e.g., if a 2D array or dict)
 
-(Could also specify variable-width bins?)
+Output json:
+  alert:  no output
+  reset:  no output
+  revoke:  no output
+  report:  add the following
+    name
+    nbins, xlow, xhigh
+    field, index, index2
+    underflow, overflow
+    sum, sum2
+    count
+    bins
+    (doesn't delete input field, since it's not much data
+    and may be part of an aggregate)
 """
 import logging
 import numpy as np
@@ -18,29 +31,37 @@ import numpy as np
 from snewpdag.dag import Node
 
 class Histogram1D(Node):
-  def __init__(self, title, nbins, xlow, xhigh, field, **kwargs):
-    self.title = title
+  def __init__(self, nbins, xlow, xhigh, field, **kwargs):
     self.nbins = nbins
     self.xlow = xlow
     self.xhigh = xhigh
     self.field = field
     self.index = None
+    self.index2 = None
     if 'index' in kwargs:
-      self.index = kwargs.pop('index')
-    self.reset()
+      v = kwargs.pop('index')
+      self.index = tuple(v) if isinstance(v, list) else v
+    if 'index2' in kwargs:
+      v = kwargs.pop('index2')
+      self.index2 = tuple(v) if isinstance(v, list) else v
+    self.clear()
     super().__init__(**kwargs)
 
-  def reset(self):
+  def clear(self):
     self.bins = np.zeros(self.nbins)
     self.overflow = 0.0
     self.underflow = 0.0
     self.sum = 0.0
     self.sum2 = 0.0
     self.count = 0
+    self.changed = True
 
   def fill(self, data):
-    if self.index:
-      x = data[self.field][self.index]
+    if self.index != None:
+      if self.index2 != None:
+        x = data[self.field][self.index][self.index2]
+      else:
+        x = data[self.field][self.index]
     else:
       x = data[self.field]
     ix = int(self.nbins * (x - self.xlow) / (self.xhigh - self.xlow))
@@ -53,16 +74,17 @@ class Histogram1D(Node):
     self.sum += x
     self.sum2 += x*x
     self.count += 1
+    self.changed = True
 
   def summary(self):
     return {
              'name': self.name,
-             'title': self.title,
              'nbins': self.nbins,
              'xlow': self.xlow,
              'xhigh': self.xhigh,
              'field': self.field,
              'index': self.index,
+             'index2': self.index2,
              'underflow': self.underflow,
              'overflow': self.overflow,
              'sum': self.sum,
@@ -84,9 +106,10 @@ class Histogram1D(Node):
     if action == 'alert':
       self.fill(data)
     elif action == 'reset':
-      self.reset()
+      self.clear()
     elif action == 'report':
-      data['histogram'] = self.summary()
-      self.notify(action, None, data)
-
+      if self.changed: # only if there has been a change since last report
+        data.update(self.summary())
+        self.changed = False
+        self.notify(action, None, data)
 

@@ -3,6 +3,16 @@ NthTimeDiff:  plugin which takes two time series
               and returns the time difference between the nth
               events in each series.
 Note that nth=1 means taking the first event in time.
+
+Configuration json:
+  nth:  which event to choose
+
+Output json:
+  alert:
+    t0, t1:  times used to calculate dt
+    dt:  time differences (t0 - t1)
+    delete times field
+  revoke, reset, report:  input json unmodified
 """
 import logging
 
@@ -44,16 +54,30 @@ class NthTimeDiff(Node):
     elif action == 'revoke':
       newrevoke = self.valid[index]
       self.valid[index] = False
+      if newrevoke:
+        self.notify(action, None, data)
+    elif action == 'reset':
+      newrevoke = self.valid[0] or self.valid[1]
+      self.valid[0] = False
+      self.valid[1] = False
+      if newrevoke:
+        self.notify(action, None, data)
+    elif action == 'report':
+      self.notify(action, None, data)
+      return
     else:
       logging.error("[{}] Unrecognized action {}".format(self.name, action))
       return
 
     # do the calculation if we have two valid inputs.
     if self.valid == [ True, True ]:
-      self.notify('alert', ( self.h[0], self.h[1] ),
-                  { 'dt': self.t[0] - self.t[1] } )
-    elif newrevoke:
-      self.notify('revoke', ( self.h[0], self.h[1] ), {})
+      ndata = data.copy()
+      ndata['t0'] = self.t[0]
+      ndata['t1'] = self.t[1]
+      ndata['dt'] = self.t[0] - self.t[1]
+      if 'times' in ndata:
+        del ndata['times']
+      self.notify('alert', ( self.h[0], self.h[1] ), ndata)
 
   def get_nth(self, values):
     """

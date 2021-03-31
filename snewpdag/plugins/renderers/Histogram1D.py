@@ -15,9 +15,9 @@ Might be nice to allow options to be configured here as well.
 Input data:
   action - only respond to 'report'
   id - burst id
-  histogram.xlow
-  histogram.xhigh
-  histogram.bins - uniform bin contents
+  xlow
+  xhigh
+  bins - uniform bin contents
 """
 import matplotlib.pyplot as plt
 import numpy as np
@@ -43,7 +43,8 @@ class Histogram1D(Node):
     #ax.plot(x, bins)
     ax.set_xlabel(self.xlabel)
     ax.set_ylabel(self.ylabel)
-    ax.set_title(self.title)
+    ax.set_title('{0} (burst {1} count {2})'.format(
+                 self.title, burst_id, self.count))
     fig.tight_layout()
 
     fname = self.filename.format(self.name, self.count, burst_id)
@@ -53,8 +54,7 @@ class Histogram1D(Node):
   def update(self, data):
     action = data['action']
     if action == 'report':
-      h = data['histogram']
       burst_id = data['id'] if 'id' in data else 0
-      self.render(burst_id, h['xlow'], h['xhigh'], h['bins'])
+      self.render(burst_id, data['xlow'], data['xhigh'], data['bins'])
     self.notify(action, None, data)
 

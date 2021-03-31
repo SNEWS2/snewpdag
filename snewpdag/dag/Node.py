@@ -19,7 +19,7 @@ class Node:
     self.watch_list = [] # nodes this Node is observing
     self.last_data = {}  # data after last update
 
-  def reset(self):
+  def clear(self):
     """
     Clear the last data, and detach from all observers and observables.
     """
@@ -71,6 +71,7 @@ class Node:
     self.last_data['history'] = h1 + h2
     # notify all observers
     for obs in self.observers:
+      logging.debug('DEBUG:{0}: notify {1}'.format(self.name, obs.name))
       obs.update(self.last_data)
 
   def update(self, data):

@@ -95,11 +95,19 @@ def configure(nodespecs):
 
     kwargs = spec['kwargs'] if 'kwargs' in spec else {}
     kwargs['name'] = spec['name']
-    nodes[name] = c(**kwargs)
+    try:
+      nodes[name] = c(**kwargs)
+    except TypeError:
+      logging.error('While creating node {0}: {1}'.format(name, sys.exc_info()))
+      sys.exit(2)
 
     if 'observe' in spec:
       for obs in spec['observe']:
-        nodes[obs].attach(nodes[name])
+        if obs in nodes:
+          nodes[obs].attach(nodes[name])
+        else:
+          logging.error('{0} observing unknown node {1}'.format(name, obs))
+          sys.exit(2)
 
   return nodes
 
