@@ -8,15 +8,15 @@
   },
 
   {
-    "name": "KM3Net",
+    "name": "IceCube",
     "class": "gen.TimeSeries",
     "observe": [ "Control" ],
     "kwargs": {
-      "mean": 10000.0,
+      "mean": 1548.0,
       "seed": 12345,
       "filetype": "tn",
       "filename":
-      "snewpdag/data/fluxparametrisation_3500kT_1.548e+06Hz_0.0msT0_1msbin.txt"
+      "snewpdag/data/output_icecube_27_Shen_1D_solar_mass_progenitor.fits_1msbin.txt"
     }
   },
 
@@ -26,11 +26,11 @@
     "observe": [ "Control" ],
     "comment": "do I need to introduce a time delay?",
     "kwargs": {
-      "mean": 12000.0,
+      "mean": 0.001,
       "seed": 5831,
       "filetype": "tn",
       "filename":
-      "snewpdag/data/fluxparametrisation_22.5kT_0Hz_0.0msT0_1msbin.txt"
+      "snewpdag/data/output_scint20kt_27_Shen_1D_solar_mass_progenitor.fits_1msbin.txt"
     }
   },
 
@@ -40,7 +40,7 @@
     "observe": [ "KM3Net" ],
     "kwargs": {
       "field": "times",
-      "nbins": 200000,
+      "nbins": 20000,
       "xlow": -10.0,
       "xhigh": 10.0,
       "xname": "t",
@@ -54,7 +54,7 @@
     "observe": [ "JUNO" ],
     "kwargs": {
       "field": "times",
-      "nbins": 200000,
+      "nbins": 20000,
       "xlow": -10.0,
       "xhigh": 10.0,
       "xname": "t",
@@ -146,7 +146,7 @@
     "observe": [ "JUNO" ],
     "kwargs": {
       "field": "times",
-      "nbins": 200,
+      "nbins": 20,
       "xlow": -10.0,
       "xhigh": 10.0,
       "xname": "t",
@@ -173,7 +173,7 @@
     "observe": [ "KM3Net" ],
     "kwargs": {
       "field": "times",
-      "nbins": 200,
+      "nbins": 20,
       "xlow": -10.0,
       "xhigh": 10.0,
       "xname": "t",
