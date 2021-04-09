@@ -8,6 +8,7 @@ import sys, argparse
 import json
 import importlib
 import logging
+import ast
 
 def run():
   """
@@ -34,8 +35,9 @@ def run():
       raise ValueError('Invalid log level {}'.format(args.log))
     logging.basicConfig(level=numeric_level)
 
-  with open(args.config) as f:
-    nodespecs = json.loads(f.read())
+  with open(args.config, 'r') as f:
+    #nodespecs = json.loads(f.read())
+    nodespecs = ast.literal_eval(f.read())
   #nodes = configure(nodespecs)
 
   dags = {}

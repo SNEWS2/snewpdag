@@ -48,25 +48,31 @@ class NthTimeDiff(Node):
     # is new, i.e., the data was valid before.
     newrevoke = False
     if action == 'alert':
-      self.valid[index] = True
       self.t[index] = self.get_nth(data['times'])
+      if self.t[index] == None:
+        if self.valid[index]:
+          self.valid[index] = False
+          newrevoke = True
+      else:
+        self.valid[index] = True
       self.h[index] = data['history']
     elif action == 'revoke':
       newrevoke = self.valid[index]
       self.valid[index] = False
-      if newrevoke:
-        self.notify(action, None, data)
     elif action == 'reset':
       newrevoke = self.valid[0] or self.valid[1]
       self.valid[0] = False
       self.valid[1] = False
-      if newrevoke:
-        self.notify(action, None, data)
     elif action == 'report':
       self.notify(action, None, data)
       return
     else:
       logging.error("[{}] Unrecognized action {}".format(self.name, action))
+      return
+
+    # check of there's a new revocation
+    if newrevoke:
+      self.notify(action, None, data)
       return
 
     # do the calculation if we have two valid inputs.
@@ -84,6 +90,8 @@ class NthTimeDiff(Node):
     get nth smallest value in the list of values.
     note that smallest is nth=1
     """
+    if len(values) < self.nth:
+      return None
     lowest = [ values[i] for i in range(self.nth) ]
     current = max(lowest)
     for i in range(self.nth, len(values)):

@@ -25,6 +25,7 @@ Output json:
     (doesn't delete input field, since it's not much data
     and may be part of an aggregate)
 """
+import sys
 import logging
 import numpy as np
 
@@ -57,14 +58,36 @@ class Histogram1D(Node):
     self.changed = True
 
   def fill(self, data):
-    if self.index != None:
-      if self.index2 != None:
-        x = data[self.field][self.index][self.index2]
+    if self.field in data:
+      if self.index != None:
+        if self.index in data[self.field]:
+          if self.index2 != None:
+            if self.index2 in data[self.field][self.index]:
+              x = data[self.field][self.index][self.index2]
+            else:
+              logging.info('{0}: index2 {1} not found in data'.format(
+                           self.name, self.index2))
+              return
+          else:
+            x = data[self.field][self.index]
+        else:
+          logging.info('{0}: index {1} not found in data'.format(
+                       self.name, self.index))
+          return
       else:
-        x = data[self.field][self.index]
+        x = data[self.field]
     else:
-      x = data[self.field]
-    ix = int(self.nbins * (x - self.xlow) / (self.xhigh - self.xlow))
+      # field not in data
+      logging.info('{0}: field {1} not found in data'.format(self.name, self.field))
+      return
+
+    try:
+      # need to protect against invalid values
+      ix = int(self.nbins * (x - self.xlow) / (self.xhigh - self.xlow))
+    except:
+      logging.info('Calculation error in {0}: {1}'.format(self.name, sys.exc_info()))
+      return
+
     if ix < 0:
       self.underflow += 1.0
     elif ix >= self.nbins:
