@@ -33,20 +33,35 @@ class Pass(Node):
       else:
         print('{0}{1}: {2}'.format(indent, k, v))
 
-  def update(self, data):
+  def alert(self, data):
     self.count += 1
     if self.line > 0:
       if self.count == 1 or self.count % self.line == 0:
-        if 'action' in data:
-          print('{0} received {1} messages (action {2})'.format(
-                self.name, self.count, data['action']))
-        else:
-          logging.error('{0} received {1} messages'.format(
-                        self.name, self.count))
+        print('{0}: received {1} alerts'.format(self.name, self.count))
     if self.dump > 0:
       if self.count == 1 or self.count % self.dump == 0:
-        print('**** {0} **** ({1})'.format(self.name, self.count))
+        print('**** {0} **** ({1}) alert'.format(self.name, self.count))
         self.print_dict('', data)
         print('---- {} ----'.format(self.name))
-    self.notify(data['action'], None, data)
+    return True
+
+  def revoke(self, data):
+    if self.dump > 0:
+      print('**** {0} **** ({1}) revoke'.format(self.name, self.count))
+      self.print_dict('', data)
+      print('---- {} ----'.format(self.name))
+    return True
+
+  def report(self, data):
+    print('**** {0} **** ({1}) report'.format(self.name, self.count))
+    self.print_dict('', data)
+    print('---- {} ----'.format(self.name))
+    return True
+
+  def reset(self, data):
+    if self.dump > 0:
+      print('**** {0} **** ({1}) reset'.format(self.name, self.count))
+      self.print_dict('', data)
+      print('---- {} ----'.format(self.name))
+    return True
 
