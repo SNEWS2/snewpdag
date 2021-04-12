@@ -1,0 +1,16 @@
+[
+  {
+    "class": "Histogram1D", "name": "hist",
+    "kwargs": {
+      "title": "Values", "field": "x",
+      "nbins": 100, "xlow": -2.0, "xhigh": 2.0
+    }
+  },
+  {
+    "class": "renderers.Histogram1D", "name": "render", "observe": [ "hist" ],
+    "kwargs": {
+      "title": "Values", "xlabel": "x", "ylabel": "entries",
+      "filename": "dags-test-{}-{}.png"
+    }
+  }
+]
