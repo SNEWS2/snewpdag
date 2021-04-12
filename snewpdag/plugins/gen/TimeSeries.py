@@ -27,14 +27,17 @@ class TimeSeries(TimeDistSource):
     area = sum(self.mu)
     self.mu = self.mu / area
 
-  def update(self, data):
-    action = data['action']
-    if action == 'alert':
-      nev = self.rng.poisson(self.mean)
-      size = len(self.mu)
-      j = self.rng.choice(size, nev, p=self.mu, replace=True, shuffle=False)
-      t0 = self.t[j]
-      dt = self.t[j+1] - t0
-      data['times'] = self.rng.random(nev) * dt + t0
-    self.notify(action, None, data)
+  def alert(self, data):
+    tdelay = data['tdelay'] if 'tdelay' in data else 0
+    nev = self.rng.poisson(self.mean)
+    size = len(self.mu)
+    j = self.rng.choice(size, nev, p=self.mu, replace=True, shuffle=False)
+    t0 = self.t[j]
+    dt = self.t[j+1] - t0
+    a = self.rng.random(nev) * dt + t0 + tdelay
+    if 'times' in data:
+      data['times'] = np.concatenate(data['times'], a)
+    else:
+      data['times'] = a
+    return True
 
