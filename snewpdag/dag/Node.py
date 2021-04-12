@@ -123,6 +123,18 @@ class Node:
     """
     return True
 
+  def other(self, data):
+    """
+    An action not defined by default. Override to implement handling
+    a custom alert. By default, it gives an error message and
+    consumes (doesn't forward) the alert.
+    (Note that action is defined in the payload, because that's how
+    we got here in the first place)
+    """
+    logging.error('{0}: unrecognized action {1}'.format(
+                  self.name, data['action']))
+    return False
+
   def update(self, data):
     """
     Update this object with provided data.
@@ -152,7 +164,7 @@ class Node:
       elif action == 'reset':
         v = self.reset(cdata)
       else:
-        logging.error('{0}: unrecognized action {1}'.format(self.name, action))
+        v = self.other(cdata)
 
       if v == True:
         self.notify(action, None, cdata) # notify() will update history
