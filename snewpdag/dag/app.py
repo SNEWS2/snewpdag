@@ -5,9 +5,9 @@ See README for details of the configuration and input data files.
 """
 
 import sys, argparse
-import json
 import importlib
 import logging
+import ast
 
 def run():
   """
@@ -34,8 +34,8 @@ def run():
       raise ValueError('Invalid log level {}'.format(args.log))
     logging.basicConfig(level=numeric_level)
 
-  with open(args.config) as f:
-    nodespecs = json.loads(f.read())
+  with open(args.config, 'r') as f:
+    nodespecs = ast.literal_eval(f.read())
   #nodes = configure(nodespecs)
 
   dags = {}
@@ -44,18 +44,18 @@ def run():
     with open(args.input) as f:
       if args.jsonlines:
         for jsonline in f:
-          data = json.loads(jsonline)
+          data = ast.literal_eval(jsonline)
           inject(dags, data, nodespecs)
       else:
-        data = json.loads(f.read())
+        data = ast.literal_eval(f.read())
         inject(dags, data, nodespecs)
   else:
     if args.jsonlines:
       for jsonline in sys.stdin:
-        data = json.loads(jsonline)
+        data = ast.literal_eval(jsonline)
         inject(dags, data, nodespecs)
     else:
-      data = json.loads(sys.stdin.read())
+      data = ast.literal_eval(sys.stdin.read())
       inject(dags, data, nodespecs)
 
 def find_class(name):

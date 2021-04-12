@@ -24,7 +24,7 @@ histogram:
 
 trial:
 	python snewpdag/trials/Simple.py Control -n 10 | \
-          python -m snewpdag --jsonlines snewpdag/data/test-gen-config.json
+          python -m snewpdag --jsonlines snewpdag/data/test-gen-config.py
 
 init:
 	pip install -r requirements.txt

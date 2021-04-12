@@ -1,5 +1,9 @@
+#
+# a test DAG for generating and analyzing two experiment alerts
+#
+
 [
-  {
+  { # this just triggers generators
     "name": "Control",
     "class": "Pass",
     "kwargs": {
@@ -35,9 +39,9 @@
   },
 
   {
-    "name": "KM3Net-bin",
+    "name": "IceCube-bin",
     "class": "SeriesBinner",
-    "observe": [ "KM3Net" ],
+    "observe": [ "IceCube" ],
     "kwargs": {
       "field": "times",
       "nbins": 20000,
@@ -65,7 +69,7 @@
   {
     "name": "Out1",
     "class": "Pass",
-    "observe": [ "JUNO-bin", "KM3Net-bin" ],
+    "observe": [ "JUNO-bin", "IceCube-bin" ],
     "kwargs": {
       "line": 1,
       "dump": 1
@@ -75,7 +79,7 @@
   {
     "name": "Diff1",
     "class": "TimeDistDiff",
-    "observe": [ "JUNO-bin", "KM3Net-bin" ]
+    "observe": [ "JUNO-bin", "IceCube-bin" ]
   },
 
   {
@@ -97,8 +101,9 @@
       "xlow": -0.1,
       "xhigh": 0.1,
       "field": "tdelay",
-      "index": [ "JUNO-bin", "KM3Net-bin" ],
-      "index2": 0
+      "index": ( "IceCube-bin", "JUNO-bin" ), # delicate because of order?
+      "index2": 0,
+      "comment": "lists may be delicate because of order"
     }
   },
 
@@ -123,7 +128,7 @@
       "xlow": 0.0,
       "xhigh": 10.0,
       "field": "tdelay",
-      "index": [ "JUNO-bin", "KM3Net-bin" ],
+      "index": ( "JUNO-bin", "IceCube-bin", ), # test order
       "index2": 1
     }
   },
@@ -168,9 +173,9 @@
   },
 
   {
-    "name": "KM3Net-t",
+    "name": "IceCube-t",
     "class": "SeriesBinner",
-    "observe": [ "KM3Net" ],
+    "observe": [ "IceCube" ],
     "kwargs": {
       "field": "times",
       "nbins": 20,
@@ -183,11 +188,11 @@
   },
 
   {
-    "name": "KM3Net-t-render",
+    "name": "IceCube-t-render",
     "class": "renderers.Histogram1D",
-    "observe": [ "KM3Net-t" ],
+    "observe": [ "IceCube-t" ],
     "kwargs": {
-      "title": "KM3Net time profile",
+      "title": "IceCube time profile",
       "xlabel": "time [s]",
       "ylabel": "entries/0.1s",
       "filename": "output/gen-test-{}-{}-{}.png"
@@ -197,7 +202,7 @@
   {
     "name": "Out-t",
     "class": "Pass",
-    "observe": [ "JUNO", "KM3Net" ],
+    "observe": [ "JUNO", "IceCube" ],
     "kwargs": {
       "line": 100,
       "dump": 1
@@ -207,7 +212,7 @@
   {
     "name": "Diff2",
     "class": "NthTimeDiff",
-    "observe": [ "JUNO", "KM3Net" ],
+    "observe": [ "JUNO", "IceCube" ],
     "kwargs": {
       "nth": 1
     }
