@@ -5,7 +5,7 @@ configuration:
   filename:  histogram file name
   filetype:  'tn' -> csv file of time (low edge of bin), number of events
                      (the last bin is excluded because one needs a high edge)
-             'json' -> json dictionary with t and n arrays,
+             'json' -> python-literal dictionary with t and n arrays,
                        or n array with tmin, tmax values
                        (tmax is high edge of last bin)
 
@@ -20,7 +20,7 @@ If update is called, the histogram is copied into the data dictionary.
 import sys
 import logging
 import csv
-import json
+import ast
 import numpy as np
 
 from snewpdag.dag import Node
@@ -41,8 +41,8 @@ class TimeDistSource(Node):
       # This amounts to cutting off the last n element.
       self.mu = np.array(nn[:-1])
     else:
-      with open(filename) as f:
-        data = json.loads(f.read())
+      with open(filename, 'r') as f:
+        data = ast.literal_eval(f.read())
       if 'n' in data:
         if 'tmin' in data and 'tmax' in data:
           n = data['n']
@@ -68,10 +68,8 @@ class TimeDistSource(Node):
         sys.exit(2)
     super().__init__(**kwargs)
 
-  def update(self, data):
-    action = data['action']
-    if action == 'alert':
-      data['t'] = self.t.copy() # or can we just copy a read-only object?
-      data['n'] = self.mu.copy()
-    self.notify(action, None, data)
+  def alert(self, data):
+    data['t'] = self.t.copy()
+    data['n'] = self.mu.copy()
+    return True
 

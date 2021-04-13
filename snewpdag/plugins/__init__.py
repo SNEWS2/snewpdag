@@ -15,3 +15,4 @@ from .Histogram1D import Histogram1D
 from .Accumulator import Accumulator
 
 from .SeriesBinner import SeriesBinner
+from .BinnedAccumulator import BinnedAccumulator

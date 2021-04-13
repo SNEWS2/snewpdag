@@ -1,11 +1,5 @@
 """
-SeriesBinner:  a plugin which turns a series into a histogram for each alert.
-
-  An alert action bins the input time series and forwards the result
-  for the single alert.
-
-  Other actions don't do anything except forward, since this
-  calculation is essentially stateless.
+BinnedAccumulator:  a plugin which accumulates a histogram of a series.
 
 Constructor arguments:
   nbins: number of bins
@@ -18,11 +12,20 @@ Constructor arguments:
     overflow - calculate overflow/underflow
     stats - calculate statistics
 
-Output json:
+Output dictionary:
   alert:
     add count
         overflow, underflow (if 'overflow' flag)
         mean, rms (if 'stats' flag)
+    delete input field
+  report:
+    add count
+        overflow, underflow (if 'overflow' flag)
+        mean, rms (if 'stats' flag)
+  reset:
+    forward unmodified data
+  revoke:
+    forward unmodified data
 """
 import logging
 import math
@@ -30,7 +33,7 @@ import numpy as np
 
 from snewpdag.dag import Node
 
-class SeriesBinner(Node):
+class BinnedAccumulator(Node):
   def __init__(self, field, nbins, xlow, xhigh, xname, yname, **kwargs):
     self.nbins = nbins
     self.xlow = xlow
@@ -38,6 +41,7 @@ class SeriesBinner(Node):
     self.field = field
     self.xname = xname
     self.yname = yname
+    self.accumulate = False
     self.calc_overflow = False
     self.calc_stats = False
     if 'flags' in kwargs:
@@ -56,32 +60,52 @@ class SeriesBinner(Node):
     self.sum = 0.0
     self.sum2 = 0.0
     self.count = 0
+    self.changed = True
 
   def alert(self, data):
-    data['nbins'] = self.nbins
-    data['xlow'] = self.xlow
-    data['xhigh'] = self.xhigh
-    data['field'] = self.field
-    data['xname'] = self.xname
-    data['yname'] = self.yname
-    data['count'] = self.count
     vs = data[self.field]
     h, edges = np.histogram(vs, self.nbins, (self.xlow, self.xhigh))
     # note edges will have len(h)+1, since last element is top edge.
     # also note (?) that top edge is inclusive,
     # but lower bins' right edge is exclusive.
-    data[self.xname] = edges[:-1]
-    data[self.yname] = h
-    n = len(vs)
-    data['count'] = n
+    self.edges = edges
+    self.bins = self.bins + h
+    self.count += len(vs)
     if self.calc_overflow:
-      data['overflow'] = np.count_nonzero(vs > self.xhigh)
-      data['underflow'] = np.count_nonzero(vs < self.xlow)
+      self.overflow += np.count_nonzero(vs > self.xhigh)
+      self.underflow += np.count_nonzero(vs < self.xlow)
     if self.calc_stats:
-      s = np.sum(vs)
-      s2 = np.sum(vs*vs)
-      mean = s / n
-      data['mean'] = mean
-      data['rms'] = sqrt(s2 / n - mean*mean)
-    return data
+      self.sum += np.sum(vs)
+      self.sum2 += np.sum(vs*vs)
+    self.changed = True
+    return False
+
+  def reset(self, data):
+    return False
+
+  def revoke(self, data):
+    return False
+
+  def report(self, data):
+    if self.changed:
+      data['nbins'] = self.nbins
+      data['xlow'] = self.xlow
+      data['xhigh'] = self.xhigh
+      data['field'] = self.field
+      data['xname'] = self.xname
+      data['yname'] = self.yname
+      data['count'] = self.count
+      data[self.xname] = self.edges[:-1]
+      data[self.yname] = self.bins
+      if self.calc_overflow:
+        data['overflow'] = self.overflow
+        data['underflow'] = self.underflow
+      if self.calc_stats:
+        mean = self.sum / self.count
+        data['mean'] = mean
+        data['rms'] = sqrt(self.sum2 / self.count - mean*mean)
+      self.changed = False
+      return data
+    else:
+      return False
 

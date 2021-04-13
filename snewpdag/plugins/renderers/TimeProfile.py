@@ -43,13 +43,15 @@ class TimeProfile(Node):
     plt.savefig(fname)
     self.count += 1
 
-  def update(self, data):
-    action = data['action']
-    if action == 'report' or action == 'alert':
-      burst_id = data['id'] if 'id' in data else 0
-      nm = data['name']
-      if 'comment' in data:
-        nm += ": " + data['comment']
-      self.render(burst_id, data['history'][-1], data[self.xfield], data[self.yfield], nm)
-    self.notify(action, None, data)
+  def alert(self, data):
+    burst_id = data['id'] if 'id' in data else 0
+    nm = data['name']
+    if 'comment' in data:
+      nm += ": " + data['comment']
+    self.render(burst_id, data['history'][-1],
+                data[self.xfield], data[self.yfield], nm)
+    return True
+
+  def report(self, data):
+    return self.alert(data)
 

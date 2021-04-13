@@ -9,6 +9,8 @@ Constructor arguments:
   field: string, name of field to extract from alert data
   index: int or tuple (from list), element numbers if field is an array
   index2: secondary index if needed (e.g., if a 2D array or dict)
+  flags: list of strings. Default is off for all flags.
+    accumulate - accumulate over alerts, clear after report
 
 Output json:
   alert:  no output
@@ -39,12 +41,16 @@ class Histogram1D(Node):
     self.field = field
     self.index = None
     self.index2 = None
+    self.accumulate = False
     if 'index' in kwargs:
       v = kwargs.pop('index')
       self.index = tuple(v) if isinstance(v, list) else v
     if 'index2' in kwargs:
       v = kwargs.pop('index2')
       self.index2 = tuple(v) if isinstance(v, list) else v
+    if 'flags' in kwargs:
+      flags = kwargs.pop('flags')
+      self.accumulate = 'accumulate' in flags
     self.clear()
     super().__init__(**kwargs)
 
@@ -124,15 +130,21 @@ class Histogram1D(Node):
     xx = self.sum2 / self.count
     return xx - x*x
 
-  def update(self, data):
-    action = data['action']
-    if action == 'alert':
-      self.fill(data)
-    elif action == 'reset':
-      self.clear()
-    elif action == 'report':
-      if self.changed: # only if there has been a change since last report
-        data.update(self.summary())
-        self.changed = False
-        self.notify(action, None, data)
+  def alert(self, data):
+    self.fill(data)
+    return False # don't forward an alert
+
+  def reset(self, data):
+    return False
+
+  def revoke(self, data):
+    return False
+
+  def report(self, data):
+    if self.changed:
+      data.update(self.summary())
+      self.changed = False
+      return True
+    else:
+      return False # or else will duplicate same plot for same report
 

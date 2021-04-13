@@ -51,10 +51,8 @@ class Histogram1D(Node):
     plt.savefig(fname)
     self.count += 1
 
-  def update(self, data):
-    action = data['action']
-    if action == 'report':
-      burst_id = data['id'] if 'id' in data else 0
-      self.render(burst_id, data['xlow'], data['xhigh'], data['bins'])
-    self.notify(action, None, data)
+  def report(self, data):
+    burst_id = data['id'] if 'id' in data else 0
+    self.render(burst_id, data['xlow'], data['xhigh'], data['bins'])
+    return True
 

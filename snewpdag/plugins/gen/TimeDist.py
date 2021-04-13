@@ -26,11 +26,8 @@ class TimeDist(TimeDistSource):
     area = sum(self.mu)
     self.mu = self.mu * mean / area
 
-  def update(self, data):
-    action = data['action']
-    if action == 'alert':
-      data['t'] = self.t.copy() # or can we just copy a read-only object?
-      data['n'] = self.rng.poisson(self.mu, len(self.mu))
-
-    self.notify(action, None, data)
+  def alert(self, data):
+    data['t'] = self.t.copy() # or can we just copy a read-only object?
+    data['n'] = self.rng.poisson(self.mu, len(self.mu))
+    return True
 

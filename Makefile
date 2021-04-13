@@ -26,7 +26,11 @@ trial:
 	python snewpdag/trials/Simple.py Control -n 10 | \
           python -m snewpdag --jsonlines snewpdag/data/test-gen-config.py
 
+trial2:
+	python snewpdag/trials/Simple.py Control -n 10 | \
+          python -m snewpdag --jsonlines snewpdag/data/test-liq-config.py
+
 init:
 	pip install -r requirements.txt
 
-.PHONY: init run test histogram trial runtest
+.PHONY: init run test histogram trial trial2 runtest
