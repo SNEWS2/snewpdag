@@ -7,6 +7,6 @@ from .StdOutput import StdOutput
 from .NthTimeDiff import NthTimeDiff
 from .CombineMaps import CombineMaps
 from .TimeDistDiff import TimeDistDiff
-from .Shape import Shape
-from .Bayes import Bayes
+from .ShapeComparison import ShapeComparison
+from .BayesianBlocks import BayesianBlocks
 from .ShapeHist import ShapeHist

@@ -5,11 +5,11 @@ import logging
 import math
 from snewpdag.dag import Node
 from snewpdag.plugins import ShapeHist
-from snewpdag.plugins import Shape
+from snewpdag.plugins import ShapeHistFunctions as SHF
 import numpy as np
 
 
-class Bayes(Node):
+class BayesianBlocks(Node):
   def __init__(self, shapehist, shape, gamma, division, **kwargs):
     self.h_bins = shapehist.h_bins # number of bins in histograms
     self.h_low = shapehist.h_low # lower edge of histogram
@@ -35,7 +35,7 @@ class Bayes(Node):
       self.division = self.h_low
 
 
-  def update_Bayes(self, data):
+  def update(self, data):
     action = data['action']
 
     index = len(self.history_data)
@@ -57,15 +57,15 @@ class Bayes(Node):
 
     # do the calculation if we have two valid inputs.
     if self.valid == [ True, True ]:
-      mlist = self.metric_list_Bayes(data['times'], self.history_data[index-1])
-      min_dt = ShapeHist.minimise(mlist, self.dt0, self.dt_step, self.dt_N, self.polyN, self.fit_range)
+      mlist = self.metric_list(data['times'], self.history_data[index-1])
+      min_dt = SHF.minimise(mlist, self.dt0, self.dt_step, self.dt_N, self.polyN, self.fit_range)
       print("dt = " + str(min_dt))
       self.notify('alert', (self.h[0], self.h[1]), {'dt': min_dt})
     elif newrevoke:
       self.notify('revoke', (self.h[0], self.h[1]), {})
 
 
-  def metric_list_Bayes(self, values1, values2):
+  def metric_list(self, values1, values2):
     mlist = [0] * self.dt_N
 
     block2 = self.bayesian_block(values2)
@@ -73,7 +73,7 @@ class Bayes(Node):
     for i in range(self.dt_N):
       block1 = self.bayesian_block(values1)
       hist1 = self.block_hist(block1[0], block1[1], self.dt0 + i*self.dt_step)
-      metric = ShapeHist.diff_hist(hist1, hist2, self.scale)
+      metric = SHF.diff_hist(hist1, hist2, self.scale)
       mlist[i] = metric
 
     return mlist

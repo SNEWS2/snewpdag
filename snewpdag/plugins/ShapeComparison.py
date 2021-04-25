@@ -6,10 +6,11 @@ import logging
 import math
 from snewpdag.dag import Node
 from snewpdag.plugins import ShapeHist
+from snewpdag.plugins import ShapeHistFunctions as SHF
 import numpy as np
 
 
-class Shape(Node):
+class ShapeComparison(Node):
   def __init__(self, shapehist, scale, dt0, dt_step, dt_N, polyN, fit_range, **kwargs):
     self.h_bins = shapehist.h_bins # number of bins in histograms
     self.h_low = shapehist.h_low # lower edge of histogram
@@ -52,7 +53,7 @@ class Shape(Node):
     # do the calculation if we have two valid inputs.
     if self.valid == [ True, True ]:
       mlist = self.metric_list(data['times'], self.history_data[index-1])
-      min_dt = ShapeHist.ShapeHist.minimise(mlist, self.dt0, self.dt_step, self.dt_N, self.polyN, self.fit_range)
+      min_dt = SHF.minimise(mlist, self.dt0, self.dt_step, self.dt_N, self.polyN, self.fit_range)
       print("dt = " + str(min_dt))
       self.notify('alert', (self.h[0], self.h[1]), {'dt': min_dt})
     elif newrevoke:
@@ -62,12 +63,12 @@ class Shape(Node):
   def metric_list(self, values1, values2):
     mlist = [0.0] * self.dt_N
 
-    hist2 = ShapeHist.ShapeHist.fill_hist(values2, 0.0, self.h_bins, self.h_low, self.h_up)
-    hist2 = ShapeHist.ShapeHist.remove_flow(hist2)
+    hist2 = ShapeHist.ShapeHist(self.h_bins, self.h_low, self.h_up).fill_hist(values2, 0.0)
+    hist2 = SHF.remove_flow(hist2)
     for i in range(self.dt_N):
-      hist1 = ShapeHist.ShapeHist.fill_hist(values1, self.dt0 + i*self.dt_step, self.h_bins, self.h_low, self.h_up)
-      hist1 = ShapeHist.ShapeHist.remove_flow(hist1)
-      metric = ShapeHist.ShapeHist.diff_hist(hist1, hist2, self.scale)
+      hist1 = ShapeHist.ShapeHist(self.h_bins, self.h_low, self.h_up).fill_hist(values1, self.dt0 + i*self.dt_step)
+      hist1 = SHF.remove_flow(hist1)
+      metric = SHF.diff_hist(hist1, hist2, self.scale)
 
       mlist[i] = metric
 
