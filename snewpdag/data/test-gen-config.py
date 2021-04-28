@@ -156,14 +156,23 @@
       "xhigh": 10.0,
       "xname": "t",
       "yname": "bins",
-      "flags": [ "report", "accumulate", "overflow" ]
+      "flags": [ "overflow" ]
+    }
+  },
+
+  { 'name': 'JUNO-t-acc', 'class': 'BinnedAccumulator',
+    'observe': [ 'JUNO-t' ],
+    'kwargs': {
+      'field': 'bins', 'nbins': 20, 'xlow': -10.0, 'xhigh': 10.0,
+      'xname': 't', 'yname': 'bins',
+      'flags': [ 'overflow' ],
     }
   },
 
   {
     "name": "JUNO-t-render",
     "class": "renderers.Histogram1D",
-    "observe": [ "JUNO-t" ],
+    "observe": [ "JUNO-t-acc" ],
     "kwargs": {
       "title": "JUNO time profile",
       "xlabel": "time [s]",
@@ -183,14 +192,23 @@
       "xhigh": 10.0,
       "xname": "t",
       "yname": "bins",
-      "flags": [ "report", "accumulate", "overflow" ]
+      "flags": [ "overflow" ]
+    }
+  },
+
+  { 'name': 'IceCube-t-acc', 'class': 'BinnedAccumulator',
+    'observe': [ 'IceCube-t' ],
+    'kwargs': {
+      'field': 'bins', 'nbins': 20, 'xlow': -10.0, 'xhigh': 10.0,
+      'xname': 't', 'yname': 'bins',
+      'flags': [ 'overflow' ],
     }
   },
 
   {
     "name": "IceCube-t-render",
     "class": "renderers.Histogram1D",
-    "observe": [ "IceCube-t" ],
+    "observe": [ "IceCube-t-acc" ],
     "kwargs": {
       "title": "IceCube time profile",
       "xlabel": "time [s]",
@@ -250,7 +268,7 @@
       "ylabel": "entries/0.1s",
       "filename": "output/gen-test-{}-{}-{}.png"
     }
-  }
+  },
 
 ]
 
