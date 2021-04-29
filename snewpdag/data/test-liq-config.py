@@ -9,10 +9,10 @@
   },
 
   {
-    "name": "JUNO", "class": "gen.TimeSeries",
+    "name": "JUNO", "class": "gen.GenerateSGBG",
     "observe": [ "Control" ],
     "kwargs": {
-      "mean": 1000, "seed": 5831,
+      "mean": 3e3, "seed": 5831, "bg": 0.001,
       "filetype": "tn", "filename":
       "snewpdag/data/output_scint20kt_27_Shen_1D_solar_mass_progenitor.fits_1msbin.txt"
     }
@@ -29,7 +29,7 @@
     "observe": [ "JUNO" ],
     "kwargs": {
       "field": "times",
-      "nbins": 2000, "xlow": -10.0, "xhigh": 10.0,
+      "nbins": 20000, "xlow": -10.0, "xhigh": 10.0,
       "xname": "t", "yname": "bins",
       'flags': [ 'overflow' ],
     }
@@ -54,12 +54,12 @@
   },
 
   {
-    "name": "SNOP", "class": "gen.TimeSeries",
+    "name": "SNOP", "class": "gen.GenerateSGBG",
     "observe": [ "Control" ],
     "kwargs": {
-      "mean": 100, "seed": 1235,
+      "mean": 5e5, "seed": 1235, "bg": 1548,
       "filetype": "tn", "filename":
-      "snewpdag/data/output_scint20kt_27_Shen_1D_solar_mass_progenitor.fits_1msbin.txt"
+      "snewpdag/data/output_icecube_27_Shen_1D_solar_mass_progenitor.fits_1msbin.txt"
     }
   },
 
@@ -74,7 +74,7 @@
     "observe": [ "SNOP" ],
     "kwargs": {
       "field": "times",
-      "nbins": 2000, "xlow": -10.0, "xhigh": 10.0,
+      "nbins": 20000, "xlow": -10.0, "xhigh": 10.0,
       "xname": "t", "yname": "bins",
       'flags': [ 'overflow' ],
     }
@@ -92,7 +92,7 @@
     "kwargs": {
       "title": "SNOP time profile",
       "xlabel": "time [s]",
-      "ylabel": "entries/0.1s",
+      "ylabel": "entries/1 ms",
       "filename": "output/gen-liq-{}-{}-{}.png"
     }
   },
@@ -131,7 +131,7 @@
     "kwargs": {
       "title": "Time difference",
       "xlabel": "dt [s]",
-      "ylabel": "entries/0.1s",
+      "ylabel": "entries/1 ms",
       "filename": "output/gen-liq-{}-{}-{}.png"
     }
   }

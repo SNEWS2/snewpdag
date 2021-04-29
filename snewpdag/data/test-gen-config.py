@@ -16,7 +16,8 @@
     "class": "gen.TimeSeries",
     "observe": [ "Control" ],
     "kwargs": {
-      "mean": 1548.0,
+      "mean": 5e5,
+        "bg": 1548,
       "seed": 12345,
       "filetype": "tn",
       "filename":
@@ -30,7 +31,8 @@
     "observe": [ "Control" ],
     "comment": "do I need to introduce a time delay?",
     "kwargs": {
-      "mean": 0.001,
+      "mean": 3e3,  
+      "bg": 0.001, 
       "seed": 5831,
       "filetype": "tn",
       "filename":
@@ -44,7 +46,7 @@
     "observe": [ "IceCube" ],
     "kwargs": {
       "field": "times",
-      "nbins": 20000,
+      "nbins": 2000,
       "xlow": -10.0,
       "xhigh": 10.0,
       "xname": "t",
@@ -58,7 +60,7 @@
     "observe": [ "JUNO" ],
     "kwargs": {
       "field": "times",
-      "nbins": 20000,
+      "nbins": 2000,
       "xlow": -10.0,
       "xhigh": 10.0,
       "xname": "t",
@@ -151,19 +153,28 @@
     "observe": [ "JUNO" ],
     "kwargs": {
       "field": "times",
-      "nbins": 20,
+      "nbins": 2000,
       "xlow": -10.0,
       "xhigh": 10.0,
       "xname": "t",
       "yname": "bins",
-      "flags": [ "report", "accumulate", "overflow" ]
+      "flags": [ "overflow" ]
+    }
+  },
+
+  { 'name': 'JUNO-t-acc', 'class': 'BinnedAccumulator',
+    'observe': [ 'JUNO-t' ],
+    'kwargs': {
+      'field': 'bins', 'nbins': 2000, 'xlow': -10.0, 'xhigh': 10.0,
+      'xname': 't', 'yname': 'bins',
+      'flags': [ 'overflow' ],
     }
   },
 
   {
     "name": "JUNO-t-render",
     "class": "renderers.Histogram1D",
-    "observe": [ "JUNO-t" ],
+    "observe": [ "JUNO-t-acc" ],
     "kwargs": {
       "title": "JUNO time profile",
       "xlabel": "time [s]",
@@ -178,23 +189,32 @@
     "observe": [ "IceCube" ],
     "kwargs": {
       "field": "times",
-      "nbins": 20,
+      "nbins": 2000,
       "xlow": -10.0,
       "xhigh": 10.0,
       "xname": "t",
       "yname": "bins",
-      "flags": [ "report", "accumulate", "overflow" ]
+      "flags": [ "overflow" ]
+    }
+  },
+
+  { 'name': 'IceCube-t-acc', 'class': 'BinnedAccumulator',
+    'observe': [ 'IceCube-t' ],
+    'kwargs': {
+      'field': 'bins', 'nbins': 2000, 'xlow': -10.0, 'xhigh': 10.0,
+      'xname': 't', 'yname': 'bins',
+      'flags': [ 'overflow' ],
     }
   },
 
   {
     "name": "IceCube-t-render",
     "class": "renderers.Histogram1D",
-    "observe": [ "IceCube-t" ],
+    "observe": [ "IceCube-t-acc" ],
     "kwargs": {
       "title": "IceCube time profile",
       "xlabel": "time [s]",
-      "ylabel": "entries/0.1s",
+      "ylabel": "entries/1s",
       "filename": "output/gen-test-{}-{}-{}.png"
     }
   },
@@ -247,10 +267,9 @@
     "kwargs": {
       "title": "Time difference",
       "xlabel": "dt [s]",
-      "ylabel": "entries/0.1s",
+      "ylabel": "entries/1s",
       "filename": "output/gen-test-{}-{}-{}.png"
     }
-  }
+  },
 
 ]
-
