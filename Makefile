@@ -28,7 +28,7 @@ trial:
 
 trial2:
 	python snewpdag/trials/Simple.py Control -n 10 | \
-          python -m snewpdag --jsonlines snewpdag/data/test-liq-config.py
+          python -m snewpdag --log INFO --jsonlines snewpdag/data/test-liq-config.py
 
 init:
 	pip install -r requirements.txt
