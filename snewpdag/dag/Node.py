@@ -18,6 +18,7 @@ class Node:
     self.observers = []  # observers of this Node
     self.watch_list = [] # nodes this Node is observing
     self.last_data = {}  # data after last update
+    self.last_source = None # source of last update
 
   def dispose(self):
     """
@@ -152,6 +153,8 @@ class Node:
     logging.debug('{0}: update({1})'.format(self.name,
                   data['action'] if 'action' in data else 'None'))
     cdata = data.copy() # local shallow copy
+    if 'history' in cdata and len(cdata['history']) > 0:
+      self.last_source = cdata['history'][-1]
     if 'action' in cdata:
       action = cdata['action']
       v = False
@@ -190,5 +193,13 @@ class Node:
     for i in range(len(self.watch_list)):
       if source == self.watch_list[i].name:
         return i
+
+    logging.error('{}: unrecognized source {}'.format(self.name, source))
+    return -1
+
+  def last_watch_index(self):
+    if self.last_source:
+      return self.watch_index(self.last_source)
+    logging.error('{}: no payload source'.format(self.name))
     return -1
 

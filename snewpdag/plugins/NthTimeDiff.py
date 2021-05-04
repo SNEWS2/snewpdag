@@ -30,60 +30,59 @@ class NthTimeDiff(Node):
                     self.name, self.nth))
       self.nth = 1
 
-  def update(self, data):
-    action = data['action']
-    source = data['history'][-1]
-
-    # figure out which source updated
-    index = self.watch_index(source)
+  def alert(self, data):
+    index = self.last_watch_index()
     if index < 0:
+      source = data['history'][-1]
       logging.error("[{}] Unrecognized source {}".format(self.name, source))
-      return
+      return False
     if index >= 2:
+      source = data['history'][-1]
       logging.error("[{}] Excess source {} detected".format(self.name, source))
-      return
+      return False
 
-    # update the relevant data.
-    # Only issue a downstream revocation if the source revocation
-    # is new, i.e., the data was valid before.
     newrevoke = False
-    if action == 'alert':
-      self.t[index] = self.get_nth(data['times'])
-      if self.t[index] == None:
-        if self.valid[index]:
-          self.valid[index] = False
-          newrevoke = True
-      else:
-        self.valid[index] = True
-      self.h[index] = data['history']
-    elif action == 'revoke':
-      newrevoke = self.valid[index]
-      self.valid[index] = False
-    elif action == 'reset':
-      newrevoke = self.valid[0] or self.valid[1]
-      self.valid[0] = False
-      self.valid[1] = False
-    elif action == 'report':
-      self.notify(action, None, data)
-      return
+    self.t[index] = self.get_nth(data['times'])
+    if self.t[index] == None:
+      if self.valid[index]:
+        self.valid[index] = False
+        newrevoke = True
     else:
-      logging.error("[{}] Unrecognized action {}".format(self.name, action))
-      return
+      self.valid[index] = True
+    self.h[index] = data['history']
 
-    # check of there's a new revocation
+    # check if there's a new revocation
+    # (since we only expect to observe 2 nodes,
+    # there's no way to update the time difference)
     if newrevoke:
-      self.notify(action, None, data)
-      return
+      return True
 
-    # do the calculation if we have two valid inputs.
+    # do the calculation if we have two valid inputs
     if self.valid == [ True, True ]:
-      ndata = data.copy()
-      ndata['t0'] = self.t[0]
-      ndata['t1'] = self.t[1]
-      ndata['dt'] = self.t[0] - self.t[1]
-      if 'times' in ndata:
-        del ndata['times']
-      self.notify('alert', ( self.h[0], self.h[1] ), ndata)
+      data['t0'] = self.t[0]
+      data['t1'] = self.t[1]
+      data['dt'] = self.t[0] - self.t[1]
+      data['history'] = ( self.h[0], self.h[1] )
+      # in fact, this should even work if we return True,
+      # since the payload has been updated in place.
+      return data
+
+    # no update
+    return False
+
+  def revoke(self, data):
+    newrevoke = self.valid[index]
+    self.valid = False
+    return newrevoke
+
+  def reset(self, data):
+    newrevoke = self.valid[0] or self.valid[1]
+    self.valid[0] = False
+    self.valid[1] = False
+    return newrevoke
+
+  def report(self, data):
+    return True
 
   def get_nth(self, values):
     """
