@@ -4,10 +4,11 @@ SNEWPDAG application.
 See README for details of the configuration and input data files.
 """
 
-import sys, argparse
+import os, sys, argparse
 import importlib
 import logging
 import ast
+import csv
 
 def run():
   """
@@ -21,8 +22,8 @@ def run():
   third-party module which provides more functionality than is needed here.
   """
   parser = argparse.ArgumentParser()
-  parser.add_argument('config', help='configuration JSON file')
-  parser.add_argument('--input', help='input data JSON file')
+  parser.add_argument('config', help='configuration py/json/csv file')
+  parser.add_argument('--input', help='input data py/json file')
   parser.add_argument('--jsonlines', action='store_true',
                       help='each input line contains one JSON object to inject')
   parser.add_argument('--log', help='logging level')
@@ -34,9 +35,45 @@ def run():
       raise ValueError('Invalid log level {}'.format(args.log))
     logging.basicConfig(level=numeric_level)
 
-  with open(args.config, 'r') as f:
-    nodespecs = ast.literal_eval(f.read())
-  #nodes = configure(nodespecs)
+  cfn, cfx = os.path.splitext(args.config)
+  if cfx == '.csv':
+    # name, class, observe
+    nodespecs = []
+    with open(args.config, 'r') as f:
+      reader = csv.reader(f, quotechar='"')
+      for row in reader:
+        #print('New row:  {}'.format(row))
+        if len(row) == 0:
+          continue # blank line
+        if row[0] == '' or row[0] == '#':
+          continue # comment line
+        if len(row) < 2:
+          logging.error('Node specific requires at least 2 fields')
+          continue
+        node = { 'name': row[0], 'class': row[1] }
+        if len(row) >= 3 and len(row[2]) > 0:
+          nl = []
+          ns = row[2].strip().split(',')
+          for n in ns:
+            s = n.strip()
+            if len(s) > 0:
+              nl.append(s)
+          node['observe'] = nl
+        if len(row) >= 4:
+          s = []
+          for i in range(3, len(row)):
+            if len(row[i]) > 0:
+              # replace special marks which might stand in for single quotes
+              r = row[i].replace("’","'").replace("‘","'").replace("`","'")
+              s.append(r)
+          node['kwargs'] = ast.literal_eval('{' + ','.join(s) + '}')
+        nodespecs.append(node)
+    #print(nodespecs)
+
+  else: # try python/json parsing if not csv
+    with open(args.config, 'r') as f:
+      nodespecs = ast.literal_eval(f.read())
+    #nodes = configure(nodespecs)
 
   dags = {}
 
