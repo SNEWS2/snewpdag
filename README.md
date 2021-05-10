@@ -1,8 +1,9 @@
 # snewpdag
 
-SNEWS2 pointing test harness.
+SNEWS2 alert (pointing) calculations.
 
-Please see the wiki for discussion and decisions.
+Please see the wiki for information on setting up and developing
+code, and for module documentation.
 
 ## Installation
 
