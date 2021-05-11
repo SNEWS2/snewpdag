@@ -28,13 +28,14 @@ class GenerateSGBG(TimeDistSource):
     super().__init__(**kwargs)
     self.tmin = -10
     self.tmax = 10
-    self.tdelay = int(np.random.uniform(-20,20))
+    self.tdelay = 0 #int(np.random.uniform(-20,20))
     
   def update(self, data):
     action = data['action']
     if action == 'alert':
       print('times are', self.t[-1])
       new_times = np.arange(self.tmin,self.tmax,0.001)
+      self.tdelay = int(np.random.uniform(-20,20))
       t_true = self.tdelay
       print(t_true)
       new_data = []
