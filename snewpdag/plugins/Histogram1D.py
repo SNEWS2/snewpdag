@@ -66,13 +66,14 @@ class Histogram1D(Node):
   def fill(self, data):
     if self.field in data:
       if self.index != None:
-        if self.index in data[self.field]:
+        if isinstance(self.index, int) or self.index in data[self.field]:
           if self.index2 != None:
-            if self.index2 in data[self.field][self.index]:
+            if isinstance(self.index2, int) or self.index2 in data[self.field][self.index]:
               x = data[self.field][self.index][self.index2]
             else:
               logging.info('{0}: index2 {1} not found in data'.format(
                            self.name, self.index2))
+              logging.info('data = {}'.format(data[self.field][self.index]))
               return
           else:
             x = data[self.field][self.index]
@@ -89,6 +90,8 @@ class Histogram1D(Node):
 
     try:
       # need to protect against invalid values
+      #logging.info('Received in {0}: {1}'.format(self.name, x))
+      #logging.info('Indices {} / {} / {}'.format(self.field, self.index, self.index2))
       ix = int(self.nbins * (x - self.xlow) / (self.xhigh - self.xlow))
     except:
       logging.info('Calculation error in {0}: {1}'.format(self.name, sys.exc_info()))
