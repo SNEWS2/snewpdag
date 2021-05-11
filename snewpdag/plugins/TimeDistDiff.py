@@ -62,14 +62,24 @@ class TimeDistDiff(Node):
 
     # start constructing output data.
     ndata = {}
+    ndata['action']=data['action']
+    ndata['id']=data['id']
+    ndata['name']=data['name']
+    ndata['history']=data['history']
     ndata['tdelay'] = {}
     # do the calculation
+    count=0
+    #ndata = data.copy()
+    result = 0
     for i in self.map:
         for j in self.map:
             if i < j:
+                count+=1
                 #here the main time difference calculation comes
+                #print(count, gettdelay(self.map[i]['t'],self.map[i]['n'],self.map[j]['t'],self.map[j]['n']))
+                #result = gettdelay(self.map[i]['t'],self.map[i]['n'],self.map[j]['t'],self.map[j]['n'])
                 ndata['tdelay'][(i,j)] = gettdelay(self.map[i]['t'],self.map[i]['n'],self.map[j]['t'],self.map[j]['n'])
-
+                #print('Hola', i, j, ndata, 'result', result)
     # notify
     # (JCT: notify if have a diff to forward)
     #action_verb = 'revoke' if len(hlist) <= 1 else 'alert'
@@ -80,7 +90,8 @@ class TimeDistDiff(Node):
     if len(hlist) > 1:
       action_verb = 'alert'
       self.notify(action_verb, tuple(hlist), ndata)
-
+    print('I notify', ndata, result)
+      
 #normalise time series for chi2
 #returns err^2 as a second output
 def normalizeforchi2(n1,t1,windowleft,windowright):
@@ -149,6 +160,8 @@ def gettdelay(t1,n1,t2,n2):
         chi2 = np.divide(np.power(sample1-sample2,2), errsum, out=np.zeros_like(sample1), where=errsum!=0)
         chi2sum = np.sum(chi2)/len(sample1) #chi2 is normalized to the number of elements since for each shift this can vary
         if not (minchi2 < chi2sum):
-            mintdelay = tdelay
+            mintdelay = tdelay*1000.
             minchi2   = chi2sum
+    print('This is the deltat:', mintdelay)
+    #exit()
     return (mintdelay,minchi2)
