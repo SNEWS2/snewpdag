@@ -5,16 +5,15 @@ also includes the Bayesian block method
 import logging
 import math
 from snewpdag.dag import Node
-from snewpdag.plugins import ShapeHist
 from snewpdag.plugins import ShapeHistFunctions as SHF
 import numpy as np
 
 
 class ShapeComparison(Node):
-  def __init__(self, shapehist, scale, dt0, dt_step, dt_N, polyN, fit_range, **kwargs):
-    self.h_bins = shapehist.h_bins # number of bins in histograms
-    self.h_low = shapehist.h_low # lower edge of histogram
-    self.h_up = shapehist.h_up # upper edge of histogram
+  def __init__(self, h_bins, h_low, h_up, scale, dt0, dt_step, dt_N, polyN, fit_range, **kwargs):
+    self.h_bins = h_bins # number of bins in histograms
+    self.h_low = h_low # lower edge of histogram
+    self.h_up = h_up # upper edge of histogram
     self.scale = scale # scale factor on the weight for displaced bins
     self.dt0 = dt0 # initial dt value for scan (presumably negative)
     self.dt_step = dt_step # dt scan step size
@@ -63,10 +62,10 @@ class ShapeComparison(Node):
   def metric_list(self, values1, values2):
     mlist = [0.0] * self.dt_N
 
-    hist2 = ShapeHist.ShapeHist(self.h_bins, self.h_low, self.h_up).fill_hist(values2, 0.0)
+    hist2 = SHF.fill_hist(self.h_bins, self.h_low, self.h_up, values2, 0.0)
     hist2 = SHF.remove_flow(hist2)
     for i in range(self.dt_N):
-      hist1 = ShapeHist.ShapeHist(self.h_bins, self.h_low, self.h_up).fill_hist(values1, self.dt0 + i*self.dt_step)
+      hist1 = SHF.fill_hist(self.h_bins, self.h_low, self.h_up, values1, self.dt0 + i*self.dt_step)
       hist1 = SHF.remove_flow(hist1)
       metric = SHF.diff_hist(hist1, hist2, self.scale)
 

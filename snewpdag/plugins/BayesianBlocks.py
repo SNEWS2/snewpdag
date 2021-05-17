@@ -4,16 +4,15 @@ Bayes: Bayesian block method.  It's now set to always run in hybrid mode.  To ru
 import logging
 import math
 from snewpdag.dag import Node
-from snewpdag.plugins import ShapeHist
 from snewpdag.plugins import ShapeHistFunctions as SHF
 import numpy as np
 
 
 class BayesianBlocks(Node):
-  def __init__(self, shapehist, shape, gamma, division, **kwargs):
-    self.h_bins = shapehist.h_bins # number of bins in histograms
-    self.h_low = shapehist.h_low # lower edge of histogram
-    self.h_up = shapehist.h_up # upper edge of histogram
+  def __init__(self, h_bins, h_low, h_up, shape, gamma, division, **kwargs):
+    self.h_bins = h_bins # number of bins in histograms
+    self.h_low = h_low # lower edge of histogram
+    self.h_up = h_up # upper edge of histogram
     self.scale = shape.scale # scale factor on the weight for displaced bins
     self.dt0 = shape.dt0 # initial dt value for scan (presumably negative)
     self.dt_step = shape.dt_step # dt scan step size
