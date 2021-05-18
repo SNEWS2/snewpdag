@@ -1,4 +1,3 @@
-
 from .Pass import Pass
 
 from .TimeSeriesInput import TimeSeriesInput
@@ -10,6 +9,8 @@ from .StdOutput import StdOutput
 from .NthTimeDiff import NthTimeDiff
 from .CombineMaps import CombineMaps
 from .TimeDistDiff import TimeDistDiff
+from .ShapeComparison import ShapeComparison
+from .BayesianBlocks import BayesianBlocks
 
 from .Histogram1D import Histogram1D
 from .Accumulator import Accumulator
