@@ -6,9 +6,10 @@ Constructor arguments:
   nbins: number of bins
   xlow: low edge of histogram
   xhigh: high edge of histogram
-  field: string, name of field to extract from alert data
-  index: int or tuple (from list), element numbers if field is an array
-  index2: secondary index if needed (e.g., if a 2D array or dict)
+  in_field: string, name of field to extract from alert data
+  in_index: int or tuple (from list), element numbers if field is an array
+  in_index2: secondary index if needed (e.g., if a 2D array or dict)
+  out_field: string, name of field for dictionary with histogram summary
   flags: list of strings. Default is off for all flags.
     accumulate - accumulate over alerts, clear after report
 
@@ -19,7 +20,7 @@ Output json:
   report:  add the following
     name
     nbins, xlow, xhigh
-    field, index, index2
+    in_field, in_index, in_index2
     underflow, overflow
     sum, sum2
     count
@@ -34,25 +35,20 @@ import numpy as np
 from snewpdag.dag import Node
 
 class Histogram1D(Node):
-  def __init__(self, nbins, xlow, xhigh, field, **kwargs):
+  def __init__(self, nbins, xlow, xhigh, in_field, **kwargs):
     self.nbins = nbins
     self.xlow = xlow
     self.xhigh = xhigh
-    self.field = field
-    self.index = None
-    self.index2 = None
-    self.accumulate = False
-    if 'index' in kwargs:
-      v = kwargs.pop('index')
-      self.index = tuple(v) if isinstance(v, list) else v
-    if 'index2' in kwargs:
-      v = kwargs.pop('index2')
-      self.index2 = tuple(v) if isinstance(v, list) else v
-    if 'flags' in kwargs:
-      flags = kwargs.pop('flags')
-      self.accumulate = 'accumulate' in flags
-    self.clear()
+    self.field = in_field
+    self.out_field = kwargs.pop('out_field', None)
+    v = kwargs.pop('in_index', None)
+    self.index = tuple(v) if isinstance(v, list) else v
+    v = kwargs.pop('in_index2', None)
+    self.index2 = tuple(v) if isinstance(v, list) else v
+    f = kwargs.pop('flags', [])
+    self.accumulate = 'accumulate' in f
     super().__init__(**kwargs)
+    self.clear()
 
   def clear(self):
     self.bins = np.zeros(self.nbins)
@@ -114,9 +110,9 @@ class Histogram1D(Node):
              'nbins': self.nbins,
              'xlow': self.xlow,
              'xhigh': self.xhigh,
-             'field': self.field,
-             'index': self.index,
-             'index2': self.index2,
+             'in_field': self.field,
+             'in_index': self.index,
+             'in_index2': self.index2,
              'underflow': self.underflow,
              'overflow': self.overflow,
              'sum': self.sum,
@@ -145,7 +141,10 @@ class Histogram1D(Node):
 
   def report(self, data):
     if self.changed:
-      data.update(self.summary())
+      if self.out_field == None:
+        data.update(self.summary())
+      else:
+        data[self.out_field] = self.summary()
       self.changed = False
       return True
     else:

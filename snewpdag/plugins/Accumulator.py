@@ -2,49 +2,53 @@
 Accumulator:  a plugin which simply accumulates a list of numbers
   Only forwards reports downstream.
 
-It would be nice if this kept track of numbers by burst_id.
-That way, if a burst is updated, it'll replace the number.
+In general, assumes only a single source, so revoke and reset are
+the same.
 """
 import logging
 
 from snewpdag.dag import Node
 
 class Accumulator(Node):
-  def __init__(self, title, field, **kwargs):
+  def __init__(self, title, in_field, **kwargs):
     self.title = title
-    self.field = field
-    self.index = None
-    if 'index' in kwargs:
-      self.index = kwargs.pop('index')
-    self.clear()
+    self.in_field = in_field
+    self.out_field = kwargs.pop('out_field', None)
+    self.index = kwargs.pop('in_index', None)
     super().__init__(**kwargs)
-
-  def clear(self):
     self.series = []
 
-  def fill(self, data):
+  def alert(self, data):
+    source = data['history'][-1]
     if self.index:
       x = data[self.field][self.index]
     else:
       x = data[self.field]
+    # append
     self.series.append(x)
+    return False # consume - only emit on report
 
-  def summary(self):
-    return {
-             'name': self.name,
-             'title': self.title,
-             'field': self.field,
-             'index': self.index,
-             'series': self.series,
-           }
+  def report(self, data):
+    a = np.array(self.series)
+    a.flags.writeable = False
+    d = {
+          'name': self.name,
+          'title': self.title,
+          'in_field': self.field,
+          'in_index': self.index,
+          'series': a,
+        }
+    if self.out_field == None:
+      data.update(d)
+    else:
+      data[self.out_field] = d
+    return True
 
-  def update(self, data):
-    action = data['action']
-    if action == 'alert':
-      self.fill(data)
-    elif action == 'reset':
-      self.clear()
-    elif action == 'report':
-      data['histogram'] = self.summary()
-      self.notify(action, None, data)
+  def revoke(self, data):
+    self.series = []
+    return True
+
+  def reset(self, data):
+    self.series = []
+    return True
 

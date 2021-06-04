@@ -27,7 +27,7 @@ class TestInputs(unittest.TestCase):
     with self.assertLogs() as cm:
       n1.update(data)
     self.assertEqual(cm.output, [
-        'ERROR:root:[Input1] Expected action field not found' ])
+        'ERROR:root:[Input1] Action not specified' ])
     self.assertEqual(n2.last_data, {})
 
     data['action'] = 'alert'
@@ -45,7 +45,7 @@ class TestInputs(unittest.TestCase):
     with self.assertLogs() as cm:
       n1.update(data)
     self.assertEqual(cm.output, [
-        'ERROR:root:[Input1] Expected action field not found' ])
+        'ERROR:root:[Input1] Action not specified' ])
     self.assertEqual(n2.last_data, {})
 
     data = { 'action': 'alert', 'filetype': 'tn' }
@@ -66,10 +66,10 @@ class TestInputs(unittest.TestCase):
              'filename': 'snewpdag/data/fluxparametrisation_22.5kT_0Hz_0.0msT0_1msbin.txt',
              'filetype': 'tn' }
     n1.update(data)
-    self.assertEqual(len(n2.last_data['t']), 10000)
-    self.assertEqual(len(n2.last_data['n']), 10000)
-    self.assertEqual(n2.last_data['t'][2125], 0.125)
-    self.assertEqual(n2.last_data['n'][2125], 7)
-    self.assertEqual(n2.last_data['t'][2500], 0.5)
-    self.assertEqual(n2.last_data['n'][2500], 1)
+    self.assertEqual(len(n2.last_data['t_low']), 9999)
+    self.assertEqual(len(n2.last_data['t_bins']), 9999)
+    self.assertEqual(n2.last_data['t_low'][2125], 0.125)
+    self.assertEqual(n2.last_data['t_bins'][2125], 7)
+    self.assertEqual(n2.last_data['t_low'][2500], 0.5)
+    self.assertEqual(n2.last_data['t_bins'][2500], 1)
 

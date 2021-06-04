@@ -4,12 +4,12 @@ Unit tests for Histogram plugin
 import unittest
 import numpy as np
 from snewpdag.dag import Node
-from snewpdag.plugins import Histogram
+from snewpdag.plugins import Histogram1D
 
-class TestHistogram(unittest.TestCase):
+class TestHistogram1D(unittest.TestCase):
 
   def test_plugin0(self):
-    h = Histogram('Time diffs', 10, -0.1, 1.9, 'dt', name='hist0')
+    h = Histogram1D(10, -0.1, 1.9, 'dt', name='hist0')
     data = [
              { 'action': 'alert', 'dt': 0.1 },
              { 'action': 'alert', 'dt': 0.3 },
@@ -25,12 +25,11 @@ class TestHistogram(unittest.TestCase):
     self.assertEqual(h.last_data['action'], 'report')
     self.assertEqual(h.last_data['history'], ('hist0',))
     self.assertEqual(hh['name'], 'hist0')
-    self.assertEqual(hh['title'], 'Time diffs')
     self.assertEqual(hh['nbins'], 10)
     self.assertAlmostEqual(hh['xlow'], -0.1)
     self.assertAlmostEqual(hh['xhigh'], 1.9)
-    self.assertEqual(hh['field'], 'dt')
-    self.assertIsNone(hh['index'])
+    self.assertEqual(hh['in_field'], 'dt')
+    self.assertIsNone(hh['in_index'])
     self.assertEqual(hh['underflow'], 1)
     self.assertEqual(hh['overflow'], 1)
     self.assertAlmostEqual(hh['sum'], 2.3)
@@ -42,7 +41,7 @@ class TestHistogram(unittest.TestCase):
     # and then use a @staticmethod decorator to avoid pylint errors
 
   def test_plugin1d(self):
-    h = Histogram('Time diffs', 10, -0.1, 1.9, 'dt', index=2, name='hist1')
+    h = Histogram1D(10, -0.1, 1.9, 'dt', index=2, name='hist1')
     data = [
              { 'action': 'alert', 'dt': [0.0, 0.0, 0.1, 0.0] },
              { 'action': 'alert', 'dt': [0.0, 0.0, 0.3, 0.0] },
@@ -58,12 +57,11 @@ class TestHistogram(unittest.TestCase):
     self.assertEqual(h.last_data['action'], 'report')
     self.assertEqual(h.last_data['history'], ('hist1',))
     self.assertEqual(hh['name'], 'hist1')
-    self.assertEqual(hh['title'], 'Time diffs')
     self.assertEqual(hh['nbins'], 10)
     self.assertAlmostEqual(hh['xlow'], -0.1)
     self.assertAlmostEqual(hh['xhigh'], 1.9)
-    self.assertEqual(hh['field'], 'dt')
-    self.assertEqual(hh['index'], 2)
+    self.assertEqual(hh['in_field'], 'dt')
+    self.assertEqual(hh['in_index'], 2)
     self.assertEqual(hh['underflow'], 1)
     self.assertEqual(hh['overflow'], 1)
     self.assertAlmostEqual(hh['sum'], 2.3)
@@ -72,8 +70,7 @@ class TestHistogram(unittest.TestCase):
     self.assertEqual(hh['bins'].tolist(), [ 0, 1, 1, 0, 1, 0, 0, 0, 0, 0 ])
 
   def test_plugin2d(self):
-    h = Histogram('Time diffs', 10, -0.1, 1.9, 'dt',
-                  index=(1, 2), name='hist2')
+    h = Histogram1D(10, -0.1, 1.9, 'dt', index=(1, 2), name='hist2')
     d0 = np.zeros((3,3))
     d1 = np.zeros((3,3))
     d2 = np.zeros((3,3))
@@ -99,12 +96,11 @@ class TestHistogram(unittest.TestCase):
     self.assertEqual(h.last_data['action'], 'report')
     self.assertEqual(h.last_data['history'], ('hist2',))
     self.assertEqual(hh['name'], 'hist2')
-    self.assertEqual(hh['title'], 'Time diffs')
     self.assertEqual(hh['nbins'], 10)
     self.assertAlmostEqual(hh['xlow'], -0.1)
     self.assertAlmostEqual(hh['xhigh'], 1.9)
-    self.assertEqual(hh['field'], 'dt')
-    self.assertEqual(hh['index'], (1,2))
+    self.assertEqual(hh['in_field'], 'dt')
+    self.assertEqual(hh['in_index'], (1,2))
     self.assertEqual(hh['underflow'], 1)
     self.assertEqual(hh['overflow'], 1)
     self.assertAlmostEqual(hh['sum'], 2.3)
@@ -113,7 +109,7 @@ class TestHistogram(unittest.TestCase):
     self.assertEqual(hh['bins'].tolist(), [ 0, 1, 1, 0, 1, 0, 0, 0, 0, 0 ])
 
   def test_summary(self):
-    h = Histogram('Time diffs', 10, -0.1, 1.9, 'dt', name='hist0')
+    h = Histogram1D(10, -0.1, 1.9, 'dt', name='hist0')
     data = [
              { 'action': 'alert', 'dt': 0.1 },
              { 'action': 'alert', 'dt': 0.3 },
@@ -126,12 +122,11 @@ class TestHistogram(unittest.TestCase):
 
     hh = h.summary()
     self.assertEqual(hh['name'], 'hist0')
-    self.assertEqual(hh['title'], 'Time diffs')
     self.assertEqual(hh['nbins'], 10)
     self.assertAlmostEqual(hh['xlow'], -0.1)
     self.assertAlmostEqual(hh['xhigh'], 1.9)
-    self.assertEqual(hh['field'], 'dt')
-    self.assertIsNone(hh['index'])
+    self.assertEqual(hh['in_field'], 'dt')
+    self.assertIsNone(hh['in_index'])
     self.assertEqual(hh['underflow'], 1)
     self.assertEqual(hh['overflow'], 1)
     self.assertAlmostEqual(hh['sum'], 2.3)
@@ -143,7 +138,7 @@ class TestHistogram(unittest.TestCase):
     self.assertAlmostEqual(h.variance(), 6.15/5.0 - 2.3*2.3/(5.0*5.0))
 
   def test_reset(self):
-    h = Histogram('Time diffs', 10, -0.1, 1.9, 'dt', name='hist0')
+    h = Histogram1D(10, -0.1, 1.9, 'dt', name='hist0')
     data = [
              { 'action': 'alert', 'dt': 0.1 },
              { 'action': 'alert', 'dt': 0.3 },

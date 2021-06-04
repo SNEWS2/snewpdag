@@ -24,20 +24,31 @@ strings are accepted, e.g.,
   python -m snewpdag --log=INFO snewpdag/data/test-flux-config.json
 ```
 
+### Configuration CSV
+
+The easiest way to configure a DAG is probably to use a CSV file,
+which can be edited using a text editor or spreadsheet.
+
+If the first column in a row is non-empty, it is taken to be a
+node-configuring row.  The columns are as follows:
+1. name:  the name of the node
+1. class:  the name of the Node subclass
+1. observe:  a comma-separated list of nodes to observe
+1. kwargs:  keyword arguments for instantiating the node
+Unquoted whitespace is ignored.  The kwargs argument looks like a
+python dictionary, but without the external braces.
+
+If the first column is empty, the row is taken to be a comment row.
+You can also leave rows blank, so you can group nodes in your
+spreadsheet and even label the groups with a title in the second
+(or later) column.
+
 ### Configuration JSON
 
 The configuration document is an array of dictionaries,
 each dictionary specifying a node.
-
-There are three general varieties of node, all of which subclass Node:
-
-Type   | Description
--------|------------
-input  | validates input data, can be observed by other nodes for updates
-output | turns data into an outside-facing alert
-normal | performs some kind of computation
-
-However, we don't enforce strict boundaries for now.
+While the dictionary can be in JSON form,
+it actually uses the more flexible python dictionary syntax.
 
 For each node, the dictionary contains the following fields:
 
@@ -77,11 +88,8 @@ Value      | Description
 -----------|------------
 `'alert'`  | update data associated with the named node
 `'revoke'` | invalidate any previous data from the named node
+`'reset'`  | invalidate all the data
+`'report'` | report summary information
 
 Other fields may be required by particular input nodes.
-
-In order to clear the DAG of input state, issue a `revoke` for
-all inputs.  (In fact, this may be a reason to define a master revocation
-node which all input nodes observe for just this message.
-Data is still injected in the same way.)
 

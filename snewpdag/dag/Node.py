@@ -2,7 +2,7 @@
 Node in the directed acyclic graph.
 Implemented on observer-observable pattern.
 
-Plugins should subclass Node and override update().
+Plugins should subclass Node and override alert, revoke, reset, report.
 """
 import logging
 

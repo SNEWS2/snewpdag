@@ -3,12 +3,13 @@ TimeDist:  generates a time distribution on each alert, based on a histogram
 
 configuration:
   seed:  random number seed (integer)
-  mean:  normalization.  Histogram normalized to this area before generations.
-         (This means generated histogram will vary in area)
+  sig_mean:  normalization.  Histogram normalized to this area before
+             generations.  (This means generated histogram will vary in area)
 
 output added to data:
-  't': low edges of time bins (array of floats)
-  'n': number of events in corresponding time bins (array of floats)
+  't_low': low edges of time bins (array of floats)
+  't_high': high edge of last time bins
+  't_bins': number of events in corresponding time bins (array of floats)
 
 Originally based on Vladimir's TimeDistFileInput
 """
@@ -19,15 +20,22 @@ from . import TimeDistSource
 
 class TimeDist(TimeDistSource):
 
-  def __init__(self, mean, seed, **kwargs):
+  def __init__(self, sig_mean, seed, **kwargs):
     self.rng = np.random.default_rng(seed)
     super().__init__(**kwargs)
     # normalize to specified mean
     area = sum(self.mu)
-    self.mu = self.mu * mean / area
+    self.nmu = self.mu * sig_mean / area
+    self.nmu.flags.writeable = False
 
   def alert(self, data):
-    data['t'] = self.t.copy() # or can we just copy a read-only object?
-    data['n'] = self.rng.poisson(self.mu, len(self.mu))
+    ngen = { 't_low': self.t, # immutable (from TimeDistSource)
+             't_high': self.thi, }
+    ngen['t_bins'] = self.rng.poisson(self.nmu, len(self.nmu))
+    ngen['t_bins'].flags.writeable = False
+    if 'gen' in data:
+      data['gen'] += (ngen, )
+    else:
+      data['gen'] = (ngen, )
     return True
 

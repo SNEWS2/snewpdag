@@ -12,43 +12,46 @@
   },
 
   {
-    "name": "IceCube",
+    "name": "IceCube-ts",
     "class": "gen.TimeSeries",
     "observe": [ "Control" ],
     "kwargs": {
       "mean": 1548.0,
       "seed": 12345,
-      "filetype": "tn",
-      "filename":
+      "sig_filetype": "tn",
+      "sig_filename":
       "snewpdag/data/output_icecube_27_Shen_1D_solar_mass_progenitor.fits_1msbin.txt"
     }
   },
 
   {
-    "name": "JUNO",
+    "name": "JUNO-ts",
     "class": "gen.TimeSeries",
     "observe": [ "Control" ],
     "comment": "do I need to introduce a time delay?",
     "kwargs": {
       "mean": 0.001,
       "seed": 5831,
-      "filetype": "tn",
-      "filename":
+      "sig_filetype": "tn",
+      "sig_filename":
       "snewpdag/data/output_scint20kt_27_Shen_1D_solar_mass_progenitor.fits_1msbin.txt"
     }
   },
+
+  { "name": "IceCube", "class": "gen.Combine", "observe": [ "IceCube-ts" ] },
+  { "name": "JUNO", "class": "gen.Combine", "observe": [ "JUNO-ts" ] },
 
   {
     "name": "IceCube-bin",
     "class": "SeriesBinner",
     "observe": [ "IceCube" ],
     "kwargs": {
-      "field": "times",
+      "in_field": "times",
       "nbins": 20000,
       "xlow": -10.0,
       "xhigh": 10.0,
-      "xname": "t",
-      "yname": "n"
+      "out_xfield": "t",
+      "out_yfield": "n"
     }
   },
 
@@ -57,12 +60,12 @@
     "class": "SeriesBinner",
     "observe": [ "JUNO" ],
     "kwargs": {
-      "field": "times",
+      "in_field": "times",
       "nbins": 20000,
       "xlow": -10.0,
       "xhigh": 10.0,
-      "xname": "t",
-      "yname": "n"
+      "out_xfield": "t",
+      "out_yfield": "n"
     }
   },
 
@@ -100,9 +103,9 @@
       "nbins": 100,
       "xlow": -0.1,
       "xhigh": 0.1,
-      "field": "tdelay",
-      "index": ( "IceCube-bin", "JUNO-bin" ), # delicate because of order?
-      "index2": 0,
+      "in_field": "tdelay",
+      "in_index": ( "IceCube-bin", "JUNO-bin" ), # delicate because of order?
+      "in_index2": 0,
       "comment": "lists may be delicate because of order"
     }
   },
@@ -127,9 +130,9 @@
       "nbins": 100,
       "xlow": 0.0,
       "xhigh": 10.0,
-      "field": "tdelay",
-      "index": ( "JUNO-bin", "IceCube-bin", ), # test order
-      "index2": 1
+      "in_field": "tdelay",
+      "in_index": ( "JUNO-bin", "IceCube-bin", ), # test order
+      "in_index2": 1
     }
   },
 
@@ -150,12 +153,12 @@
     "class": "SeriesBinner",
     "observe": [ "JUNO" ],
     "kwargs": {
-      "field": "times",
+      "in_field": "times",
       "nbins": 20,
       "xlow": -10.0,
       "xhigh": 10.0,
-      "xname": "t",
-      "yname": "bins",
+      "out_xfield": "t",
+      "out_yfield": "bins",
       "flags": [ "overflow" ]
     }
   },
@@ -163,8 +166,8 @@
   { 'name': 'JUNO-t-acc', 'class': 'BinnedAccumulator',
     'observe': [ 'JUNO-t' ],
     'kwargs': {
-      'field': 'bins', 'nbins': 20, 'xlow': -10.0, 'xhigh': 10.0,
-      'xname': 't', 'yname': 'bins',
+      'in_field': 'bins', 'nbins': 20, 'xlow': -10.0, 'xhigh': 10.0,
+      'out_xfield': 't', 'out_yfield': 'bins',
       'flags': [ 'overflow' ],
     }
   },
@@ -186,12 +189,12 @@
     "class": "SeriesBinner",
     "observe": [ "IceCube" ],
     "kwargs": {
-      "field": "times",
+      "in_field": "times",
       "nbins": 20,
       "xlow": -10.0,
       "xhigh": 10.0,
-      "xname": "t",
-      "yname": "bins",
+      "out_xfield": "t",
+      "out_yfield": "bins",
       "flags": [ "overflow" ]
     }
   },
@@ -199,8 +202,8 @@
   { 'name': 'IceCube-t-acc', 'class': 'BinnedAccumulator',
     'observe': [ 'IceCube-t' ],
     'kwargs': {
-      'field': 'bins', 'nbins': 20, 'xlow': -10.0, 'xhigh': 10.0,
-      'xname': 't', 'yname': 'bins',
+      'in_field': 'bins', 'nbins': 20, 'xlow': -10.0, 'xhigh': 10.0,
+      'out_xfield': 't', 'out_yfield': 'bins',
       'flags': [ 'overflow' ],
     }
   },
@@ -254,7 +257,7 @@
       "nbins": 100,
       "xlow": -0.1,
       "xhigh": 0.1,
-      "field": "dt"
+      "in_field": "dt"
     }
   },
 

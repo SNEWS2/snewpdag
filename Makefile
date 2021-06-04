@@ -5,11 +5,13 @@ lightcurvesim:
 	cd externals/lightcurve_match && make simulation
 	cd externals/lightcurve_match/matching && make getdelay
 
-test: lightcurvesim
+standalone_unittests:
 	python -m unittest snewpdag.tests.test_basic_node
-	python -m unittest snewpdag.tests.test_inputs
 	python -m unittest snewpdag.tests.test_app
+	python -m unittest snewpdag.tests.test_inputs
 	python -m unittest snewpdag.tests.test_combinemaps
+
+test: standaline_unittests lightcurvesim
 	python -m unittest snewpdag.tests.test_timedistdiff
 
 runtest:
