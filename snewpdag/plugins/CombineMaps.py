@@ -29,35 +29,38 @@ class CombineMaps(Node):
     self.map = {}
     super().__init__(**kwargs)
 
-  def update(self, data):
-    action = data['action']
+  def alert(self, data):
     source = data['history'][-1]
-
-    if action == 'alert':
-      if 'cl' in data and 'chi2' in data:
-        logging.error('[{}] Both CL and chi2 present in map'.format(self.name))
-        return
-      if 'cl' in data or 'chi2' in data:
-        self.map[source] = data
-        self.map[source]['valid'] = True
-      else:
-        logging.error('[{}] Expected either CL or chi2 in map'.format(self.name))
-        return
-
-    elif action == 'revoke':
-      if source in self.map:
-        self.map[source]['valid'] = False
-      else:
-        logging.error('[{}] Revocation received for unknown source {}'.format(self.name, source))
-        return
-
+    if 'cl' in data and 'chi2' in data:
+      logging.error('[{}] Both CL and chi2 present in map'.format(self.name))
+      return False
+    if 'cl' in data or 'chi2' in data:
+      self.map[source] = data.copy()
+      self.map[source]['valid'] = True
+      return self.reevaluate(data)
     else:
-      logging.error("[{}] Unrecognized action {}".format(self.name, action))
-      return
+      logging.error('[{}] Expected either CL or chi2 in map'.format(self.name))
+      return False
 
-    # start constructing output data.
-    ndata = {}
+  def revoke(self, data):
+    source = data['history'][-1]
+    if source in self.map:
+      self.map[source]['valid'] = False
+      return self.reevaluate(data)
+    else:
+      logging.error('[{}] Revocation received for unknown source {}'.format(
+                    self.name, source))
+      return False
 
+  def reset(self, data):
+    newrevoke = False
+    for k in self.map:
+      if self.map[k]['valid']:
+        newrevoke = True
+        self.map[k]['valid'] = False
+    return newrevoke
+
+  def reevaluate(self, data):
     # if all maps are chi2, then can output chi2
     use_chi2 = not self.force_cl
     if use_chi2:
@@ -89,8 +92,8 @@ class CombineMaps(Node):
             ma = np.array(v['chi2'])
           m += ma
           df += v['ndof']
-      ndata['chi2'] = m
-      ndata['ndof'] = df
+      data['chi2'] = m
+      data['ndof'] = df
 
     else:
       m = np.ones(maxnpix)
@@ -112,13 +115,14 @@ class CombineMaps(Node):
             else:
               ma = np.array(v['cl'])
           m *= ma
-      ndata['cl'] = m
+      data['cl'] = m
 
     # notify
     hlist = []
     for k in self.map:
       if self.map[k]['valid']:
         hlist.append(self.map[k]['history'])
-    action_verb = 'revoke' if len(hlist) == 0 else 'alert'
-    self.notify(action_verb, tuple(hlist), ndata)
+    data['action'] = 'revoke' if len(hlist) == 0 else 'alert'
+    data['history'] = tuple(hlist)
+    return data
 

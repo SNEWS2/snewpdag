@@ -26,8 +26,8 @@ class TestAccumulator(unittest.TestCase):
     self.assertEqual(h.last_data['history'], ('acc0',))
     self.assertEqual(hh['name'], 'acc0')
     self.assertEqual(hh['title'], 'Time diffs')
-    self.assertEqual(hh['field'], 'dt')
-    self.assertIsNone(hh['index'])
+    self.assertEqual(hh['in_field'], 'dt')
+    self.assertIsNone(hh['in_index'])
     dd = hh['series']
     self.assertEqual(len(dd), 5)
     self.assertAlmostEqual(dd[0], 0.1)
@@ -54,8 +54,8 @@ class TestAccumulator(unittest.TestCase):
     self.assertEqual(h.last_data['history'], ('acc0',))
     self.assertEqual(hh['name'], 'acc0')
     self.assertEqual(hh['title'], 'Time diffs')
-    self.assertEqual(hh['field'], 'dt')
-    self.assertEqual(hh['index'], 2)
+    self.assertEqual(hh['in_field'], 'dt')
+    self.assertEqual(hh['in_index'], 2)
     dd = hh['series']
     self.assertEqual(len(dd), 5)
     self.assertAlmostEqual(dd[0], 0.1)
@@ -92,8 +92,8 @@ class TestAccumulator(unittest.TestCase):
     self.assertEqual(h.last_data['history'], ('acc0',))
     self.assertEqual(hh['name'], 'acc0')
     self.assertEqual(hh['title'], 'Time diffs')
-    self.assertEqual(hh['field'], 'dt')
-    self.assertEqual(hh['index'], (1, 2))
+    self.assertEqual(hh['in_field'], 'dt')
+    self.assertEqual(hh['in_index'], (1, 2))
     dd = hh['series']
     self.assertEqual(len(dd), 5)
     self.assertAlmostEqual(dd[0], 0.1)

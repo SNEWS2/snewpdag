@@ -11,7 +11,6 @@ Output json:
   alert:
     t0, t1:  times used to calculate dt
     dt:  time differences (t0 - t1)
-    delete times field
   revoke, reset, report:  input json unmodified
 """
 import logging
@@ -71,8 +70,9 @@ class NthTimeDiff(Node):
     return False
 
   def revoke(self, data):
+    index = self.last_watch_index()
     newrevoke = self.valid[index]
-    self.valid = False
+    self.valid[index] = False
     return newrevoke
 
   def reset(self, data):

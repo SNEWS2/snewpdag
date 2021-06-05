@@ -9,14 +9,16 @@
   },
 
   {
-    "name": "JUNO", "class": "gen.TimeSeries",
+    "name": "JUNO-ts", "class": "gen.TimeSeries",
     "observe": [ "Control" ],
     "kwargs": {
       "mean": 1000, "seed": 5831,
-      "filetype": "tn", "filename":
+      "sig_filetype": "tn", "sig_filename":
       "snewpdag/data/output_scint20kt_27_Shen_1D_solar_mass_progenitor.fits_1msbin.txt"
     }
   },
+
+  { "name": "JUNO", "class": "gen.Combine", "observe": [ "JUNO-ts" ] },
 
   {
     "name": "JUNO-out", "class": "Pass",
@@ -28,9 +30,9 @@
     "name": "JUNO-bin", "class": "BinnedAccumulator",
     "observe": [ "JUNO" ],
     "kwargs": {
-      "field": "times",
+      "in_field": "times",
       "nbins": 2000, "xlow": -10.0, "xhigh": 10.0,
-      "xname": "t", "yname": "bins",
+      "out_xfield": "t", "out_yfield": "bins",
       'flags': [ 'overflow' ],
     }
   },
@@ -54,14 +56,16 @@
   },
 
   {
-    "name": "SNOP", "class": "gen.TimeSeries",
+    "name": "SNOP-ts", "class": "gen.TimeSeries",
     "observe": [ "Control" ],
     "kwargs": {
       "mean": 100, "seed": 1235,
-      "filetype": "tn", "filename":
+      "sig_filetype": "tn", "sig_filename":
       "snewpdag/data/output_scint20kt_27_Shen_1D_solar_mass_progenitor.fits_1msbin.txt"
     }
   },
+
+  { "name": "SNOP", "class": "gen.Combine", "observe": [ "SNOP-ts" ] },
 
   {
     "name": "SNOP-out", "class": "Pass",
@@ -73,9 +77,9 @@
     "name": "SNOP-bin", "class": "BinnedAccumulator",
     "observe": [ "SNOP" ],
     "kwargs": {
-      "field": "times",
+      "in_field": "times",
       "nbins": 2000, "xlow": -10.0, "xhigh": 10.0,
-      "xname": "t", "yname": "bins",
+      "out_xfield": "t", "out_yfield": "bins",
       'flags': [ 'overflow' ],
     }
   },
@@ -113,7 +117,7 @@
     "name": "Diff-dt", "class": "Histogram1D",
     "observe": [ "Diff" ],
     "kwargs": {
-      "field": "dt",
+      "in_field": "dt",
       "nbins": 100, "xlow": -0.1, "xhigh": 0.1,
     }
   },

@@ -18,6 +18,8 @@ Input data:
   xlow
   xhigh
   bins - uniform bin contents
+  in_field - optional, dictionary name of input
+             (otherwise look in payload dictionary itself)
 """
 import matplotlib.pyplot as plt
 import numpy as np
@@ -30,6 +32,7 @@ class Histogram1D(Node):
     self.xlabel = xlabel
     self.ylabel = ylabel
     self.filename = filename # include pattern to include index
+    self.in_field = kwargs.pop('in_field', None)
     self.count = 0 # number of histograms made
     super().__init__(**kwargs)
 
@@ -52,7 +55,8 @@ class Histogram1D(Node):
     self.count += 1
 
   def report(self, data):
-    burst_id = data['id'] if 'id' in data else 0
-    self.render(burst_id, data['xlow'], data['xhigh'], data['bins'])
+    burst_id = data.get('id', 0)
+    d = data[self.in_field] if self.in_field else data
+    self.render(burst_id, d['xlow'], d['xhigh'], d['bins'])
     return True
 

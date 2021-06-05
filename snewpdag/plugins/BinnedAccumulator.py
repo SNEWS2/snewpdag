@@ -5,9 +5,10 @@ Constructor arguments:
   nbins: number of bins
   xlow: low edge of histogram
   xhigh: high edge of histogram
-  field: string, name of field to extract from alert data
-  xname: name of x axis field for output data (to contain bin edges)
-  yname: name of y axis field for output data (to contain bin contents)
+  in_field: string, name of field to extract from alert data
+  out_xfield: name of x axis field for output data (to contain bin edges)
+  out_yfield: name of y axis field for output data (to contain bin contents)
+  out_field: optional, name of field for dictionary output
   flags: list of strings. Default is off for all flags.
     overflow - calculate overflow/underflow
     stats - calculate statistics
@@ -34,21 +35,18 @@ import numpy as np
 from snewpdag.dag import Node
 
 class BinnedAccumulator(Node):
-  def __init__(self, field, nbins, xlow, xhigh, xname, yname, **kwargs):
+  def __init__(self, in_field, nbins, xlow, xhigh,
+               out_xfield, out_yfield, **kwargs):
     self.nbins = nbins
     self.xlow = xlow
     self.xhigh = xhigh
-    self.field = field
-    self.xname = xname
-    self.yname = yname
-    self.accumulate = False
-    self.calc_overflow = False
-    self.calc_stats = False
-    if 'flags' in kwargs:
-      flags = kwargs['flags']
-      self.calc_overflow = 'overflow' in flags
-      self.calc_stats = 'stats' in flags
-      kwargs.pop('flags')
+    self.field = in_field
+    self.xname = out_xfield
+    self.yname = out_yfield
+    self.out_field = kwargs.pop('out_field', None)
+    flags = kwargs.pop('flags', [])
+    self.calc_overflow = 'overflow' in flags
+    self.calc_stats = 'stats' in flags
     self.clear()
     super().__init__(**kwargs)
 
@@ -88,24 +86,30 @@ class BinnedAccumulator(Node):
 
   def report(self, data):
     if self.changed:
-      data['nbins'] = self.nbins
-      data['xlow'] = self.xlow
-      data['xhigh'] = self.xhigh
-      data['field'] = self.field
-      data['xname'] = self.xname
-      data['yname'] = self.yname
-      data['count'] = self.count
-      data[self.xname] = self.edges[:-1]
-      data[self.yname] = self.bins
+      d = {
+            'nbins': self.nbins,
+            'xlow': self.xlow,
+            'xhigh': self.xhigh,
+            'in_field': self.field,
+            'out_xfield': self.xname,
+            'out_yfield': self.yname,
+            'count': self.count,
+          }
+      d[self.xname] = self.edges[:-1]
+      d[self.yname] = self.bins
       if self.calc_overflow:
-        data['overflow'] = self.overflow
-        data['underflow'] = self.underflow
+        d['overflow'] = self.overflow
+        d['underflow'] = self.underflow
       if self.calc_stats:
         mean = self.sum / self.count
-        data['mean'] = mean
-        data['rms'] = sqrt(self.sum2 / self.count - mean*mean)
+        d['mean'] = mean
+        d['rms'] = sqrt(self.sum2 / self.count - mean*mean)
       self.changed = False
-      return data
+      if self.out_field == None:
+        data.update(d)
+      else:
+        data[self.out_field] = d
+      return True
     else:
       return False
 

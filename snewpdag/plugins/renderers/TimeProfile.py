@@ -2,9 +2,11 @@
 Time profile renderer.
 
 Configuration options:
+  in_field:  optional, name of dictionary of input data
+             (otherwise look in payload dictionary itself)
+  in_xfield:  name of data field for x values
+  in_yfield:  name of data field for y values
   title:  profile title (top of plot)
-  xfield:  name of data field for x values
-  yfield:  name of data field for y values
   xlabel:  x axis label
   ylabel:  y axis label
   filename:  output filename, with fields
@@ -21,13 +23,14 @@ import numpy as np
 from snewpdag.dag import Node
 
 class TimeProfile(Node):
-  def __init__(self, xfield, yfield, title, xlabel, ylabel, filename, **kwargs):
-    self.xfield = xfield
-    self.yfield = yfield
+  def __init__(self, in_xfield, in_yfield, title, xlabel, ylabel, filename, **kwargs):
+    self.xfield = in_xfield
+    self.yfield = in_yfield
     self.title = title
     self.xlabel = xlabel
     self.ylabel = ylabel
     self.filename = filename # include pattern to include index
+    self.in_field = kwargs.pop('in_field', None)
     self.count = 0 # number of histograms made
     super().__init__(**kwargs)
 
@@ -44,12 +47,13 @@ class TimeProfile(Node):
     self.count += 1
 
   def alert(self, data):
-    burst_id = data['id'] if 'id' in data else 0
-    nm = data['name']
-    if 'comment' in data:
-      nm += ": " + data['comment']
+    burst_id = data.get('id', 0)
+    d = data[self.in_field] if self.in_field else data
+    nm = d['name']
+    if 'comment' in d:
+      nm += ": " + d['comment']
     self.render(burst_id, data['history'][-1],
-                data[self.xfield], data[self.yfield], nm)
+                d[self.xfield], d[self.yfield], nm)
     return True
 
   def report(self, data):

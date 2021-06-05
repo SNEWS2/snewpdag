@@ -11,9 +11,10 @@ Constructor arguments:
   nbins: number of bins
   xlow: low edge of histogram
   xhigh: high edge of histogram
-  field: string, name of field to extract from alert data
-  xname: name of x axis field for output data (to contain bin edges)
-  yname: name of y axis field for output data (to contain bin contents)
+  in_field: string, name of field to extract from alert data
+  out_xfield: name of x axis field for output data (to contain bin edges)
+  out_yfield: name of y axis field for output data (to contain bin contents)
+  out_field: optional, name of field for dictionary output
   flags: list of strings. Default is off for all flags.
     overflow - calculate overflow/underflow
     stats - calculate statistics
@@ -31,22 +32,20 @@ import numpy as np
 from snewpdag.dag import Node
 
 class SeriesBinner(Node):
-  def __init__(self, field, nbins, xlow, xhigh, xname, yname, **kwargs):
+  def __init__(self, in_field, nbins, xlow, xhigh,
+               out_xfield, out_yfield, **kwargs):
     self.nbins = nbins
     self.xlow = xlow
     self.xhigh = xhigh
-    self.field = field
-    self.xname = xname
-    self.yname = yname
-    self.calc_overflow = False
-    self.calc_stats = False
-    if 'flags' in kwargs:
-      flags = kwargs['flags']
-      self.calc_overflow = 'overflow' in flags
-      self.calc_stats = 'stats' in flags
-      kwargs.pop('flags')
-    self.clear()
+    self.field = in_field
+    self.xname = out_xfield
+    self.yname = out_yfield
+    self.out_field = kwargs.pop('out_field', None)
+    flags = kwargs.pop('flags', [])
+    self.calc_overflow = 'overflow' in flags
+    self.calc_stats = 'stats' in flags
     super().__init__(**kwargs)
+    self.clear()
 
   def clear(self):
     self.bins = np.zeros(self.nbins)
@@ -58,30 +57,36 @@ class SeriesBinner(Node):
     self.count = 0
 
   def alert(self, data):
-    data['nbins'] = self.nbins
-    data['xlow'] = self.xlow
-    data['xhigh'] = self.xhigh
-    data['field'] = self.field
-    data['xname'] = self.xname
-    data['yname'] = self.yname
-    data['count'] = self.count
+    d = {
+          'nbins': self.nbins,
+          'xlow': self.xlow,
+          'xhigh': self.xhigh,
+          'in_field': self.field,
+          'out_xfield': self.xname,
+          'out_yfield': self.yname,
+          'count': self.count,
+        }
     vs = data[self.field]
     h, edges = np.histogram(vs, self.nbins, (self.xlow, self.xhigh))
     # note edges will have len(h)+1, since last element is top edge.
     # also note (?) that top edge is inclusive,
     # but lower bins' right edge is exclusive.
-    data[self.xname] = edges[:-1]
-    data[self.yname] = h
+    d[self.xname] = edges[:-1]
+    d[self.yname] = h
     n = len(vs)
-    data['count'] = n
+    d['count'] = n
     if self.calc_overflow:
-      data['overflow'] = np.count_nonzero(vs > self.xhigh)
-      data['underflow'] = np.count_nonzero(vs < self.xlow)
+      d['overflow'] = np.count_nonzero(vs > self.xhigh)
+      d['underflow'] = np.count_nonzero(vs < self.xlow)
     if self.calc_stats:
       s = np.sum(vs)
       s2 = np.sum(vs*vs)
       mean = s / n
-      data['mean'] = mean
-      data['rms'] = sqrt(s2 / n - mean*mean)
-    return data
+      d['mean'] = mean
+      d['rms'] = sqrt(s2 / n - mean*mean)
+    if self.out_field == None:
+      data.update(d)
+    else:
+      data[self.out_field] = d
+    return True
 

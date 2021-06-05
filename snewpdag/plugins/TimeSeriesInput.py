@@ -19,17 +19,15 @@ class TimeSeriesInput(Node):
   def __init__(self, **kwargs):
     super().__init__(**kwargs)
 
-  def update(self, data):
+  def alert(self, data):
     """
     Check that the input has the right fields:
     - if it's an alert, it should have a times field.
     - if it's not an alert, just pass it along.
     """
-    if 'action' in data:
-      if data['action'] != 'alert' or 'times' in data:
-        self.notify(data['action'], None, data)
-      else:
-        logging.error('[{}] Expected times field not found'.format(self.name))
+    if 'times' in data:
+      return True
     else:
-      logging.error('[{}] Expected action field not found'.format(self.name))
+      logging.error('[{}] Expected times field not found'.format(self.name))
+      return False
 
