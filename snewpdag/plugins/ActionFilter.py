@@ -22,35 +22,44 @@ from snewpdag.dag import Node
 
 class ActionFilter(Node):
     def __init__(self, **kwargs):
+        self.on_alert = kwargs.pop('on_alert', None)
+        self.on_reset = kwargs.pop('on_reset', None)
+        self.on_revoke = kwargs.pop('on_revoke', None)
+        self.on_report = kwargs.pop('on_report', None)
         super().__init__(**kwargs)
 
     def alert(self, data):
-        # if 'newaction' in data: (this line does not work for some reason)
-        if len(data) > 1 and data['newaction'] == 'alert':
-                return True
+        if self.on_alert:
+            data['action'] = self.on_alert
+            return data
         else:
             return False # don't forward an alert
 
     def reset(self, data):
-        if len(data) > 1 and data['newaction'] == 'reset':
-                return True
+        if self.on_reset:
+            data['action'] = self.on_reset
+            return data
         else:
             return False
 
     def revoke(self, data):
-        if len(data) > 1 and data['newaction'] == 'revoke':
-                return True
+        if self.on_revoke:
+            data['action'] = self.on_revoke
+            return data
         else:
             return False
 
     def report(self, data):
-        if len(data) > 1 and data['newaction'] == 'report':
-                return True
+        if self.on_report:
+            data['action'] = self.on_report
+            return data
         else:
             return False
     
-    def change_action(self, data):
+    '''
+    def change_action(self, data): # not sure if this part is really necessary
         self.alert(data)
         self.reset(data)
         self.revoke(data)
         self.report(data)
+    '''
