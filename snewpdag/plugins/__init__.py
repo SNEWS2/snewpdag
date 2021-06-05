@@ -14,3 +14,6 @@ from .Accumulator import Accumulator
 
 from .SeriesBinner import SeriesBinner
 from .BinnedAccumulator import BinnedAccumulator
+
+from .SkymapInput import SkymapInput
+
