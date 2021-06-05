@@ -6,6 +6,8 @@ Plugins should subclass Node and override alert, revoke, reset, report.
 """
 import logging
 
+from snewpdag.values import History
+
 class Node:
 
   def __init__(self, name, **kwargs):
@@ -49,27 +51,29 @@ class Node:
       self.observers.remove(observer)
       observer.watch_list.remove(self)
 
-  def notify(self, action, history, data):
+  def notify(self, action, data):
     """
     Notify all observers that they need to update.
-    Update history by appending name to data field.
-    Previous history is given by history argument,
-    but if history == None, data['history'] will be used
-    as the starting point.
+    Update history by appending name of current node.
     """
     self.last_data = data.copy() # shallow copy (copies refs of objects)
     # record action
     self.last_data['action'] = action
     # append to history (tuple, so remember that tuples are immutable)
-    if history == None:
-      if 'history' in data:
-        h1 = self.last_data['history']
-      else:
-        h1 = ()
-    else:
-      h1 = history
-    h2 = (self.name,)
-    self.last_data['history'] = h1 + h2
+    #if history == None:
+    #  if 'history' in data:
+    #    h1 = self.last_data['history']
+    #  else:
+    #    #h1 = ()
+    #    h1 = History()
+    #else:
+    #  h1 = history
+
+    if 'history' not in data:
+      self.last_data['history'] = History()
+    self.last_data['history'].append(self.name)
+    #h2 = (self.name,)
+    #self.last_data['history'] = h1 + h2
     # notify all observers
     for obs in self.observers:
       logging.debug('DEBUG:{0}: notify {1}'.format(self.name, obs.name))
@@ -153,8 +157,10 @@ class Node:
     logging.debug('{0}: update({1})'.format(self.name,
                   data['action'] if 'action' in data else 'None'))
     cdata = data.copy() # local shallow copy
-    if 'history' in cdata and len(cdata['history']) > 0:
-      self.last_source = cdata['history'][-1]
+    if 'history' in cdata:
+      cdata['history'] = data['history'].copy() # local copy of history
+      self.last_source = cdata['history'].last()
+
     if 'action' in cdata:
       action = cdata['action']
       v = False
@@ -170,11 +176,11 @@ class Node:
         v = self.other(cdata)
 
       if v == True:
-        self.notify(action, None, cdata) # notify() will update history
+        self.notify(action, cdata) # notify() will update history
       elif v == False:
         return
       elif type(v) is dict:
-        self.notify(v['action'] if 'action' in v else action, None, v)
+        self.notify(v['action'] if 'action' in v else action, v)
       else:
         logging.error('{0}: empty action response'.format(self.name))
         return

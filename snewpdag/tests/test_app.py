@@ -68,8 +68,8 @@ class TestApp(unittest.TestCase):
     self.assertAlmostEqual(nodes[0]['Diff1'].last_data['dt'], 0.4)
     self.assertEqual(nodes[0]['Diff3'].last_data['action'], 'alert')
     self.assertAlmostEqual(nodes[0]['Diff3'].last_data['dt'], -0.4)
-    self.assertEqual(nodes[0]['Diff1'].last_data['history'],
-                     ( ('Input1', ), ('Input2', ), 'Diff1' ) )
+    self.assertEqual(nodes[0]['Diff1'].last_data['history'].emit(),
+                     ( (('Input1', ), ('Input2', )), 'Diff1' ) )
 
     data = [
       { 'name': 'Input2', 'action': 'revoke' }

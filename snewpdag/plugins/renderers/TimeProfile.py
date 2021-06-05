@@ -52,7 +52,7 @@ class TimeProfile(Node):
     nm = d['name']
     if 'comment' in d:
       nm += ": " + d['comment']
-    self.render(burst_id, data['history'][-1],
+    self.render(burst_id, self.last_source,
                 d[self.xfield], d[self.yfield], nm)
     return True
 

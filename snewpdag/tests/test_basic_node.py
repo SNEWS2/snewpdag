@@ -37,14 +37,18 @@ class TestBasicNode(unittest.TestCase):
     self.n2.attach(self.n4)
     data = { 'action': 'alert', 'k': 'v' }
     self.n1.update(data)
-    self.assertEqual(self.n1.last_data,
-                     { 'action': 'alert', 'k':'v', 'history':('node1',) })
-    self.assertEqual(self.n2.last_data,
-                     { 'action': 'alert', 'k':'v', 'history':('node1','node2') })
-    self.assertEqual(self.n3.last_data,
-                     { 'action': 'alert', 'k':'v', 'history':('node1','node3') })
-    self.assertEqual(self.n4.last_data,
-                     { 'action': 'alert', 'k':'v', 'history':('node1','node2','node4') })
+    self.assertEqual(self.n1.last_data['action'], 'alert')
+    self.assertEqual(self.n1.last_data['history'].emit(), ('node1',))
+    self.assertEqual(self.n1.last_data['k'], 'v')
+    self.assertEqual(self.n2.last_data['action'], 'alert')
+    self.assertEqual(self.n2.last_data['history'].emit(), ('node1','node2'))
+    self.assertEqual(self.n2.last_data['k'], 'v')
+    self.assertEqual(self.n3.last_data['action'], 'alert')
+    self.assertEqual(self.n3.last_data['history'].emit(), ('node1','node3'))
+    self.assertEqual(self.n3.last_data['k'], 'v')
+    self.assertEqual(self.n4.last_data['action'], 'alert')
+    self.assertEqual(self.n4.last_data['history'].emit(), ('node1','node2', 'node4'))
+    self.assertEqual(self.n4.last_data['k'], 'v')
 
   def test_history_order(self):
     self.n1.attach(self.n3)
@@ -52,12 +56,16 @@ class TestBasicNode(unittest.TestCase):
     self.n3.attach(self.n4)
     data = { 'action': 'alert', 'k': 'v' }
     self.n1.update(data)
-    self.assertEqual(self.n1.last_data,
-                     { 'action': 'alert', 'k':'v', 'history':('node1',) })
-    self.assertEqual(self.n2.last_data,
-                     { 'action': 'alert', 'k':'v', 'history':('node1','node2') })
-    self.assertEqual(self.n3.last_data,
-                     { 'action': 'alert', 'k':'v', 'history':('node1','node3') })
-    self.assertEqual(self.n4.last_data,
-                     { 'action': 'alert', 'k':'v', 'history':('node1','node3','node4') })
+    self.assertEqual(self.n1.last_data['action'], 'alert')
+    self.assertEqual(self.n1.last_data['history'].emit(), ('node1',))
+    self.assertEqual(self.n1.last_data['k'], 'v')
+    self.assertEqual(self.n2.last_data['action'], 'alert')
+    self.assertEqual(self.n2.last_data['history'].emit(), ('node1','node2'))
+    self.assertEqual(self.n2.last_data['k'], 'v')
+    self.assertEqual(self.n3.last_data['action'], 'alert')
+    self.assertEqual(self.n3.last_data['history'].emit(), ('node1','node3'))
+    self.assertEqual(self.n3.last_data['k'], 'v')
+    self.assertEqual(self.n4.last_data['action'], 'alert')
+    self.assertEqual(self.n4.last_data['history'].emit(), ('node1','node3', 'node4'))
+    self.assertEqual(self.n4.last_data['k'], 'v')
 

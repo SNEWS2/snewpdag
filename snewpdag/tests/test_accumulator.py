@@ -23,7 +23,7 @@ class TestAccumulator(unittest.TestCase):
     h.update({ 'action': 'report' })
     hh = h.last_data['histogram']
     self.assertEqual(h.last_data['action'], 'report')
-    self.assertEqual(h.last_data['history'], ('acc0',))
+    self.assertEqual(h.last_data['history'].emit(), ('acc0',))
     self.assertEqual(hh['name'], 'acc0')
     self.assertEqual(hh['title'], 'Time diffs')
     self.assertEqual(hh['in_field'], 'dt')
@@ -51,7 +51,7 @@ class TestAccumulator(unittest.TestCase):
     h.update({ 'action': 'report' })
     hh = h.last_data['histogram']
     self.assertEqual(h.last_data['action'], 'report')
-    self.assertEqual(h.last_data['history'], ('acc0',))
+    self.assertEqual(h.last_data['history'].emit(), ('acc0',))
     self.assertEqual(hh['name'], 'acc0')
     self.assertEqual(hh['title'], 'Time diffs')
     self.assertEqual(hh['in_field'], 'dt')
@@ -89,7 +89,7 @@ class TestAccumulator(unittest.TestCase):
     h.update({ 'action': 'report' })
     hh = h.last_data['histogram']
     self.assertEqual(h.last_data['action'], 'report')
-    self.assertEqual(h.last_data['history'], ('acc0',))
+    self.assertEqual(h.last_data['history'].emit(), ('acc0',))
     self.assertEqual(hh['name'], 'acc0')
     self.assertEqual(hh['title'], 'Time diffs')
     self.assertEqual(hh['in_field'], 'dt')

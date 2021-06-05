@@ -11,13 +11,13 @@ standalone_unittests:
 	python -m unittest snewpdag.tests.test_inputs
 	python -m unittest snewpdag.tests.test_combinemaps
 
-test: standaline_unittests lightcurvesim
+test: standalone_unittests lightcurvesim
 	python -m unittest snewpdag.tests.test_timedistdiff
 
 runtest:
 	python -m snewpdag \
-          --input snewpdag/data/text-flux-input.json \
-          snewpdag/data/text-flux-config.json
+          --input snewpdag/data/test-flux-input.json \
+          snewpdag/data/test-flux-config.json
 
 histogram:
 	python snewpdag/trials/Normal.py hist --expt Newt | \

@@ -32,11 +32,11 @@ class NthTimeDiff(Node):
   def alert(self, data):
     index = self.last_watch_index()
     if index < 0:
-      source = data['history'][-1]
+      source = self.last_source
       logging.error("[{}] Unrecognized source {}".format(self.name, source))
       return False
     if index >= 2:
-      source = data['history'][-1]
+      source = self.last_source
       logging.error("[{}] Excess source {} detected".format(self.name, source))
       return False
 
@@ -48,7 +48,7 @@ class NthTimeDiff(Node):
         newrevoke = True
     else:
       self.valid[index] = True
-    self.h[index] = data['history']
+    self.h[index] = data['history'] # a History object
 
     # check if there's a new revocation
     # (since we only expect to observe 2 nodes,
@@ -61,7 +61,8 @@ class NthTimeDiff(Node):
       data['t0'] = self.t[0]
       data['t1'] = self.t[1]
       data['dt'] = self.t[0] - self.t[1]
-      data['history'] = ( self.h[0], self.h[1] )
+      data['history'].combine(self.h)
+      #data['history'] = ( self.h[0], self.h[1] )
       # in fact, this should even work if we return True,
       # since the payload has been updated in place.
       return data

@@ -9,6 +9,7 @@ fields:
 * t_high: float. Should be greater than t_low or last value of t_low
 """
 import logging
+import numpy as np
 
 from snewpdag.dag import Node
 

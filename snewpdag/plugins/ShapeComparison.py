@@ -54,9 +54,12 @@ class ShapeComparison(Node):
       mlist = self.metric_list(data['times'], self.history_data[index-1])
       min_dt = SHF.minimise(mlist, self.dt0, self.dt_step, self.dt_N, self.polyN, self.fit_range)
       print("dt = " + str(min_dt))
-      self.notify('alert', (self.h[0], self.h[1]), {'dt': min_dt})
+      data['dt'] = min_dt
+      data['history'].combine(self.h)
+      self.notify('alert', data)
     elif newrevoke:
-      self.notify('revoke', (self.h[0], self.h[1]), {})
+      data['history'].combine(self.h)
+      self.notify('revoke', data)
 
 
   def metric_list(self, values1, values2):

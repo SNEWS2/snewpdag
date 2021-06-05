@@ -30,12 +30,13 @@ class CombineMaps(Node):
     super().__init__(**kwargs)
 
   def alert(self, data):
-    source = data['history'][-1]
+    source = self.last_source
     if 'cl' in data and 'chi2' in data:
       logging.error('[{}] Both CL and chi2 present in map'.format(self.name))
       return False
     if 'cl' in data or 'chi2' in data:
       self.map[source] = data.copy()
+      self.map[source]['history'] = data['history'].copy() # keep local copy
       self.map[source]['valid'] = True
       return self.reevaluate(data)
     else:
@@ -43,7 +44,7 @@ class CombineMaps(Node):
       return False
 
   def revoke(self, data):
-    source = data['history'][-1]
+    source = self.last_source
     if source in self.map:
       self.map[source]['valid'] = False
       return self.reevaluate(data)
@@ -122,7 +123,8 @@ class CombineMaps(Node):
     for k in self.map:
       if self.map[k]['valid']:
         hlist.append(self.map[k]['history'])
+    data['history'].combine(hlist)
     data['action'] = 'revoke' if len(hlist) == 0 else 'alert'
-    data['history'] = tuple(hlist)
+    #data['history'] = tuple(hlist)
     return data
 
