@@ -37,7 +37,7 @@ class TestTimeDistDiff(unittest.TestCase):
              'filetype': 'tn' }
     n2.update(data)
 
-    self.assertEqual(OutputNode.last_data['history'], (('Input1',), ('Input2',), 'TimeDistDiffNode', 'Output'))
+    self.assertEqual(OutputNode.last_data['history'].emit(), (('Input1',), ('Input2',), 'TimeDistDiffNode', 'Output'))
     print(OutputNode.last_data['tdelay'])
 
   def test_many(self):

@@ -82,7 +82,7 @@ class OutputMap(Node):
     def update(self, data):
     
         action = data['action']
-        source = data['history'][-1]
+        source = data['history'].last()
         
         if action == 'alert':
             self.params[source] = data #contains res, r, errs, biases, loc
@@ -138,6 +138,6 @@ class OutputMap(Node):
         #ndata['map'] = fig
 
         #notify
-        self.notify(ndata)
+        self.notify(action, ndata)
         
         

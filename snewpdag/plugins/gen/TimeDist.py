@@ -25,7 +25,7 @@ class TimeDist(TimeDistSource):
     super().__init__(**kwargs)
     # normalize to specified mean
     area = sum(self.mu)
-    self.nmu = self.mu * sig_mean / area
+    self.nmu = self.mu * (sig_mean / area)
     self.nmu.flags.writeable = False
 
   def alert(self, data):

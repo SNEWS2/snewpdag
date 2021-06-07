@@ -5,8 +5,8 @@ Input JSON: (choose either cl or chi2)
 
 If cl or chi2 are lists rather than numpy arrays, they're converted.
 JSON input fields:
-    't':  low edges of time bins (array of floats)
-    'n':  number of events in corresponding time bins (array of floats)
+    't_low':  low edges of time bins (array of floats)
+    't_bins':  number of events in corresponding time bins (array of floats)
 
 Output JSON:
     dictionary of input pairs with time difference (TODO - pyhonise the format)
@@ -32,11 +32,13 @@ class TimeDistDiff(Node):
 
   def update(self, data):
     action = data['action']
-    source = data['history'][-1]
+    source = data['history'].last()
+    #source = data['history'][-1]
 
     if action == 'alert':
-      if 't' in data and 'n' in data:
-        self.map[source] = data
+      if 't_low' in data and 't_bins' in data:
+        self.map[source] = data.copy()
+        self.map[source]['history'] = data['history'].copy() # keep local copy
         self.map[source]['valid'] = True
       else:
         logging.error('[{}] Expected t and n arrays in time distribution'.format(self.name))
@@ -50,10 +52,10 @@ class TimeDistDiff(Node):
     elif action == 'reset':
       for source in self.map:
         self.map[source]['valid'] = False
-      self.notify(action, None, data)
+      self.notify(action, data)
       return
     elif action == 'report':
-      self.notify(action, None, data)
+      self.notify(action, data)
       return
     else:
       logging.error("[{}] Unrecognized action {}".format(self.name, action))
@@ -61,12 +63,7 @@ class TimeDistDiff(Node):
 
 
     # start constructing output data.
-    ndata = {}
-    ndata['action']=data['action']
-    ndata['id']=data['id']
-    ndata['name']=data['name']
-    ndata['history']=data['history']
-    ndata['tdelay'] = {}
+    data['tdelay'] = {}
     # do the calculation
     count=0
     #ndata = data.copy()
@@ -78,7 +75,7 @@ class TimeDistDiff(Node):
                 #here the main time difference calculation comes
                 #print(count, gettdelay(self.map[i]['t'],self.map[i]['n'],self.map[j]['t'],self.map[j]['n']))
                 #result = gettdelay(self.map[i]['t'],self.map[i]['n'],self.map[j]['t'],self.map[j]['n'])
-                ndata['tdelay'][(i,j)] = gettdelay(self.map[i]['t'],self.map[i]['n'],self.map[j]['t'],self.map[j]['n'])
+                data['tdelay'][(i,j)] = gettdelay(self.map[i]['t_low'],self.map[i]['t_bins'],self.map[j]['t_low'],self.map[j]['t_bins'])
                 #print('Hola', i, j, ndata, 'result', result)
     # notify
     # (JCT: notify if have a diff to forward)
@@ -89,8 +86,9 @@ class TimeDistDiff(Node):
         hlist.append(self.map[k]['history'])
     if len(hlist) > 1:
       action_verb = 'alert'
-      self.notify(action_verb, tuple(hlist), ndata)
-    print('I notify', ndata, result)
+      data['history'].combine(hlist)
+      self.notify(action_verb, data)
+    #print('I notify', data, result)
       
 #normalise time series for chi2
 #returns err^2 as a second output

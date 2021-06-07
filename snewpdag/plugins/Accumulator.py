@@ -19,7 +19,6 @@ class Accumulator(Node):
     self.series = []
 
   def alert(self, data):
-    source = data['history'][-1]
     if self.index:
       x = data[self.field][self.index]
     else:

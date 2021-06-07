@@ -23,7 +23,7 @@ class TestHistogram1D(unittest.TestCase):
     h.update({ 'action': 'report' })
     hh = h.last_data['histogram']
     self.assertEqual(h.last_data['action'], 'report')
-    self.assertEqual(h.last_data['history'], ('hist0',))
+    self.assertEqual(h.last_data['history'].emit(), ('hist0',))
     self.assertEqual(hh['name'], 'hist0')
     self.assertEqual(hh['nbins'], 10)
     self.assertAlmostEqual(hh['xlow'], -0.1)
@@ -55,7 +55,7 @@ class TestHistogram1D(unittest.TestCase):
     h.update({ 'action': 'report' })
     hh = h.last_data['histogram']
     self.assertEqual(h.last_data['action'], 'report')
-    self.assertEqual(h.last_data['history'], ('hist1',))
+    self.assertEqual(h.last_data['history'].emit(), ('hist1',))
     self.assertEqual(hh['name'], 'hist1')
     self.assertEqual(hh['nbins'], 10)
     self.assertAlmostEqual(hh['xlow'], -0.1)
@@ -94,7 +94,7 @@ class TestHistogram1D(unittest.TestCase):
     h.update({ 'action': 'report' })
     hh = h.last_data['histogram']
     self.assertEqual(h.last_data['action'], 'report')
-    self.assertEqual(h.last_data['history'], ('hist2',))
+    self.assertEqual(h.last_data['history'].emit(), ('hist2',))
     self.assertEqual(hh['name'], 'hist2')
     self.assertEqual(hh['nbins'], 10)
     self.assertAlmostEqual(hh['xlow'], -0.1)

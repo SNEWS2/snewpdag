@@ -14,10 +14,9 @@ class TestInputs(unittest.TestCase):
     n1.attach(n2)
     data = { 'action': 'alert', 'times': [ -0.2, 0.1, 0.125 ] };
     n1.update(data)
-    self.assertEqual(n2.last_data,
-                     { 'action': 'alert',
-                       'times': [ -0.2, 0.1, 0.125 ],
-                       'history': ( 'Input1', 'Node2' ) } )
+    self.assertEqual(n2.last_data['action'], 'alert')
+    self.assertEqual(n2.last_data['history'].emit(), ('Input1','Node2'))
+    self.assertEqual(n2.last_data['times'], [-0.2, 0.1, 0.125])
 
   def test_time_series_invalid_input(self):
     n1 = TimeSeriesInput(name='Input1')
