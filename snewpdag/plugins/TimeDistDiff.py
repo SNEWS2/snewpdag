@@ -41,7 +41,7 @@ class TimeDistDiff(Node):
         self.map[source]['history'] = data['history'].copy() # keep local copy
         self.map[source]['valid'] = True
       else:
-        logging.error('[{}] Expected t and n arrays in time distribution'.format(self.name))
+        logging.error('[{}] Expected t_low and t_bins arrays in time distribution'.format(self.name))
         return
     elif action == 'revoke':
       if source in self.map:
