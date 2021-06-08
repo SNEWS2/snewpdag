@@ -10,6 +10,7 @@ standalone_unittests:
 	python -m unittest snewpdag.tests.test_app
 	python -m unittest snewpdag.tests.test_inputs
 	python -m unittest snewpdag.tests.test_combinemaps
+	python -m unittest snewpdag.tests.test_history
 
 test: standalone_unittests lightcurvesim
 	python -m unittest snewpdag.tests.test_timedistdiff

@@ -21,7 +21,8 @@ class History:
 
   # replace history with a single item which is a list of History objects
   def combine(self, hists):
-    self.val = [ tuple( h.emit() for h in hists ) ]
+    v = [ tuple( h.emit() for h in hists ) ]
+    self.val = v
 
   # emit as a tuple
   def emit(self):
