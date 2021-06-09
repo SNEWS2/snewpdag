@@ -1,15 +1,16 @@
 """
-GenerateSGBG
+GenerateSGBG : Generate
 
 configuration:
-  mean:  mean number of events to be generated for each alert.
   seed:  random number seed (integer)
-  bg: 
+  bg:    expected background of the experiments (events in 1ms)
 
 output added to data:
   'times': times of individual events based on histogram.
            Use uniform distribution within a bin.
            Note that the array is not sorted.
+
+Author: Marta Colomer, marta.colomer@ulb.be
 """
 import logging
 from statistics import mean
@@ -19,19 +20,18 @@ from . import TimeDistSource
 
 class GenerateSGBG(TimeDistSource):
 
-  def __init__(self, mean, seed, bg, **kwargs):
-    self.mean = mean
+  def __init__(self, seed, bg, **kwargs):
     logging.info("GenerateSGBG: mean {} seed {} bg {}".format(mean, seed, bg))
     self.bg = bg
     self.rng = np.random.default_rng(seed)
     super().__init__(**kwargs)
     self.tmin = -10
     self.tmax = 10
-    self.tdelay = 0 #int(np.random.uniform(-20,20))
     
   def alert(self, data):
     logging.info('times are {}'.format(self.t[-1]))
     new_times = np.arange(self.tmin,self.tmax,0.001)
+    
     self.tdelay = int(np.random.uniform(-20,20))
     t_true = self.tdelay
     logging.info('t_true {}'.format(t_true))

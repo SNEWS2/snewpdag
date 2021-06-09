@@ -41,7 +41,7 @@ class TimeDistDiff(Node):
         self.map[source]['history'] = data['history'].copy() # keep local copy
         self.map[source]['valid'] = True
       else:
-        logging.error('[{}] Expected t and n arrays in time distribution'.format(self.name))
+        logging.error('[{}] Expected t_low and t_bins arrays in time distribution'.format(self.name))
         return
     elif action == 'revoke':
       if source in self.map:
@@ -64,6 +64,9 @@ class TimeDistDiff(Node):
 
     # start constructing output data.
     data['tdelay'] = {}
+    data['t_true'] = {}
+    data['dt_true'] = -9999999
+
     # do the calculation
     count=0
     #ndata = data.copy()
@@ -73,10 +76,11 @@ class TimeDistDiff(Node):
             if i < j:
                 count+=1
                 #here the main time difference calculation comes
-                #print(count, gettdelay(self.map[i]['t'],self.map[i]['n'],self.map[j]['t'],self.map[j]['n']))
-                #result = gettdelay(self.map[i]['t'],self.map[i]['n'],self.map[j]['t'],self.map[j]['n'])
+                result = gettdelay(self.map[i]['t_low'],self.map[i]['t_bins'],self.map[j]['t_low'],self.map[j]['t_bins'])[0]
                 data['tdelay'][(i,j)] = gettdelay(self.map[i]['t_low'],self.map[i]['t_bins'],self.map[j]['t_low'],self.map[j]['t_bins'])
-                #print('Hola', i, j, ndata, 'result', result)
+                data['t_true'][(i,j)] = (self.map[i]['t_true'], self.map[j]['t_true'])
+                data['dt_true'] = result-(self.map[i]['t_true']-self.map[j]['t_true'])
+   
     # notify
     # (JCT: notify if have a diff to forward)
     #action_verb = 'revoke' if len(hlist) <= 1 else 'alert'
@@ -88,7 +92,6 @@ class TimeDistDiff(Node):
       action_verb = 'alert'
       data['history'].combine(hlist)
       self.notify(action_verb, data)
-    #print('I notify', data, result)
       
 #normalise time series for chi2
 #returns err^2 as a second output
