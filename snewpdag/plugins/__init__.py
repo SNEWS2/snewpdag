@@ -17,4 +17,4 @@ from .Accumulator import Accumulator
 from .SeriesBinner import SeriesBinner
 from .BinnedAccumulator import BinnedAccumulator
 from .ActionFilter import ActionFilter
-
+from .Validator import Validator
