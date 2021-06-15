@@ -32,13 +32,13 @@ import numpy as np
 from snewpdag.dag import Node
 
 class SeriesBinner(Node):
-  def __init__(self, in_field, field2, nbins, xlow, xhigh,
+  def __init__(self, in_field, in_field2, nbins, xlow, xhigh,
                out_xfield, out_yfield, **kwargs):
     self.nbins = nbins
     self.xlow = xlow
     self.xhigh = xhigh
     self.field = in_field
-    self.field2 = field2
+    self.field2 = in_field2
     self.xname = out_xfield
     self.yname = out_yfield
     self.out_field = kwargs.pop('out_field', None)
@@ -63,7 +63,7 @@ class SeriesBinner(Node):
           'xlow': self.xlow,
           'xhigh': self.xhigh,
           'in_field': self.field,
-          'field2': self.field2,
+          'in_field2': self.field2,
           'out_xfield': self.xname,
           'out_yfield': self.yname,
           'count': self.count,
