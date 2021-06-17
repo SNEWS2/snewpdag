@@ -12,7 +12,7 @@ Input: data as payload + key_type
 
 from snewpdag.dag import Node
 
-class Validator_keytype(Node):
+class ValidateKeyType(Node):
     def __init__(self, **kwargs):
         self.key_type = kwargs.pop('key_type', None)
         super().__init__(**kwargs)
@@ -21,7 +21,4 @@ class Validator_keytype(Node):
         return isinstance(data, self.key_type)
     
     def alert(self, data):
-        if self.check_type(data):
-            return True
-        else:
-            return False
+        return self.check_type(data)

@@ -12,7 +12,7 @@ Input: data as payload + search_key
 import logging
 from snewpdag.dag import Node
 
-class Validator_key(Node):
+class ValidateKey(Node):
     def __init__(self, **kwargs):
         self.search_key = kwargs.pop('search_key', None)
         super().__init__(**kwargs)
@@ -25,7 +25,4 @@ class Validator_key(Node):
             return False
     
     def alert(self, data):
-        if self.check_key(data):
-            return True
-        else:
-            return False
+        return self.check_key(data)

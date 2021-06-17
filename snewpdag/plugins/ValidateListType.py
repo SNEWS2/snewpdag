@@ -10,14 +10,22 @@ based on the type we want in the input,
 and if a wrong type is found, such element is removed
 and the removal is logged.
 
-Input: data as payload + key_type
+min_fraction is the maximum fraction of numbers with wrong key_type allowed
+that we don't need to consume the action.
+e.g. min_fraction = 0.1 (i.e. 10%)
+I. if there are 10% or fewer elements in the list with wrong key type,
+we simply remove the element and log the removal.
+II. if there are more than 10% with wrong key type, we consume the action.
+
+Input: data as payload + min_fraction + key_type
 '''
 
 import logging
 from snewpdag.dag import Node
 
-class Validator_listtype(Node):
-    def __init__(self, **kwargs):
+class ValidateListType(Node):
+    def __init__(self, max_fraction, **kwargs):
+        self.max_fraction = max_fraction
         self.key_type = kwargs.pop('key_type', None)
         super().__init__(**kwargs)
     
@@ -27,7 +35,7 @@ class Validator_listtype(Node):
         for x in data:
             if isinstance(x, self.key_type) == False:
                 remove_element.append(x)
-        if len(remove_element) <= (data_len*0.1):
+        if len(remove_element) <= (data_len * self.max_fraction):
             logging.error('{} elements in list are not the desired type of {} and are deleted'.format(len(remove_element), self.key_type))
             for x in remove_element:
                 data.remove(x)
