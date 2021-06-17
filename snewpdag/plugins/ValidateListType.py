@@ -33,7 +33,7 @@ class ValidateListType(Node):
         data_len = len(data)
         remove_element = []
         for x in data:
-            if isinstance(x, self.key_type) == False:
+            if type(x).__name__ != self.key_type:
                 remove_element.append(x)
         if len(remove_element) <= (data_len * self.max_fraction):
             logging.error('{} elements in list are not the desired type of {} and are deleted'.format(len(remove_element), self.key_type))
