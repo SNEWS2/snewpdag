@@ -5,9 +5,7 @@ Using the method of Segerlund, O'Sullivan, O'Connor from the paper
 This plugin is for calculating the distance of a supernova using neutrino data.
 '''
 
-import logging
 import numpy as np
-import healpy as hp
 from snewpdag.dag import Node
 
 class DistanceCal(Node):
@@ -16,12 +14,15 @@ class DistanceCal(Node):
 
     # N1 / N2 = (d2 / d1)^2
     def dist_ratio(self, data):
+        # placeholder values
         N1 = 10000  # 10000 counts (standard candle)
         d1 = 10     # 10 kpc
         # data = N2
         d2 = np.sqrt(N1 / data) * d1
         return d2
 
+    # the below lines for (potential) future use
+    '''
     # data[1] = N(100 - 150 ms); data[0] = N(0 - 50 ms)
     def f_delta(self, data):
         return data[1]/data[0]
@@ -34,3 +35,4 @@ class DistanceCal(Node):
         # f_delta = slope * data[0] + y_intercept
         data[0] = (f_delta - y_intercept) / slope
         return self.dist_ratio(data[0])
+    '''
