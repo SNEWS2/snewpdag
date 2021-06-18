@@ -49,3 +49,21 @@ class ValidateListType(Node):
             return True
         else:
             return False
+    
+    def revoke(self, data):
+        if self.check_listtype(data) != False:
+            return True
+        else:
+            return False
+
+    def reset(self, data):
+        if self.check_listtype(data) != False:
+            return True
+        else:
+            return False
+
+    def report(self, data):
+        if self.check_listtype(data) != False:
+            return True
+        else:
+            return False

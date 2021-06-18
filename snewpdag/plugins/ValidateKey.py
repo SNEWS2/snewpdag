@@ -26,3 +26,12 @@ class ValidateKey(Node):
     
     def alert(self, data):
         return self.check_key(data)
+
+    def revoke(self, data):
+        return self.check_key(data)
+
+    def reset(self, data):
+        return self.check_key(data)
+
+    def report(self, data):
+        return self.check_key(data)

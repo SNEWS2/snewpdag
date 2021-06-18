@@ -18,10 +18,16 @@ class ValidateKeyType(Node):
         super().__init__(**kwargs)
 
     def check_type(self, data): # check that the key corresponed to the correct type
-        if type(data).__name__ == self.key_type:
-            return True
-        else:
-            return False
+        return type(data).__name__ == self.key_type
     
     def alert(self, data):
+        return self.check_type(data)
+    
+    def reset(self, data):
+        return self.check_type(data)
+    
+    def revoke(self, data):
+        return self.check_type(data)
+    
+    def report(self, data):
         return self.check_type(data)
