@@ -18,4 +18,5 @@ from .SeriesBinner import SeriesBinner
 from .BinnedAccumulator import BinnedAccumulator
 from .ActionFilter import ActionFilter
 
-from .DistanceCal import DistanceCal
+from .DistanceRatio import DistanceRatio
+from .DistanceFit import DistanceFit
