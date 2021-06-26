@@ -20,3 +20,4 @@ from .ActionFilter import ActionFilter
 
 from .DistanceRatio import DistanceRatio
 from .DistanceFit import DistanceFit
+from .GaussianFit import GaussianFit
