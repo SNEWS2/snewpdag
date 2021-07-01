@@ -12,8 +12,8 @@ Input: data as payload
 from snewpdag.dag import Node
 
 class ValidateSort(Node):
-    def __init__(self, listorder, **kwargs):
-        self.listorder = listorder
+    def __init__(self, list_order, **kwargs):
+        self.list_order = list_order
         super().__init__(**kwargs)
     
     def check_sorted(self, data):
@@ -29,13 +29,25 @@ class ValidateSort(Node):
             temp = x
 
         if ascending_flag == 1:
-            self.listorder = 'ascending'
+            self.list_order = 'ascending'
             print('Input is sorted in ascending order')
         elif descending_flag == 1:
-            self.listorder = 'descending'
+            self.list_order = 'descending'
             print('Input is sorted in descending order')
         else:
-            self.listorder = None
+            self.list_order = None
             print('Input is not sorted.')
         
-        return self.listorder
+        return self.list_order
+    
+    def alert(self):
+        return True
+    
+    def revoke(self):
+        return True
+
+    def reset(self):
+        return True
+
+    def report(self):
+        return True

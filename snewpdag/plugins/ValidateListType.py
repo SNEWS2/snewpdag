@@ -24,9 +24,9 @@ import logging
 from snewpdag.dag import Node
 
 class ValidateListType(Node):
-    def __init__(self, max_fraction, **kwargs):
+    def __init__(self, max_fraction, key_type, **kwargs):
         self.max_fraction = max_fraction
-        self.key_type = kwargs.pop('key_type', None)
+        self.key_type = key_type
         super().__init__(**kwargs)
     
     def check_listtype(self, data): # same as above but we check elements of a list

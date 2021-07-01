@@ -74,7 +74,7 @@ class TestValidator(unittest.TestCase):
         self.assertEqual(h1.check_listtype(data[1]['dt']), [0.0, 1.0, 2.1, 9.3, 4.0, 14.5, 9.0, 2.4, 5.3, 18.0, 19.4, 20.3, 14.0, 9.3, 4.0, 14.5, 9.0, 2.4, 5.3])
     
     def test_plugin5(self):
-        h1 = ValidateSort(listorder = '', name = 'val0')
+        h1 = ValidateSort(list_order = '', name = 'val0')
         data = [
             {'dt': [0.0, 0.5, 1.0, 3.2, 5.3]},
             {'dt': [5.3, 3.2, 1.0, 0.5, 0.0]},
