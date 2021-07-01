@@ -46,7 +46,8 @@ class DistanceFit(Node):
             f_delta = self.f_delta(data[i])
             # f_delta = slope * count_num + y_intercept
             count_num = (f_delta - y_intercept) / slope     # constrained count_num for 0-50 ms
-            dist.append(h.dist_ratio(count_num))
-            dist_error.append(h.dist_error(count_num, data_error[0][0]))
+            if count_num > 0:
+                dist.append(h.dist_ratio(count_num))
+                dist_error.append(h.dist_error(count_num, data_error[0][0]))
 
         return dist, dist_error
