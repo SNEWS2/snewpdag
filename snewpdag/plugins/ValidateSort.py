@@ -14,6 +14,10 @@ from snewpdag.dag import Node
 class ValidateSort(Node):
     def __init__(self, list_order, **kwargs):
         self.list_order = list_order
+        self.on_alert = kwargs.pop('on_alert', None)
+        self.on_reset = kwargs.pop('on_reset', None)
+        self.on_revoke = kwargs.pop('on_revoke', None)
+        self.on_report = kwargs.pop('on_report', None)
         super().__init__(**kwargs)
     
     def check_sorted(self, data):
@@ -40,14 +44,26 @@ class ValidateSort(Node):
         
         return self.list_order
     
-    def alert(self):
-        return True
+    def alert(self, data):
+        if self.on_alert:
+            return self.check_sorted(data)
+        else:
+            return False
     
-    def revoke(self):
-        return True
+    def revoke(self, data):
+        if self.on_revoke:
+            return self.check_sorted(data)
+        else:
+            return False
 
-    def reset(self):
-        return True
+    def reset(self, data):
+        if self.on_reset:
+            return self.check_sorted(data)
+        else:
+            return False
 
-    def report(self):
-        return True
+    def report(self, data):
+        if self.on_report:
+            return self.check_sorted(data)
+        else:
+            return False

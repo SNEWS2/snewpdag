@@ -15,19 +15,35 @@ from snewpdag.dag import Node
 class ValidateKeyType(Node):
     def __init__(self, **kwargs):
         self.key_type = kwargs.pop('key_type', None)
+        self.on_alert = kwargs.pop('on_alert', None)
+        self.on_reset = kwargs.pop('on_reset', None)
+        self.on_revoke = kwargs.pop('on_revoke', None)
+        self.on_report = kwargs.pop('on_report', None)
         super().__init__(**kwargs)
 
     def check_type(self, data): # check that the key corresponed to the correct type
         return type(data).__name__ == self.key_type
     
     def alert(self, data):
-        return self.check_type(data)
-    
-    def reset(self, data):
-        return self.check_type(data)
+        if self.on_alert:
+            return self.check_type(data)
+        else:
+            return False
     
     def revoke(self, data):
-        return self.check_type(data)
-    
+        if self.on_revoke:
+            return self.check_type(data)
+        else:
+            return False
+
+    def reset(self, data):
+        if self.on_reset:
+            return self.check_type(data)
+        else:
+            return False
+
     def report(self, data):
-        return self.check_type(data)
+        if self.on_report:
+            return self.check_type(data)
+        else:
+            return False

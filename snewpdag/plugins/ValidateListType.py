@@ -27,43 +27,48 @@ class ValidateListType(Node):
     def __init__(self, max_fraction, key_type, **kwargs):
         self.max_fraction = max_fraction
         self.key_type = key_type
+        self.on_alert = kwargs.pop('on_alert', None)
+        self.on_reset = kwargs.pop('on_reset', None)
+        self.on_revoke = kwargs.pop('on_revoke', None)
+        self.on_report = kwargs.pop('on_report', None)
         super().__init__(**kwargs)
     
     def check_listtype(self, data): # same as above but we check elements of a list
         data_len = len(data)
+        data_copy = data.copy()
         remove_element = []
-        for x in data:
+        for x in data_copy:
             if type(x).__name__ != self.key_type:
                 remove_element.append(x)
         if len(remove_element) <= (data_len * self.max_fraction):
             logging.error('{} elements in list are not the desired type of {} and are deleted'.format(len(remove_element), self.key_type))
             for x in remove_element:
-                data.remove(x)
-            return data
+                data_copy.remove(x)
+            return data_copy
         else:
             logging.error('More than 10% in list are not the desired type of {} and action is consumed'.format(self.key_type))
             return False
     
     def alert(self, data):
-        if self.check_listtype(data) != False:
-            return True
+        if self.on_alert:
+            return self.check_listtype(data)
         else:
             return False
     
     def revoke(self, data):
-        if self.check_listtype(data) != False:
-            return True
+        if self.on_revoke:
+            return self.check_listtype(data)
         else:
             return False
 
     def reset(self, data):
-        if self.check_listtype(data) != False:
-            return True
+        if self.on_reset:
+            return self.check_listtype(data)
         else:
             return False
 
     def report(self, data):
-        if self.check_listtype(data) != False:
-            return True
+        if self.on_report:
+            return self.check_listtype(data)
         else:
             return False
