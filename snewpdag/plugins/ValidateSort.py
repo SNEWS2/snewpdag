@@ -6,9 +6,15 @@ repeat this sort of validation.
 check_sorted() is for numbers in a list.
 It checks whether it is sorted in ascending/descending order or not sorted.
 
-Input: data as payload
+Constructor arguments:
+list_order: the preferred order if the data is not sorted
+on_alert: pass an alert downstream
+
+Input:
+data as payload
 '''
 
+import logging
 from snewpdag.dag import Node
 
 class ValidateSort(Node):
@@ -24,7 +30,7 @@ class ValidateSort(Node):
         temp = data[0]
         ascending_flag = 1
         descending_flag = 1
-
+        
         for x in data:
             if x < temp: # check ascending
                 ascending_flag = 0
@@ -33,37 +39,43 @@ class ValidateSort(Node):
             temp = x
 
         if ascending_flag == 1:
-            self.list_order = 'ascending'
-            print('Input is sorted in ascending order')
+            order = 'ascending'
+            logging.info('Input is sorted in ascending order')
+            return data, order
         elif descending_flag == 1:
-            self.list_order = 'descending'
-            print('Input is sorted in descending order')
+            order = 'descending'
+            logging.info('Input is sorted in descending order')
+            return data, order
         else:
-            self.list_order = None
-            print('Input is not sorted.')
-        
-        return self.list_order
+            data_copy = data.copy()
+            if self.list_order == 'ascending':
+                data_copy.sort()
+                logging.info('Input is not sorted and is now sorted in ascending order')
+            elif self.list_order == 'descending':
+                data_copy.sort(reverse=True)
+                logging.info('Input is not sorted and is now sorted in descending order')
+            return data_copy, self.list_order     
     
     def alert(self, data):
         if self.on_alert:
-            return self.check_sorted(data)
+            return self.check_sorted(data)[0]
         else:
             return False
     
     def revoke(self, data):
         if self.on_revoke:
-            return self.check_sorted(data)
+            return self.check_sorted(data)[0]
         else:
             return False
 
     def reset(self, data):
         if self.on_reset:
-            return self.check_sorted(data)
+            return self.check_sorted(data)[0]
         else:
             return False
 
     def report(self, data):
         if self.on_report:
-            return self.check_sorted(data)
+            return self.check_sorted(data)[0]
         else:
             return False
