@@ -20,7 +20,7 @@ class DistCalc2(Node):
         self.detector = detector
         super().__init__(**kwargs)
     
-    def distcalc2(self,data)
+    def dist_calc2(self,data)
         #dict of f_delta-N50 fit parameters at 10kpc
         #{'detector, ordering': [m, b, progenitor model variance]}
         fit_par = {'IceCube, NO': [0.000182, 0.779, 0.11], \

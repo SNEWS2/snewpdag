@@ -21,7 +21,7 @@ class DistCalc1(Node):
         self.detector = detector
         super().__init__(**kwargs)
     
-    def distcalc1(self,data)
+    def dist_calc1(self,data)
         #dict of IMF weighted 0-50ms signals and errors
         #{'detector, ordering': [IMF signal, error, frac error]}
         IMFsignal = {'IceCube, NO': [9169.96028097276, 1536.248563196319, 0.1675305580531208], \
