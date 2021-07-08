@@ -16,13 +16,14 @@ from snewpdag.dag import Node
 
 class DistCalc2(Node):
     
-    def _init_(self, detector,**kwargs)
+    def __init__(self, detector, **kwargs):
         self.detector = detector
         super().__init__(**kwargs)
     
-    def dist_calc2(self,data)
-        #dict of f_delta-N50 fit parameters at 10kpc
-        #{'detector, ordering': [m, b, progenitor model variance]}
+    def dist_calc2(self, data):
+        # data: [N(0-50ms), N(100-150ms)]
+        # dict of f_delta-N50 fit parameters at 10kpc
+        # {'detector, ordering': [m, b, progenitor model variance]}
         fit_par = {'IceCube, NO': [0.000182, 0.779, 0.11], \
                'IceCube, IO': [0.000125, 0.342, 0.0656], \
                'HK, NO': [0.00152, 0.894, 0.0973], \
@@ -34,16 +35,13 @@ class DistCalc2(Node):
                'JUNO, NO': [0.0109, 0.746, 0.0909], \
                'JUNO, IO': [0.0088, 0.319, 0.0515]}
         
-        #N50 = data[50]
-        
-        #f_delta = (data[150]-data[100])/data[50]
-        f_delta = 2.5
+        N50 = data[0]
+        dist_par = 10.0
+        f_delta = data[1]/data[0]
         m = fit_par[self.detector][0]
         b = fit_par[self.detector][1]
         N50_exp = (f_delta-b)/m
         
-        dist2 = np.sqrt(N50_exp*10**2/N50)
+        dist2 = dist_par*np.sqrt(N50_exp/N50)
         
-        
-        
-    return dist2
+        return dist2

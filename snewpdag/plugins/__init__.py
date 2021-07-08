@@ -18,3 +18,5 @@ from .SeriesBinner import SeriesBinner
 from .BinnedAccumulator import BinnedAccumulator
 from .ActionFilter import ActionFilter
 
+from .DistCalc1 import DistCalc1
+from .DistCalc2 import DistCalc2
