@@ -47,6 +47,6 @@ class DistCalc1(Node):
         
         dist_par = 10.0
         dist1 = dist_par*np.sqrt(self.IMF_signal[self.detector][0]/N50)
-        dist1_err = 0.5*dist1*(np.sqrt((N50_err/N50)**2 + (self.IMF_signal[self.detector][2]**2)))
+        dist1_err = 0.5*dist1*(np.sqrt((N50_err/N50)**2 + (self.IMF_signal[self.detector][2])**2))
         
         return dist1, dist1_err
