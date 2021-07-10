@@ -17,10 +17,10 @@ Constructor arguments:
 import logging
 import numpy as np
 from snewpdag.dag import Node
-from DistCalc1 import DistCalc1
-from DistCalc2 import DistCalc2
+from snewpdag.plugins import DistCalc1
+from snewpdag.plugins import DistCalc2
 
-class MeanDist(Node)
+class MeanDist(Node):
     
     def __init__(self, detector, **kwargs):
         self.DistCalc1 = DistCalc1(detector)
@@ -34,4 +34,4 @@ class MeanDist(Node)
         mdist = (dist1/dist1_err**2 + dist2/dist2_err**2)/ (1.0/dist1_err**2+1.0/dist2_err**2)
         mdist_err = 1.0/np.sqrt(1.0/dist1_err**2+1.0/dist2_err**2)
     
-    return mdist, mdist_err
+        return mdist, mdist_err

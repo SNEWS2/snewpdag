@@ -39,12 +39,10 @@ class DistCalc2(Node):
         super().__init__(**kwargs)
     
     def dist_calc2(self, data):
-        # data: [N(0-50ms), N(100-150ms)]
-        
-        bg = np.mean(data[0:999]) #using first 1000 bins to find background
-        N50 = np.sum((data[1000:1499]-bg)) #N(0-50ms) corrected for background
+        bg = np.mean(data[0:1000]) #using first 1000 bins to find background
+        N50 = np.sum(data[1000:1500]-bg) #N(0-50ms) corrected for background
         N50_err = np.sqrt(N50) #assume Gaussian
-        N100_150 = np.sum((data[2000:2499]-bg)) #N(100-150ms) corrected for background
+        N100_150 = np.sum(data[2000:2500]-bg) #N(100-150ms) corrected for background
         N100_150_err = np.sqrt(N100_150) #assume Gaussian
         f_delta = N100_150/N50
         f_delta_err = f_delta*np.sqrt((N50_err/N50)**2+(N100_150_err/N100_150)**2)

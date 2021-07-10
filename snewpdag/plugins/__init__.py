@@ -20,3 +20,4 @@ from .ActionFilter import ActionFilter
 
 from .DistCalc1 import DistCalc1
 from .DistCalc2 import DistCalc2
+from .MeanDist import MeanDist

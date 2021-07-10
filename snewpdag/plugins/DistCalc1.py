@@ -41,12 +41,12 @@ class DistCalc1(Node):
     
     def dist_calc1(self, data):
 
-        bg = np.mean(data[0:999]) #using first 1000 bins to find background
-        N50 = np.sum((data[1000:1499]-bg)) #correct for background
+        bg = np.mean(data[0:1000]) #using first 1000 bins to find background
+        N50 = np.sum(data[1000:1500]-bg) #correct for background
         N50_err = np.sqrt(N50) #assume Gaussian
         
         dist_par = 10.0
         dist1 = dist_par*np.sqrt(self.IMF_signal[self.detector][0]/N50)
-        dist1_err = 0.5*dist1*(np.sqrt((N50_err/N50)**2 + (self.IMF_signal[self.detector][2]**2))
+        dist1_err = 0.5*dist1*(np.sqrt((N50_err/N50)**2 + (self.IMF_signal[self.detector][2]**2)))
         
         return dist1, dist1_err
