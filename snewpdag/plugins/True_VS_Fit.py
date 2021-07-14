@@ -1,4 +1,9 @@
 """
+Code which computes the difference between:
+i) True time delay between det1 and det2
+ii) Estimated/measured time delay
+Provides time uncertainty as ouput
+
 Author: M. Colomer (marta.colomer@ulb.be)
 
 """
@@ -12,11 +17,6 @@ class True_VS_Fit(Node):
     self.map = {}
 
     self.field = in_field
-
-    v = kwargs.pop('in_index', None)
-    self.index = tuple(v) if isinstance(v, list) else v
-    v = kwargs.pop('in_index2', None)
-    self.index2 = tuple(v) if isinstance(v, list) else v
 
     super().__init__(**kwargs)
 
