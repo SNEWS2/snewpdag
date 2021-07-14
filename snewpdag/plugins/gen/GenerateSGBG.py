@@ -1,15 +1,19 @@
 """
 GenerateSGBG
 
+Lightcurve generator: simulates a random time delay for the signal at a given distance as well as a poisson background on top of it
+
 configuration:
-  mean:  mean number of events to be generated for each alert.
+  dist: distance to the source in [kpc]
   seed:  random number seed (integer)
-  bg: 
+  bg: expected background of the experiment
 
 output added to data:
   'times': times of individual events based on histogram.
            Use uniform distribution within a bin.
            Note that the array is not sorted.
+
+Author: M. Colomer (marta.colomer@ulb.be)
 """
 import logging
 from statistics import mean
@@ -19,15 +23,15 @@ from . import TimeDistSource
 
 class GenerateSGBG(TimeDistSource):
 
-  def __init__(self, mean, seed, bg, **kwargs):
-    self.mean = mean
-    logging.info("GenerateSGBG: mean {} seed {} bg {}".format(mean, seed, bg))
+  def __init__(self, dist, seed, bg, **kwargs):
+    logging.info("GenerateSGBG: dist {} seed {} bg {}".format(dist, seed, bg))
     self.bg = bg
+    self.dist = dist
     self.rng = np.random.default_rng(seed)
     super().__init__(**kwargs)
     self.tmin = -10
     self.tmax = 10
-    self.tdelay = 0 #int(np.random.uniform(-20,20))
+    self.tdelay = -9999
     
   def alert(self, data):
     logging.info('times are {}'.format(self.t[-1]))
@@ -41,7 +45,7 @@ class GenerateSGBG(TimeDistSource):
     for i,ti in enumerate(new_times):
       bg = self.bg
       if ti>=t_true/1000. and ti<self.t[-1]-0.001+t_true/1000.:                                                                                   
-        signal = self.mu[i-t_true+self.tmin*1000-1]
+        signal = self.mu[i-t_true+self.tmin*1000-1]*(10./dist)**2
         new_data.append(signal+bg)
       else:
         new_data.append(bg)
@@ -59,7 +63,7 @@ class GenerateSGBG(TimeDistSource):
     a = self.rng.random(nev) * dt + t0
     a.flags.writeable = False
 
-    ngen = { 'times': a, 'gen_t_delay': t_true }
+    ngen = { 'times': a, 't_true': t_true }
     if 'gen' in data:
       data['gen'] += (ngen, )
     else:
