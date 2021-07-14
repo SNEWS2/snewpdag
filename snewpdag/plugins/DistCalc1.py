@@ -12,6 +12,10 @@ Constructor arguments:
     detector: string, "detector name, ordering" ,
               one of ["IceCube, NO","IceCube, IO","HK, NO","HK, IO","SK, NO","SK, IO",
               "DUNE, NO","DUNE, IO","JUNO, NO","JUNO, IO"]
+    in_field: string, "count",
+              to get the count numbers from data["count"]
+    out_field: string, "dist" (as an example),
+              used for adding/updating the field in the data dict
               
 '''
 
@@ -35,14 +39,15 @@ class DistCalc1(Node):
                'JUNO, NO': [128.54796152661447, 20.633251789516653, 0.16051014379753317], \
                'JUNO, IO': [135.26455501942974, 18.91887993385422, 0.13986576107197238]}
     
-    def __init__(self, detector, **kwargs):
+    def __init__(self, detector, in_field, out_field, **kwargs):
         self.detector = detector
+        self.in_field = in_field
+        self.out_field = out_field
         super().__init__(**kwargs)
     
     def dist_calc1(self, data):
-
-        bg = np.mean(data[0:1000]) #using first 1000 bins to find background
-        N50 = np.sum(data[1000:1500]-bg) #correct for background
+        bg = np.mean(data[self.in_field][0:1000]) #using first 1000 bins to find background
+        N50 = np.sum(data[self.in_field][1000:1500]-bg) #correct for background
         N50_err = np.sqrt(N50) #assume Gaussian
         
         dist_par = 10.0
@@ -50,3 +55,18 @@ class DistCalc1(Node):
         dist1_err = 0.5*dist1*(np.sqrt((N50_err/N50)**2 + (self.IMF_signal[self.detector][2])**2))
         
         return dist1, dist1_err
+
+    def alert(self, data):
+        dist1, dist1_err = self.dist_calc1(data)
+        d = { self.out_field: [dist1, dist1_err] }
+        data.update(d)
+        return True
+    
+    def revoke(self, data):
+        return True
+
+    def reset(self, data):
+        return True
+
+    def report(self, data):
+        return True
