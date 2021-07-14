@@ -43,8 +43,8 @@ class Combine(Node):
     # histograms - only works if all of them have the same spec
     nodef = True
     for d in data['gen']:
-      if 'gen_t_delay' in d:
-        t_true = d['gen_t_delay']
+      if 't_true' in d:
+        data['t_true'] = d['t_true']
       if 't_bins' in d and 't_low' in d and 't_high' in d:
         if nodef:
           tb = np.array(d['t_bins'])
@@ -65,8 +65,8 @@ class Combine(Node):
       data['t_high'] = th
       data['t_bins'] = tb
       data['t_bins'].flags.writeable = False
-    data['t_true'] = t_true  
-    print(t_true, data['t_true'])
+   
+    print(data['t_true'])
     #exit()
     return True
 
