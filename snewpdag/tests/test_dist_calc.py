@@ -16,6 +16,7 @@ class TestDistCalc(unittest.TestCase):
         h3 = MeanDist('IceCube, NO', 'count', 'dist', name = 'dist2')
 
         temp = []
+        bg_temp = 100 #background count
         for i in range(0,1000):
             temp.append(0)
         for i in range(1000,1500):
@@ -24,6 +25,8 @@ class TestDistCalc(unittest.TestCase):
             temp.append(0)
         for i in range(2000,2500):
             temp.append(6)
+        
+        temp = [i+bg_temp for i in temp] #constant background
         data = { 'count': temp }
 
         self.assertAlmostEqual(h1.dist_calc1(data)[0], 30.28194228)
