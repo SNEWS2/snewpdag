@@ -58,7 +58,7 @@ class DistCalc1(Node):
 
     def alert(self, data):
         dist1, dist1_err = self.dist_calc1(data)
-        d = { self.out_field: [dist1, dist1_err] }
+        d = { self.out_field: (dist1, dist1_err) }
         data.update(d)
         return True
     

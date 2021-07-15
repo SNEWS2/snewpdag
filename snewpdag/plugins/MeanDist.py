@@ -46,7 +46,7 @@ class MeanDist(Node):
 
     def alert(self, data):
         mdist, mdist_err = self.mean_dist(data)
-        d = { self.out_field: [mdist, mdist_err] }
+        d = { self.out_field: (mdist, mdist_err) }
         data.update(d)
         return True
     
