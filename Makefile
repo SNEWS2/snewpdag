@@ -32,6 +32,10 @@ trial2:
 	python snewpdag/trials/Simple.py Control -n 10 | \
           python -m snewpdag --log INFO --jsonlines snewpdag/data/test-liq-config.py
 
+distcalc_trial:
+	python snewpdag/trials/Simple.py Control -n 1000 | \
+          python -m snewpdag --log INFO --jsonlines snewpdag/data/test-meandist-config.csv
+          
 init:
 	pip install -r requirements.txt
 
