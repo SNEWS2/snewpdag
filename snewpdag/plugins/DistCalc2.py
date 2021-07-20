@@ -37,17 +37,18 @@ class DistCalc2(Node):
                'JUNO, NO': [0.0109, 0.746, 0.0909], \
                'JUNO, IO': [0.0088, 0.319, 0.0515]}
     
-    def __init__(self, detector, in_field, out_field, **kwargs):
+    def __init__(self, detector, in_field, out_field, t0, **kwargs):
         self.detector = detector
         self.in_field = in_field
         self.out_field = out_field
+        self.t0 = t0
         super().__init__(**kwargs)
     
     def dist_calc2(self, data):
-        bg = np.mean(data[self.in_field][0:1000]) #using first 1000 bins to find background
-        N50 = np.sum(data[self.in_field][1000:1500]-bg) #N(0-50ms) corrected for background
+        bg = np.mean(data[self.in_field][self.t0-1000: self.t0]) #using first 1000 bins to find background
+        N50 = np.sum(data[self.in_field][self.t0: self.t0+500]-bg) #N(0-50ms) corrected for background
         N50_err = np.sqrt(N50) #assume Gaussian
-        N100_150 = np.sum(data[self.in_field][2000:2500]-bg) #N(100-150ms) corrected for background
+        N100_150 = np.sum(data[self.in_field][self.t0+1000: self.t0+1500]-bg) #N(100-150ms) corrected for background
         N100_150_err = np.sqrt(N100_150) #assume Gaussian
         f_delta = N100_150/N50
         f_delta_err = f_delta*np.sqrt((N50_err/N50)**2+(N100_150_err/N100_150)**2)

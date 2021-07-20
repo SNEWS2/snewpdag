@@ -11,9 +11,9 @@ from snewpdag.plugins import MeanDist
 class TestDistCalc(unittest.TestCase):
 
     def test_plugin0(self):
-        h1 = DistCalc1('IceCube, NO', 'count', 'dist', name = 'dist0')
-        h2 = DistCalc2('IceCube, NO', 'count', 'dist', name = 'dist1')
-        h3 = MeanDist('IceCube, NO', 'count', 'dist', name = 'dist2')
+        h1 = DistCalc1('IceCube, NO', 'count', 'dist', 1000, name = 'dist0')
+        h2 = DistCalc2('IceCube, NO', 'count', 'dist', 1000, name = 'dist1')
+        h3 = MeanDist('IceCube, NO', 'count', 'dist', 1000, name = 'dist2')
 
         temp = []
         bg_temp = 100 #background count

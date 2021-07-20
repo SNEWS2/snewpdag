@@ -26,15 +26,16 @@ from snewpdag.plugins import DistCalc2
 
 class MeanDist(Node):
     
-    def __init__(self, detector, in_field, out_field, **kwargs):
+    def __init__(self, detector, in_field, out_field, t0, **kwargs):
         self.detector = detector
         self.in_field = in_field
         self.out_field = out_field
+        self.t0 = t0
         super().__init__(**kwargs)
     
     def mean_dist(self, data):
-        h1 = DistCalc1(self.detector, self.in_field, self.out_field, name = self.name)
-        h2 = DistCalc2(self.detector, self.in_field, self.out_field, name = self.name)  
+        h1 = DistCalc1(self.detector, self.in_field, self.out_field, self.t0, name = self.name)
+        h2 = DistCalc2(self.detector, self.in_field, self.out_field, self.t0, name = self.name)  
 
         dist1, dist1_err = h1.dist_calc1(data)
         dist2, dist2_err = h2.dist_calc2(data)

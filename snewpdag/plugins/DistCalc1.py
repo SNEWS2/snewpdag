@@ -39,15 +39,16 @@ class DistCalc1(Node):
                'JUNO, NO': [128.54796152661447, 20.633251789516653, 0.16051014379753317], \
                'JUNO, IO': [135.26455501942974, 18.91887993385422, 0.13986576107197238]}
     
-    def __init__(self, detector, in_field, out_field, **kwargs):
+    def __init__(self, detector, in_field, out_field, t0, **kwargs):
         self.detector = detector
         self.in_field = in_field
         self.out_field = out_field
+        self.t0 = t0
         super().__init__(**kwargs)
     
     def dist_calc1(self, data):
-        bg = np.mean(data[self.in_field][0:1000]) #using first 1000 bins to find background
-        N50 = np.sum(data[self.in_field][1000:1500]-bg) #correct for background
+        bg = np.mean(data[self.in_field][self.t0-1000: self.t0]) #using first 1000 bins to find background
+        N50 = np.sum(data[self.in_field][self.t0: self.t0+500]-bg) #correct for background
         N50_err = np.sqrt(N50) #assume Gaussian
         
         dist_par = 10.0
