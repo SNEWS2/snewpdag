@@ -3,8 +3,8 @@ This plugin estimate the distance to the supernova from the neutrino data by con
 assuming one-to-one correspondence bt f_delta and N50_exp (expected 0-50ms count) (f_delta = m*N50_exp + b)
 
 Data assumptions:
-    - 0.1 ms binning
-    - first 1000 bins of each data have no SN emission (for background calculation)
+    - 1 ms binning
+    - first 100 bins of each data have no SN emission (for background calculation)
 
 Constructor arguments: 
     detector: string, "detector name, ordering" ,
@@ -14,6 +14,7 @@ Constructor arguments:
               to get the count numbers from data["count"]
     out_field: string, "dist" (as an example),
               used for adding/updating the field in the data dict
+    t0:       the "measured/estimated" t_nought
  
 '''
 
@@ -45,10 +46,10 @@ class DistCalc2(Node):
         super().__init__(**kwargs)
     
     def dist_calc2(self, data):
-        bg = np.mean(data[self.in_field][self.t0-1000: self.t0]) #using first 1000 bins to find background
-        N50 = np.sum(data[self.in_field][self.t0: self.t0+500]-bg) #N(0-50ms) corrected for background
+        bg = np.mean(data[self.in_field][self.t0-100: self.t0]) #using first 1000 bins to find background
+        N50 = np.sum(data[self.in_field][self.t0: self.t0+50]-bg) #N(0-50ms) corrected for background
         N50_err = np.sqrt(N50) #assume Gaussian
-        N100_150 = np.sum(data[self.in_field][self.t0+1000: self.t0+1500]-bg) #N(100-150ms) corrected for background
+        N100_150 = np.sum(data[self.in_field][self.t0+100: self.t0+150]-bg) #N(100-150ms) corrected for background
         N100_150_err = np.sqrt(N100_150) #assume Gaussian
         f_delta = N100_150/N50
         f_delta_err = f_delta*np.sqrt((N50_err/N50)**2+(N100_150_err/N100_150)**2)

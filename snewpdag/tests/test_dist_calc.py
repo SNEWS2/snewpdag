@@ -11,20 +11,20 @@ from snewpdag.plugins import MeanDist
 class TestDistCalc(unittest.TestCase):
 
     def test_plugin0(self):
-        h1 = DistCalc1('IceCube, NO', 'count', 'dist', 1000, name = 'dist0')
-        h2 = DistCalc2('IceCube, NO', 'count', 'dist', 1000, name = 'dist1')
-        h3 = MeanDist('IceCube, NO', 'count', 'dist', 1000, name = 'dist2')
+        h1 = DistCalc1('IceCube, NO', 'count', 'dist', 100, name = 'dist0')
+        h2 = DistCalc2('IceCube, NO', 'count', 'dist', 100, name = 'dist1')
+        h3 = MeanDist('IceCube, NO', 'count', 'dist', 100, name = 'dist2')
 
         temp = []
         bg_temp = 100 #background count
-        for i in range(0,1000):
+        for i in range(0,100):
             temp.append(0)
-        for i in range(1000,1500):
-            temp.append(2)
-        for i in range(1500,2000):
+        for i in range(100,150):
+            temp.append(20)
+        for i in range(150,200):
             temp.append(0)
-        for i in range(2000,2500):
-            temp.append(6)
+        for i in range(200,250):
+            temp.append(60)
         
         temp = [i+bg_temp for i in temp] #constant background
         data = { 'count': temp }

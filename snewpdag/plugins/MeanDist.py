@@ -15,6 +15,7 @@ Constructor arguments:
               to get the count numbers from data["count"]
     out_field: string, "dist" (as an example),
               used for adding/updating the field in the data dict
+    t0:       the "measured/estimated" t_nought
               
 '''
 

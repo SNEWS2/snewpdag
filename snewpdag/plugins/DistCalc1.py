@@ -4,8 +4,8 @@ This plugin estimate the distance to the supernova from the neutrino data and IM
 assuming that the measured count obeys inverse square law
 
 Data assumptions:
-    - 0.1 ms binning
-    - first 1000 bins of each data have no SN emission (for background calculation)
+    - 1 ms binning
+    - first 100 bins of each data have no SN emission (for background calculation)
 
 
 Constructor arguments: 
@@ -16,6 +16,7 @@ Constructor arguments:
               to get the count numbers from data["count"]
     out_field: string, "dist" (as an example),
               used for adding/updating the field in the data dict
+    t0:       the "measured/estimated" t_nought
               
 '''
 
@@ -47,8 +48,8 @@ class DistCalc1(Node):
         super().__init__(**kwargs)
     
     def dist_calc1(self, data):
-        bg = np.mean(data[self.in_field][self.t0-1000: self.t0]) #using first 1000 bins to find background
-        N50 = np.sum(data[self.in_field][self.t0: self.t0+500]-bg) #correct for background
+        bg = np.mean(data[self.in_field][self.t0-100: self.t0]) #using first 1000 bins to find background
+        N50 = np.sum(data[self.in_field][self.t0: self.t0+50]-bg) #correct for background
         N50_err = np.sqrt(N50) #assume Gaussian
         
         dist_par = 10.0
