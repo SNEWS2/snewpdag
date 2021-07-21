@@ -38,38 +38,8 @@ def run():
   cfn, cfx = os.path.splitext(args.config)
   if cfx == '.csv':
     # name, class, observe
-    nodespecs = []
     with open(args.config, 'r') as f:
-      reader = csv.reader(f, quotechar='"')
-      for row in reader:
-        #print('New row:  {}'.format(row))
-        if len(row) == 0:
-          continue # blank line
-        if row[0] == '' or row[0] == '#':
-          continue # comment line
-        if len(row) < 2:
-          logging.error('Node specific requires at least 2 fields')
-          continue
-        node = { 'name': row[0], 'class': row[1] }
-        if len(row) >= 3 and len(row[2]) > 0:
-          nl = []
-          ns = row[2].strip().split(',')
-          for n in ns:
-            s = n.strip()
-            if len(s) > 0:
-              nl.append(s)
-          node['observe'] = nl
-        if len(row) >= 4:
-          s = []
-          for i in range(3, len(row)):
-            if len(row[i]) > 0:
-              # replace special marks which might stand in for single quotes
-              r = row[i].replace("’","'").replace("‘","'").replace("`","'")
-              s.append(r)
-          node['kwargs'] = ast.literal_eval('{' + ','.join(s) + '}')
-        nodespecs.append(node)
-    #print(nodespecs)
-
+      nodespecs = csv_eval(f)
   else: # try python/json parsing if not csv
     with open(args.config, 'r') as f:
       nodespecs = ast.literal_eval(f.read())
@@ -94,6 +64,39 @@ def run():
     else:
       data = ast.literal_eval(sys.stdin.read())
       inject(dags, data, nodespecs)
+
+def csv_eval(infile):
+  # name, class, observe
+  nodespecs = []
+  reader = csv.reader(infile, quotechar='"')
+  for row in reader:
+    #print('New row:  {}'.format(row))
+    if len(row) == 0:
+      continue # blank line
+    if row[0] == '' or row[0] == '#':
+      continue # comment line
+    if len(row) < 2:
+      logging.error('Node specific requires at least 2 fields')
+      continue
+    node = { 'name': row[0], 'class': row[1] }
+    if len(row) >= 3 and len(row[2]) > 0:
+      nl = []
+      ns = row[2].strip().split(',')
+      for n in ns:
+        s = n.strip()
+        if len(s) > 0:
+          nl.append(s)
+      node['observe'] = nl
+    if len(row) >= 4:
+      s = []
+      for i in range(3, len(row)):
+        if len(row[i]) > 0:
+          # replace special marks which might stand in for single quotes
+          r = row[i].replace("’","'").replace("‘","'").replace("`","'")
+          s.append(r)
+      node['kwargs'] = ast.literal_eval('{' + ','.join(s) + '}')
+    nodespecs.append(node)
+  return nodespecs
 
 def find_class(name):
   s = name.split('.')

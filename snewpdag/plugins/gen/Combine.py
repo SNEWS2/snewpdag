@@ -66,7 +66,7 @@ class Combine(Node):
       data['t_bins'] = tb
       data['t_bins'].flags.writeable = False
    
-    print(data['t_true'])
+    #print(data['t_true'])
     #exit()
     return True
 
