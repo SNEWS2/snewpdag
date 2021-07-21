@@ -5,14 +5,27 @@
 "JUNO","gen.Combine","JUNO-ts",,,
 "IceCube-bin","SeriesBinner","IceCube","'in_field’:’times’, ‘nbins’:250, ‘xlow’:-0.1, ‘xhigh’:0.15, ‘out_xfield’:’t’, ‘out_yfield’:’n’",,
 "JUNO-bin","SeriesBinner","JUNO","'in_field’:’times’, ‘nbins’:250, ‘xlow’:-0.1, ‘xhigh’:0.15, ‘out_xfield’:’t’, ‘out_yfield’:’n’",,
+
+"IceCube-normdist","DistNormalizer","IceCube-bin","'true_dist’:20, ‘in_field’:’n’, ‘out_field’:‘n_norm’",,
+"JUNO-normdist","DistNormalizer","JUNO-bin","'true_dist’:20, ‘in_field’:’n’, ‘out_field’:‘n_norm’",,
+"IceCube-DistCalc-norm","MeanDist","IceCube-normdist","'detector’:’IceCube, NO’, ‘in_field’:’n_norm’, ‘out_field’:‘dist_norm’, 't0':100",,
+"JUNO-DistCalc-norm","MeanDist","JUNO-normdist","'detector’:’JUNO, NO’, ‘in_field’:’n_norm’, ‘out_field’:‘dist_norm’, 't0':100",,
+"IceCube-DistCalc-td-norm","Histogram1D","IceCube-DistCalc-norm","'nbins’:200, ‘xlow’: 19, ‘xhigh’:21, ‘in_field’:’dist_norm’,‘in_index’:0",,
+"JUNO-DistCalc-td-norm","Histogram1D","JUNO-DistCalc-norm","'nbins’:200, ‘xlow’: 14.5, ‘xhigh’:25.5, ‘in_field’:’dist_norm’,‘in_index’:0",,
+
 "IceCube-DistCalc","MeanDist","IceCube-bin","'detector’:’IceCube, NO’, ‘in_field’:’n’, ‘out_field’:‘dist’, 't0':100",,
 "JUNO-DistCalc","MeanDist","JUNO-bin","'detector’:’JUNO, NO’, ‘in_field’:’n’, ‘out_field’:‘dist’, 't0':100",,
 "IceCube-DistCalc-td","Histogram1D","IceCube-DistCalc","'nbins’:200, ‘xlow’: 9.5, ‘xhigh’:10.5, ‘in_field’:’dist’,‘in_index’:0",,
 "JUNO-DistCalc-td","Histogram1D","JUNO-DistCalc","'nbins’:200, ‘xlow’: 6.5, ‘xhigh’:13.5, ‘in_field’:’dist’,‘in_index’:0",,
+
 ,,,,,
 ,Renderers,,,,
+"IceCube-DistCalc-norm-h","renderers.Histogram1D","IceCube-DistCalc-td-norm","'title’:’distance estimate (IceCube)’,’xlabel’:’mdist [kpc]’,’ylabel’:’freq’,’filename’:’output/test-{}-{}-{}-20kpc.png’",,
+"JUNO-DistCalc-norm_h","renderers.Histogram1D","JUNO-DistCalc-td-norm","'title’:’distance estimate (JUNO)’,’xlabel’:’mdist [kpc]’,’ylabel’:’freq’,’filename’:’output/test-{}-{}-{}-20kpc.png’",,
+
 "IceCube-DistCalc-h","renderers.Histogram1D","IceCube-DistCalc-td","'title’:’distance estimate (IceCube)’,’xlabel’:’mdist [kpc]’,’ylabel’:’freq’,’filename’:’output/test-{}-{}-{}-10kpc.png’",,
 "JUNO-DistCalc-h","renderers.Histogram1D","JUNO-DistCalc-td","'title’:’distance estimate (JUNO)’,’xlabel’:’mdist [kpc]’,’ylabel’:’freq’,’filename’:’output/test-{}-{}-{}-10kpc.png’"
+
 ,,,,,
 ,"Debugging",,,,
-"Out","Pass","IceCube,JUNO,IceCube-bin,JUNO-bin,IceCube-DistCalc,JUNO-DistCalc,IceCube-DistCalc-td,JUNO-DistCalc-td",,,"'line’:1,’dump’:1"
+"Out","Pass","IceCube,JUNO,IceCube-bin,JUNO-bin,IceCube-normdist,JUNO-normdist,IceCube-DistCalc,JUNO-DistCalc,IceCube-DistCalc-td,JUNO-DistCalc-td",,,"'line’:1,’dump’:1"

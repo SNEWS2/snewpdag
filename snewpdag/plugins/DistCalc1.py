@@ -12,11 +12,11 @@ Constructor arguments:
     detector: string, "detector name, ordering" ,
               one of ["IceCube, NO","IceCube, IO","HK, NO","HK, IO","SK, NO","SK, IO",
               "DUNE, NO","DUNE, IO","JUNO, NO","JUNO, IO"]
-    in_field: string, "count",
-              to get the count numbers from data["count"]
+    in_field: string, "n",
+              to get the count numbers from data["n"]
     out_field: string, "dist" (as an example),
               used for adding/updating the field in the data dict
-    t0:       the "measured/estimated" t_nought
+    t0:       the "measured/estimated" time of the start of SN emission (ms)
               
 '''
 
