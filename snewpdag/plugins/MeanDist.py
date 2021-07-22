@@ -26,7 +26,7 @@ import numpy as np
 from snewpdag.dag import Node
 from snewpdag.plugins import DistCalc1
 from snewpdag.plugins import DistCalc2
-from snewpdag.plugins import DistNormalizer
+from snewpdag.plugins.DistNormalizer import DistNormalizer
 
 class MeanDist(Node):
     
@@ -63,8 +63,8 @@ class MeanDist(Node):
                 dist2, dist2_err = h2.dist_calc2(d)
                 mdist = (dist1/dist1_err**2 + dist2/dist2_err**2)/ (1.0/dist1_err**2+1.0/dist2_err**2)
                 mdist_err = 1.0/np.sqrt(1.0/dist1_err**2+1.0/dist2_err**2)
-                mdist_array.np.append(mdist)
-                mdist_err_array.np.append(mdist_err)
+                mdist_array = np.append(mdist_array,mdist)
+                mdist_err_array = np.append(mdist_err_array,mdist_err)
             return mdist_array, mdist_err_array
                 
     

@@ -34,7 +34,7 @@ class DistNormalizer(Node):
         super().__init__(**kwargs)
 
     def dist_normalizer(self, data):
-        n_norm = data[self.in_field]*(10/self.true_dist)**2
+        n_norm = np.asarray(data[self.in_field])*(10/self.true_dist)**2
         
         return n_norm
     

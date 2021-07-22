@@ -36,6 +36,10 @@ distcalc_trial:
 	python snewpdag/trials/Simple.py Control -n 1000 | \
           python -m snewpdag --log INFO --jsonlines snewpdag/data/test-meandist-config-norm.csv
 
+distcalc_err_trial:
+	python snewpdag/trials/Simple.py Control -n 1000 | \
+          python -m snewpdag --log INFO --jsonlines snewpdag/data/test-meandist-config-error.csv
+
 init:
 	pip install -r requirements.txt
 

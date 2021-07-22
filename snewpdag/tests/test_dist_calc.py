@@ -43,16 +43,16 @@ class TestDistCalc(unittest.TestCase):
     
     def test_plugin1(self):
         print('-----Test 2-----')
-        h1 = DistNormalizer(4.0, 'n', 'n_norm', name='dist0')
+        h1 = DistNormalizer(2.0, 'n', 'n_norm', name='dist0')
 
         data = { 'n': 5.0 }
 
-        print(h1.dist_normalizer(data))
+        self.assertEqual(h1.dist_normalizer(data),125)
 
     
     def test_plugin2(self):
         print('-----Test 3-----')
-        h1 = MeanDist('IceCube, NO', 'count', 'dist', 100, 'Error', name = 'dist2')
+        h1 = MeanDist('IceCube, NO', 'n', 'dist', 100, 'Error', name = 'dist2')
 
         temp = []
         bg_temp = 100 #background count
@@ -68,5 +68,8 @@ class TestDistCalc(unittest.TestCase):
         temp = [i+bg_temp for i in temp] #constant background
         data = { 'n': temp }
 
-        h1.mean_dist(data)
+        mdist_array, mdist_err_array = h1.mean_dist(data)
+        l1 = len(mdist_array)
+        l2 = len(mdist_err_array)
+        self.assertEqual(l1,l2)
     

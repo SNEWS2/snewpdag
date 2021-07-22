@@ -1,0 +1,20 @@
+"Control","Pass",,"'line’: 100",,
+"IceCube-ts","gen.TimeSeries",Control,"'mean’: 1e5, ‘seed’: 12345, ‘sig_filetype’:’tn’, ‘sig_filename’:’snewpdag/data/output_icecube_27_Shen_1D_solar_mass_progenitor.fits_1msbin.txt‘",,
+"JUNO-ts","gen.TimeSeries",Control,"'mean’: 1e3, ‘seed’: 5831, ‘sig_filetype’:’tn’, ‘sig_filename’:’snewpdag/data/output_scint20kt_27_Shen_1D_solar_mass_progenitor.fits_1msbin.txt‘",,
+"IceCube","gen.Combine",IceCube-ts,,,
+"JUNO","gen.Combine",JUNO-ts,,,
+"IceCube-bin","SeriesBinner",IceCube,"'in_field’:’times’, ‘nbins’:250, ‘xlow’:-0.1, ‘xhigh’:0.15, ‘out_xfield’:’t’, ‘out_yfield’:’n’",,
+"JUNO-bin","SeriesBinner",JUNO,"'in_field’:’times’, ‘nbins’:250, ‘xlow’:-0.1, ‘xhigh’:0.15, ‘out_xfield’:’t’, ‘out_yfield’:’n’",,
+"IceCube-DistCalc","MeanDist",IceCube-bin,"'detector’:’IceCube, NO’, ‘in_field’:’n’, ‘out_field’:‘dist’, 't0':100, 'mode':'Error'",,
+"JUNO-DistCalc","MeanDist",JUNO-bin,"'detector’:’JUNO, NO’, ‘in_field’:’n’, ‘out_field’:‘dist’, 't0':100, 'mode':'Error'",,
+"IceCube-Err","DistErrCalc","IceCube-DistCalc","'xlow':4, 'xhigh':40, 'xno':100",,
+"JUNO-Err","DistErrCalc","JUNO-DistCalc","'xlow':4, 'xhigh':40, 'xno':100",,
+
+,,,,,
+,"Renderers",,,,
+"IceCube-ErrPlot","renderers.DistErrPlot","IceCube-Err","'title’:’relative error (IceCube) [%]’,’xlabel’:’true distance [kpc]’,’ylabel’:’relative error’,’filename’:’output/test-{}-{}-{}.png’",,
+"JUNO-ErrPlot","renderers.DistErrPlot","JUNO-Err","'title’:’relative error (IceCube) [%]’,’xlabel’:’true distance [kpc]’,’ylabel’:’relative error’,’filename’:’output/test-{}-{}-{}.png’",,
+
+,,,,,
+,"Debugging",,,,
+"Out","Pass","IceCube,JUNO,IceCube-bin,JUNO-bin,IceCube-DistCalc,JUNO-DistCalc,IceCube-Err,JUNO-Err,IceCube-ErrPlot,JUNO-ErrPlot",,,"'line’:1,’dump’:1"
