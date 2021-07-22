@@ -26,7 +26,7 @@ import numpy as np
 from snewpdag.dag import Node
 from snewpdag.plugins import DistCalc1
 from snewpdag.plugins import DistCalc2
-from snewpdag.plugins import DistNormalizer
+from snewpdag.plugins.DistNormalizer import DistNormalizer
 
 class MeanDist(Node):
     

@@ -1,5 +1,5 @@
 '''
-Unit tests for DistCalc1, DistCalc2 and MeanDist plugins
+Unit tests for DistCalc1, DistCalc2, MeanDist and DistNormalizer plugins
 '''
 
 import unittest
@@ -52,7 +52,7 @@ class TestDistCalc(unittest.TestCase):
     
     def test_plugin2(self):
         print('-----Test 3-----')
-        h1 = MeanDist('IceCube, NO', 'count', 'dist', 100, 'Error', name = 'dist2')
+        h1 = MeanDist('IceCube, NO', 'n', 'dist', 100, 'Error', name = 'dist2')
 
         temp = []
         bg_temp = 100 #background count
