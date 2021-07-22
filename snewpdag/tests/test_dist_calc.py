@@ -1,5 +1,5 @@
 '''
-Unit tests for DistCalc1, DistCalc2 and MeanDist plugins
+Unit tests for DistCalc1, DistCalc2, MeanDist and DistNormalizer plugins
 '''
 
 import unittest
