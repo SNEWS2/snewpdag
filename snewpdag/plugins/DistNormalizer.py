@@ -33,13 +33,13 @@ class DistNormalizer(Node):
         self.out_field = out_field
         super().__init__(**kwargs)
 
-    def dist_normaliser(self, data):
+    def dist_normalizer(self, data):
         n_norm = data[self.in_field]*(10/self.true_dist)**2
         
         return n_norm
     
     def alert(self, data):
-        n_norm = self.dist_normaliser(data)
+        n_norm = self.dist_normalizer(data)
         d = { self.out_field: (n_norm) }
         data.update(d)
         return True

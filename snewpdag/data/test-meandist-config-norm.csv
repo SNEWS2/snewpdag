@@ -8,13 +8,13 @@
 
 "IceCube-normdist","DistNormalizer","IceCube-bin","'true_dist’:20, ‘in_field’:’n’, ‘out_field’:‘n_norm’",,
 "JUNO-normdist","DistNormalizer","JUNO-bin","'true_dist’:20, ‘in_field’:’n’, ‘out_field’:‘n_norm’",,
-"IceCube-DistCalc-norm","MeanDist","IceCube-normdist","'detector’:’IceCube, NO’, ‘in_field’:’n_norm’, ‘out_field’:‘dist_norm’, 't0':100",,
-"JUNO-DistCalc-norm","MeanDist","JUNO-normdist","'detector’:’JUNO, NO’, ‘in_field’:’n_norm’, ‘out_field’:‘dist_norm’, 't0':100",,
+"IceCube-DistCalc-norm","MeanDist","IceCube-normdist","'detector’:’IceCube, NO’, ‘in_field’:’n_norm’, ‘out_field’:‘dist_norm’, 't0':100,'mode':'Histogram'",,
+"JUNO-DistCalc-norm","MeanDist","JUNO-normdist","'detector’:’JUNO, NO’, ‘in_field’:’n_norm’, ‘out_field’:‘dist_norm’, 't0':100,'mode':'Histogram'",,
 "IceCube-DistCalc-td-norm","Histogram1D","IceCube-DistCalc-norm","'nbins’:200, ‘xlow’: 19, ‘xhigh’:21, ‘in_field’:’dist_norm’,‘in_index’:0",,
 "JUNO-DistCalc-td-norm","Histogram1D","JUNO-DistCalc-norm","'nbins’:200, ‘xlow’: 14.5, ‘xhigh’:25.5, ‘in_field’:’dist_norm’,‘in_index’:0",,
 
-"IceCube-DistCalc","MeanDist","IceCube-bin","'detector’:’IceCube, NO’, ‘in_field’:’n’, ‘out_field’:‘dist’, 't0':100",,
-"JUNO-DistCalc","MeanDist","JUNO-bin","'detector’:’JUNO, NO’, ‘in_field’:’n’, ‘out_field’:‘dist’, 't0':100",,
+"IceCube-DistCalc","MeanDist","IceCube-bin","'detector’:’IceCube, NO’, ‘in_field’:’n’, ‘out_field’:‘dist’, 't0':100,'mode':'Histogram'",,
+"JUNO-DistCalc","MeanDist","JUNO-bin","'detector’:’JUNO, NO’, ‘in_field’:’n’, ‘out_field’:‘dist’, 't0':100,'mode':'Histogram'",,
 "IceCube-DistCalc-td","Histogram1D","IceCube-DistCalc","'nbins’:200, ‘xlow’: 9.5, ‘xhigh’:10.5, ‘in_field’:’dist’,‘in_index’:0",,
 "JUNO-DistCalc-td","Histogram1D","JUNO-DistCalc","'nbins’:200, ‘xlow’: 6.5, ‘xhigh’:13.5, ‘in_field’:’dist’,‘in_index’:0",,
 

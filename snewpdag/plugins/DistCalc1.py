@@ -48,7 +48,7 @@ class DistCalc1(Node):
         super().__init__(**kwargs)
     
     def dist_calc1(self, data):
-        bg = np.mean(data[self.in_field][self.t0-100: self.t0]) #using first 1000 bins to find background
+        bg = np.mean(data[self.in_field][self.t0-100: self.t0]) #using first 100 bins to find background
         N50 = np.sum(data[self.in_field][self.t0: self.t0+50]-bg) #correct for background
         N50_err = np.sqrt(N50) #assume Gaussian
         
@@ -62,13 +62,4 @@ class DistCalc1(Node):
         dist1, dist1_err = self.dist_calc1(data)
         d = { self.out_field: (dist1, dist1_err) }
         data.update(d)
-        return True
-    
-    def revoke(self, data):
-        return True
-
-    def reset(self, data):
-        return True
-
-    def report(self, data):
         return True
