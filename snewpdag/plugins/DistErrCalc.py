@@ -51,7 +51,7 @@ class DistErrCalc(Node):
     def report(self, data):
         if self.changed:
             rmse = np.sqrt(self.err2/self.xno)
-            rel_err = np.absolute(rmse/self.true_dist)
+            rel_err = np.absolute(rmse/self.true_dist)*100
             d = {"rel_err": rel_err}
             data.update(d)
             self.changed = False

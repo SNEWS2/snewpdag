@@ -21,7 +21,7 @@
 ,,,,,
 ,Renderers,,,,
 "IceCube-DistCalc-norm-h","renderers.Histogram1D","IceCube-DistCalc-td-norm","'title’:’distance estimate (IceCube)’,’xlabel’:’mdist [kpc]’,’ylabel’:’freq’,’filename’:’output/test-{}-{}-{}-20kpc.png’,'mode':'Gaussian','true_dist':20.0",,
-"JUNO-DistCalc-norm_h","renderers.Histogram1D","JUNO-DistCalc-td-norm","'title’:’distance estimate (JUNO)’,’xlabel’:’mdist [kpc]’,’ylabel’:’freq’,’filename’:’output/test-{}-{}-{}-20kpc.png’,'mode':'Gaussian','true_dist':20.0",,
+"JUNO-DistCalc-norm-h","renderers.Histogram1D","JUNO-DistCalc-td-norm","'title’:’distance estimate (JUNO)’,’xlabel’:’mdist [kpc]’,’ylabel’:’freq’,’filename’:’output/test-{}-{}-{}-20kpc.png’,'mode':'Gaussian','true_dist':20.0",,
 
 "IceCube-DistCalc-h","renderers.Histogram1D","IceCube-DistCalc-td","'title’:’distance estimate (IceCube)’,’xlabel’:’mdist [kpc]’,’ylabel’:’freq’,’filename’:’output/test-{}-{}-{}-10kpc.png’,'mode':'Gaussian','true_dist':10.0",,
 "JUNO-DistCalc-h","renderers.Histogram1D","JUNO-DistCalc-td","'title’:’distance estimate (JUNO)’,’xlabel’:’mdist [kpc]’,’ylabel’:’freq’,’filename’:’output/test-{}-{}-{}-10kpc.png’,'mode':'Gaussian','true_dist':10.0"

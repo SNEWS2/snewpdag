@@ -12,8 +12,8 @@
 
 ,,,,,
 ,"Renderers",,,,
-"IceCube-ErrPlot","renderers.DistErrPlot","IceCube-Err","'title’:’relative error (IceCube) [%]’,’xlabel’:’true distance [kpc]’,’ylabel’:’relative error’,’filename’:’output/test-{}-{}-{}.png’",,
-"JUNO-ErrPlot","renderers.DistErrPlot","JUNO-Err","'title’:’relative error (IceCube) [%]’,’xlabel’:’true distance [kpc]’,’ylabel’:’relative error’,’filename’:’output/test-{}-{}-{}.png’",,
+"IceCube-ErrPlot","renderers.DistErrPlot","IceCube-Err","'title’:’relative error (IceCube)’,’xlabel’:’true distance [kpc]’,’ylabel’:’relative error [%]’,’filename’:’output/test-{}-{}-{}.png’",,
+"JUNO-ErrPlot","renderers.DistErrPlot","JUNO-Err","'title’:’relative error (IceCube)’,’xlabel’:’true distance [kpc]’,’ylabel’:’relative error [%]’,’filename’:’output/test-{}-{}-{}.png’",,
 
 ,,,,,
 ,"Debugging",,,,
