@@ -23,6 +23,8 @@ Input data:
 """
 import matplotlib.pyplot as plt
 import numpy as np
+from scipy.stats import norm
+import matplotlib.mlab as mlab
 
 from snewpdag.dag import Node
 
@@ -33,6 +35,7 @@ class Histogram1D(Node):
     self.ylabel = ylabel
     self.filename = filename # include pattern to include index
     self.in_field = kwargs.pop('in_field', None)
+    self.mode = kwargs.pop('mode', None)
     self.count = 0 # number of histograms made
     super().__init__(**kwargs)
 
@@ -54,9 +57,43 @@ class Histogram1D(Node):
     plt.savefig(fname)
     self.count += 1
 
+  def render_Gaussian(self, burst_id, xlo, xhi, bins, mean, std):
+    n = len(bins)
+    step = (xhi - xlo) / n
+    x = np.arange(xlo, xhi, step)
+    x_Gauss = np.linspace(mean - 3*std, mean + 3*std, 100)
+    
+    fig, ax = plt.subplots()
+    ax.bar(x, bins, width=step, align='edge')
+    ax.set_xlabel(self.xlabel)
+    ax.set_ylabel(self.ylabel)
+    ax.set_title('{} (burst {} count {})\nGaussian Fit: mean = {:.2f}, std = {:.2f}'
+                .format(self.title, burst_id, self.count, mean, std))
+    fig.tight_layout()
+
+    scale = sum(bins) * step
+    plt.plot(x_Gauss, norm.pdf(x_Gauss, mean, std) * scale, linewidth=2, color='r')
+
+    fname = self.filename.format(self.name, self.count, burst_id)
+    plt.savefig(fname)
+    self.count += 1
+    plt.clf()
+
   def report(self, data):
     burst_id = data.get('id', 0)
     d = data[self.in_field] if self.in_field else data
-    self.render(burst_id, d['xlow'], d['xhigh'], d['bins'])
+
+    if self.mode:
+      if self.mode == 'Gaussian':
+        mean = d['sum'] / d['count']
+        x = d['sum'] / d['count']
+        xx = d['sum2'] / d['count']
+        variance = xx - x*x
+        std = np.sqrt(variance)
+
+        self.render_Gaussian(burst_id, d['xlow'], d['xhigh'], d['bins'], mean, std)
+    else:
+      self.render(burst_id, d['xlow'], d['xhigh'], d['bins'])
+
     return True
 
