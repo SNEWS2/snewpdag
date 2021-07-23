@@ -10,21 +10,21 @@
 "JUNO-normdist","DistNormalizer","JUNO-bin","'true_dist’:20, ‘in_field’:’n’, ‘out_field’:‘n_norm’",,
 "IceCube-DistCalc-norm","MeanDist","IceCube-normdist","'detector’:’IceCube, NO’, ‘in_field’:’n_norm’, ‘out_field’:‘dist_norm’, 't0':100,'mode':'Histogram'",,
 "JUNO-DistCalc-norm","MeanDist","JUNO-normdist","'detector’:’JUNO, NO’, ‘in_field’:’n_norm’, ‘out_field’:‘dist_norm’, 't0':100,'mode':'Histogram'",,
-"IceCube-DistCalc-td-norm","Histogram1D","IceCube-DistCalc-norm","'nbins’:200, ‘xlow’: 19, ‘xhigh’:21, ‘in_field’:’dist_norm’,‘in_index’:0",,
-"JUNO-DistCalc-td-norm","Histogram1D","JUNO-DistCalc-norm","'nbins’:200, ‘xlow’: 14.5, ‘xhigh’:25.5, ‘in_field’:’dist_norm’,‘in_index’:0",,
+"IceCube-DistCalc-td-norm","Histogram1D","IceCube-DistCalc-norm","'nbins’:200, ‘xlow’: 19, ‘xhigh’:21, ‘in_field’:’dist_norm’,‘in_index’:0,'error_index':1",,
+"JUNO-DistCalc-td-norm","Histogram1D","JUNO-DistCalc-norm","'nbins’:200, ‘xlow’: 14.5, ‘xhigh’:25.5, ‘in_field’:’dist_norm’,‘in_index’:0,'error_index':1",,
 
 "IceCube-DistCalc","MeanDist","IceCube-bin","'detector’:’IceCube, NO’, ‘in_field’:’n’, ‘out_field’:‘dist’, 't0':100,'mode':'Histogram'",,
 "JUNO-DistCalc","MeanDist","JUNO-bin","'detector’:’JUNO, NO’, ‘in_field’:’n’, ‘out_field’:‘dist’, 't0':100,'mode':'Histogram'",,
-"IceCube-DistCalc-td","Histogram1D","IceCube-DistCalc","'nbins’:200, ‘xlow’: 9.5, ‘xhigh’:10.5, ‘in_field’:’dist’,‘in_index’:0",,
-"JUNO-DistCalc-td","Histogram1D","JUNO-DistCalc","'nbins’:200, ‘xlow’: 6.5, ‘xhigh’:13.5, ‘in_field’:’dist’,‘in_index’:0",,
+"IceCube-DistCalc-td","Histogram1D","IceCube-DistCalc","'nbins’:200, ‘xlow’: 9.5, ‘xhigh’:10.5, ‘in_field’:’dist’,‘in_index’:0,'error_index':1",,
+"JUNO-DistCalc-td","Histogram1D","JUNO-DistCalc","'nbins’:200, ‘xlow’: 6.5, ‘xhigh’:13.5, ‘in_field’:’dist’,‘in_index’:0,'error_index':1",,
 
 ,,,,,
 ,Renderers,,,,
-"IceCube-DistCalc-norm-h","renderers.Histogram1D","IceCube-DistCalc-td-norm","'title’:’distance estimate (IceCube)’,’xlabel’:’mdist [kpc]’,’ylabel’:’freq’,’filename’:’output/test-{}-{}-{}-20kpc.png’,'mode':'Gaussian'",,
-"JUNO-DistCalc-norm_h","renderers.Histogram1D","JUNO-DistCalc-td-norm","'title’:’distance estimate (JUNO)’,’xlabel’:’mdist [kpc]’,’ylabel’:’freq’,’filename’:’output/test-{}-{}-{}-20kpc.png’,'mode':'Gaussian'",,
+"IceCube-DistCalc-norm-h","renderers.Histogram1D","IceCube-DistCalc-td-norm","'title’:’distance estimate (IceCube)’,’xlabel’:’mdist [kpc]’,’ylabel’:’freq’,’filename’:’output/test-{}-{}-{}-20kpc.png’,'mode':'Gaussian','true_dist':20.0",,
+"JUNO-DistCalc-norm_h","renderers.Histogram1D","JUNO-DistCalc-td-norm","'title’:’distance estimate (JUNO)’,’xlabel’:’mdist [kpc]’,’ylabel’:’freq’,’filename’:’output/test-{}-{}-{}-20kpc.png’,'mode':'Gaussian','true_dist':20.0",,
 
-"IceCube-DistCalc-h","renderers.Histogram1D","IceCube-DistCalc-td","'title’:’distance estimate (IceCube)’,’xlabel’:’mdist [kpc]’,’ylabel’:’freq’,’filename’:’output/test-{}-{}-{}-10kpc.png’,'mode':'Gaussian'",,
-"JUNO-DistCalc-h","renderers.Histogram1D","JUNO-DistCalc-td","'title’:’distance estimate (JUNO)’,’xlabel’:’mdist [kpc]’,’ylabel’:’freq’,’filename’:’output/test-{}-{}-{}-10kpc.png’,'mode':'Gaussian'"
+"IceCube-DistCalc-h","renderers.Histogram1D","IceCube-DistCalc-td","'title’:’distance estimate (IceCube)’,’xlabel’:’mdist [kpc]’,’ylabel’:’freq’,’filename’:’output/test-{}-{}-{}-10kpc.png’,'mode':'Gaussian','true_dist':10.0",,
+"JUNO-DistCalc-h","renderers.Histogram1D","JUNO-DistCalc-td","'title’:’distance estimate (JUNO)’,’xlabel’:’mdist [kpc]’,’ylabel’:’freq’,’filename’:’output/test-{}-{}-{}-10kpc.png’,'mode':'Gaussian','true_dist':10.0"
 
 ,,,,,
 ,"Debugging",,,,

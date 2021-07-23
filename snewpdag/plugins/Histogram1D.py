@@ -9,6 +9,7 @@ Constructor arguments:
   in_field: string, name of field to extract from alert data
   in_index: int or tuple (from list), element numbers if field is an array
   in_index2: secondary index if needed (e.g., if a 2D array or dict)
+  error_index: index containing error if needed
   out_field: string, name of field for dictionary with histogram summary
   flags: list of strings. Default is off for all flags.
     accumulate - accumulate over alerts, clear after report
@@ -25,6 +26,8 @@ Output json:
     sum, sum2
     count
     bins
+    mean, std
+    error_sum, error_sum2 (default 0.0)
     (doesn't delete input field, since it's not much data
     and may be part of an aggregate)
 """
@@ -45,6 +48,8 @@ class Histogram1D(Node):
     self.index = tuple(v) if isinstance(v, list) else v
     v = kwargs.pop('in_index2', None)
     self.index2 = tuple(v) if isinstance(v, list) else v
+    v = kwargs.pop('error_index', None)
+    self.error_index = tuple(v) if isinstance(v, list) else v
     f = kwargs.pop('flags', [])
     self.accumulate = 'accumulate' in f
     super().__init__(**kwargs)
@@ -58,6 +63,8 @@ class Histogram1D(Node):
     self.sum2 = 0.0
     self.count = 0
     self.changed = True
+    self.error_sum = 0.0
+    self.error_sum2 = 0.0
 
   def fill(self, data):
     if self.field in data:
@@ -66,6 +73,8 @@ class Histogram1D(Node):
           if self.index2 != None:
             if isinstance(self.index2, int) or self.index2 in data[self.field][self.index]:
               x = data[self.field][self.index][self.index2]
+              if self.error_index != None:
+                x_error = data[self.field][self.index][self.error_index]
             else:
               logging.info('{0}: index2 {1} not found in data'.format(
                            self.name, self.index2))
@@ -73,12 +82,16 @@ class Histogram1D(Node):
               return
           else:
             x = data[self.field][self.index]
+            if self.error_index != None:
+              x_error = data[self.field][self.error_index]
         else:
           logging.info('{0}: index {1} not found in data'.format(
                        self.name, self.index))
           return
       else:
         x = data[self.field]
+        if self.error_index != None:
+          x_error = data[self.error_index]
     else:
       # field not in data
       logging.info('{0}: field {1} not found in data'.format(self.name, self.field))
@@ -103,6 +116,9 @@ class Histogram1D(Node):
     self.sum2 += x*x
     self.count += 1
     self.changed = True
+    if self.error_index != None:
+      self.error_sum += x_error
+      self.error_sum2 += x_error*x_error
 
   def summary(self):
     return {
@@ -119,6 +135,11 @@ class Histogram1D(Node):
              'sum2': self.sum2,
              'count': self.count,
              'bins': self.bins,
+             'mean': self.mean(),
+             'std': np.sqrt(self.variance()),
+             'error_sum': self.error_sum,
+             'error_sum2': self.error_sum2,
+             'error_std': np.sqrt( self.error_sum2 )/ self.count,
            }
 
   def mean(self):
