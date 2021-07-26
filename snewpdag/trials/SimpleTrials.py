@@ -8,7 +8,7 @@ spec can be constructed by hand, or by reading from a configuration file.
 
 To read a python-formatted configuration file,
 
-  import snewpdag.SimpleTrials import trials
+  from snewpdag.trials.SimpleTrials import trials
   import ast
   with open(filename, 'r') as f:
     spec = ast.literal_eval(f.read())
@@ -16,7 +16,7 @@ To read a python-formatted configuration file,
 
 To read a csv-formatted configuration file,
 
-  import snewpdag.SimpleTrials import trials
+  from snewpdag.trials.SimpleTrials import trials
   from snewpdag.dag.app import csv_eval
   with open(filename, 'r') as f:
     spec = csv_eval(f)
