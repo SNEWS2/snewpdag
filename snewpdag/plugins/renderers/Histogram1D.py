@@ -70,8 +70,8 @@ class Histogram1D(Node):
     ax.bar(x, bins, width=step, align='edge')
     ax.set_xlabel(self.xlabel)
     ax.set_ylabel(self.ylabel)
-    ax.set_title('{} (burst {} count {})\nGaussian Fit: mean = {:.2f}, std = {:.2f}'
-                .format(self.title, burst_id, self.count, mean, std))
+    ax.set_title('{} (burst {} count {})\nGaussian Fit: mean = {:.2f}, std = {:.2f}\nExpected: mean = {:.2f}, std = {:.2f}'
+                .format(self.title, burst_id, self.count, mean, std, exp_mean, exp_std))
     fig.tight_layout()
 
     scale = sum(bins) * step

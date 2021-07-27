@@ -29,13 +29,19 @@ class DistErrCalc(Node):
         self.clear()
 
     def clear(self):
-        self.err2 = np.zeros(self.xno)
+        self.sum = np.zeros(self.xno)
+        self.sum2 = np.zeros(self.xno)
+        #self.err2 = np.zeros(self.xno)
+        self.exp_err2 = np.zeros(self.xno)
         self.changed = True
         
     def fill(self,data):
         mdist = data["mdist"]
-        mdis_err = data["mdist_err"]
-        self.err2 += (mdist-self.true_dist)**2
+        mdist_err = data["mdist_err"]
+        self.sum += mdist
+        self.sum2 += mdist**2
+        #self.err2 += (mdist-self.true_dist)**2
+        self.exp_err2 += mdist_err**2
         self.changed = True
         
     def alert(self, data):
@@ -50,9 +56,11 @@ class DistErrCalc(Node):
 
     def report(self, data):
         if self.changed:
-            rmse = np.sqrt(self.err2/self.xno)
-            rel_err = np.absolute(rmse/self.true_dist)*100
-            d = {"rel_err": rel_err}
+            std = np.sqrt(self.sum2/1000 - (self.sum/1000)**2)
+            rel_err = (std/self.true_dist)*100
+            exp_rmse = np.sqrt(self.exp_err2/1000)
+            exp_rel_err = (exp_rmse/self.true_dist)*100
+            d = {"rel_err": rel_err, "exp_rel_err": exp_rel_err}
             data.update(d)
             self.changed = False
             return True

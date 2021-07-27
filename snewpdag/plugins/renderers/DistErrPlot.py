@@ -35,17 +35,20 @@ class DistErrPlot(Node):
         self.true_dist = np.linspace(self.xlow, self.xhigh, self.xno, endpoint=True)
         super().__init__(**kwargs)
 
-    def render(self, rel_err):
+    def render(self, rel_err, exp_rel_err):
         fig, ax = plt.subplots()
-        ax.plot(self.true_dist, rel_err)
+        ax.plot(self.true_dist, rel_err, label="Data")
+        ax.plot(self.true_dist, exp_rel_err, label="Expected")
         ax.set_xlabel(self.xlabel)
         ax.set_ylabel(self.ylabel)
         ax.set_title('{0}'.format(self.title))
+        ax.legend()
         fig.tight_layout()
         fname = self.filename.format(self.name, 0, 0)
         plt.savefig(fname)
 
     def report(self, data):
         rel_err = data["rel_err"]
-        self.render(rel_err)
+        exp_rel_err = data["exp_rel_err"]
+        self.render(rel_err, exp_rel_err)
         return True

@@ -139,7 +139,7 @@ class Histogram1D(Node):
              'std': np.sqrt(self.variance()),
              'error_sum': self.error_sum,
              'error_sum2': self.error_sum2,
-             'error_std': np.sqrt( self.error_sum2 )/ self.count,
+             'error_std': np.sqrt( self.error_sum2 / self.count),
            }
 
   def mean(self):
