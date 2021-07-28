@@ -24,7 +24,8 @@ import logging
 from snewpdag.dag import Node
 
 class ValidateListType(Node):
-    def __init__(self, max_fraction, key_type, **kwargs):
+    def __init__(self, in_field, max_fraction, key_type, **kwargs):
+        self.in_field = in_field
         self.max_fraction = max_fraction
         self.key_type = key_type
         self.on_alert = kwargs.pop('on_alert', None)
@@ -34,8 +35,8 @@ class ValidateListType(Node):
         super().__init__(**kwargs)
     
     def check_listtype(self, data): # same as above but we check elements of a list
-        data_len = len(data)
-        data_copy = data.copy()
+        data_len = len(data[self.in_field])
+        data_copy = data[self.in_field].copy()
         remove_element = []
         for x in data_copy:
             if type(x).__name__ != self.key_type:
@@ -44,7 +45,8 @@ class ValidateListType(Node):
             logging.error('{} elements in list are not the desired type of {} and are deleted'.format(len(remove_element), self.key_type))
             for x in remove_element:
                 data_copy.remove(x)
-            return data_copy
+            data[self.in_field] = data_copy
+            return data
         else:
             logging.error('More than 10% in list are not the desired type of {} and action is consumed'.format(self.key_type))
             return False

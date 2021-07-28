@@ -13,8 +13,9 @@ Input: data as payload + key_type
 from snewpdag.dag import Node
 
 class ValidateKeyType(Node):
-    def __init__(self, **kwargs):
-        self.key_type = kwargs.pop('key_type', None)
+    def __init__(self, in_field, key_type, **kwargs):
+        self.in_field = in_field
+        self.key_type = key_type
         self.on_alert = kwargs.pop('on_alert', None)
         self.on_reset = kwargs.pop('on_reset', None)
         self.on_revoke = kwargs.pop('on_revoke', None)
@@ -22,7 +23,7 @@ class ValidateKeyType(Node):
         super().__init__(**kwargs)
 
     def check_type(self, data): # check that the key corresponed to the correct type
-        return type(data).__name__ == self.key_type
+        return type(data[self.in_field]).__name__ == self.key_type
     
     def alert(self, data):
         if self.on_alert:

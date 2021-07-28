@@ -13,8 +13,8 @@ import logging
 from snewpdag.dag import Node
 
 class ValidateKey(Node):
-    def __init__(self, **kwargs):
-        self.search_key = kwargs.pop('search_key', None)
+    def __init__(self, in_field, **kwargs):
+        self.in_field = in_field
         self.on_alert = kwargs.pop('on_alert', None)
         self.on_reset = kwargs.pop('on_reset', None)
         self.on_revoke = kwargs.pop('on_revoke', None)
@@ -22,10 +22,10 @@ class ValidateKey(Node):
         super().__init__(**kwargs)
     
     def check_key(self, data): # check that the key exists
-        if self.search_key in data:
+        if self.in_field in data:
             return True
         else:
-            logging.error('Desired key [{}] not found in payload and action is consumed'.format(self.search_key))
+            logging.error('Desired key [{}] not found in payload and action is consumed'.format(self.in_field))
             return False
     
     def alert(self, data):
