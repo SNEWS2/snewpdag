@@ -6,7 +6,10 @@ repeat this sort of validation.
 
 check_key() checks that the desired key/field exists in the payload
 
-Input: data as payload + search_key
+Constructor arguments:
+    in_field: string, name of field to check from data
+    on_alert: string, to initiate alert; true by default (optional argument)
+    on_reset, on_revoke, on_report: string, false by default (optional argument)
 '''
 
 import logging
@@ -15,10 +18,10 @@ from snewpdag.dag import Node
 class ValidateKey(Node):
     def __init__(self, in_field, **kwargs):
         self.in_field = in_field
-        self.on_alert = kwargs.pop('on_alert', None)
-        self.on_reset = kwargs.pop('on_reset', None)
-        self.on_revoke = kwargs.pop('on_revoke', None)
-        self.on_report = kwargs.pop('on_report', None)
+        self.on_alert = kwargs.pop('on_alert', True)
+        self.on_reset = kwargs.pop('on_reset', False)
+        self.on_revoke = kwargs.pop('on_revoke', False)
+        self.on_report = kwargs.pop('on_report', False)
         super().__init__(**kwargs)
     
     def check_key(self, data): # check that the key exists

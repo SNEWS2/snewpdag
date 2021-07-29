@@ -10,14 +10,23 @@ based on the type we want in the input,
 and if a wrong type is found, such element is removed
 and the removal is logged.
 
-min_fraction is the maximum fraction of numbers with wrong key_type allowed
+max_fraction is the maximum fraction of numbers with wrong key_type allowed
 that we don't need to consume the action.
-e.g. min_fraction = 0.1 (i.e. 10%)
+e.g. max_fraction = 0.1 (i.e. 10%)
 I. if there are 10% or fewer elements in the list with wrong key type,
 we simply remove the element and log the removal.
 II. if there are more than 10% with wrong key type, we consume the action.
 
-Input: data as payload + min_fraction + key_type
+Constructor arguments:
+    in_field: string, name of field to check from data
+    max_fraction: float, see above
+    key_type: string, the type of the key/field to check for, e.g. type of 'dt': 'float'
+    on_alert: string, to initiate alert; true by default (optional argument)
+    on_reset, on_revoke, on_report: string, false by default (optional argument)
+
+Output dictionary:
+    alert:
+        modify/remove the list in a field if 
 '''
 
 import logging
@@ -28,10 +37,10 @@ class ValidateListType(Node):
         self.in_field = in_field
         self.max_fraction = max_fraction
         self.key_type = key_type
-        self.on_alert = kwargs.pop('on_alert', None)
-        self.on_reset = kwargs.pop('on_reset', None)
-        self.on_revoke = kwargs.pop('on_revoke', None)
-        self.on_report = kwargs.pop('on_report', None)
+        self.on_alert = kwargs.pop('on_alert', True)
+        self.on_reset = kwargs.pop('on_reset', False)
+        self.on_revoke = kwargs.pop('on_revoke', False)
+        self.on_report = kwargs.pop('on_report', False)
         super().__init__(**kwargs)
     
     def check_listtype(self, data): # same as above but we check elements of a list

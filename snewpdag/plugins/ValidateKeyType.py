@@ -7,7 +7,11 @@ repeat this sort of validation.
 check_type() checks that the field has the correct type,
 e.g. 'action': str, 'history': History
 
-Input: data as payload + key_type
+Constructor arguments:
+    in_field: string, name of field to check from data
+    key_type: string, the type of the key/field to check for, e.g. type of 'dt': 'float'
+    on_alert: string, to initiate alert; true by default (optional argument)
+    on_reset, on_revoke, on_report: string, false by default (optional argument)
 '''
 
 from snewpdag.dag import Node
@@ -16,10 +20,10 @@ class ValidateKeyType(Node):
     def __init__(self, in_field, key_type, **kwargs):
         self.in_field = in_field
         self.key_type = key_type
-        self.on_alert = kwargs.pop('on_alert', None)
-        self.on_reset = kwargs.pop('on_reset', None)
-        self.on_revoke = kwargs.pop('on_revoke', None)
-        self.on_report = kwargs.pop('on_report', None)
+        self.on_alert = kwargs.pop('on_alert', True)
+        self.on_reset = kwargs.pop('on_reset', False)
+        self.on_revoke = kwargs.pop('on_revoke', False)
+        self.on_report = kwargs.pop('on_report', False)
         super().__init__(**kwargs)
 
     def check_type(self, data): # check that the key corresponed to the correct type

@@ -74,7 +74,7 @@ class TestValidator(unittest.TestCase):
         self.assertEqual(h1.check_listtype(data[1])['dt'], [0.0, 1.0, 2.1, 9.3, 4.0, 14.5, 9.0, 2.4, 5.3, 18.0, 19.4, 20.3, 14.0, 9.3, 4.0, 14.5, 9.0, 2.4, 5.3])
     
     def test_plugin5(self):
-        h1 = ValidateSort('dt', 'ascending', on_alert = 'alert', name = 'val0')
+        h1 = ValidateSort('dt', list_order = 'ascending', on_alert = 'alert', name = 'val0')
         data = [
             {'dt': [0.0, 0.5, 1.0, 3.2, 5.3]},
             {'dt': [5.3, 3.2, 1.0, 0.5, 0.0]},
@@ -84,10 +84,23 @@ class TestValidator(unittest.TestCase):
         self.assertEqual(h1.check_sorted(data[0])['dt'], [0.0, 0.5, 1.0, 3.2, 5.3])
         self.assertEqual(h1.check_sorted(data[0])['order'], 'ascending')
 
-        self.assertEqual(h1.check_sorted(data[1])['dt'], [5.3, 3.2, 1.0, 0.5, 0.0])
-        self.assertEqual(h1.check_sorted(data[1])['order'], 'descending')
+        self.assertEqual(h1.check_sorted(data[1])['dt'], [0.0, 0.5, 1.0, 3.2, 5.3])
+        self.assertEqual(h1.check_sorted(data[1])['order'], 'ascending')
 
         self.assertEqual(h1.check_sorted(data[2])['dt'], [0.0, 0.5, 1.0, 3.2, 5.3])
         self.assertEqual(h1.check_sorted(data[2])['order'], 'ascending')
 
         self.assertEqual(h1.alert(data[0])['dt'], [0.0, 0.5, 1.0, 3.2, 5.3])
+
+    def test_plugin6(self):
+        h1 = ValidateSort('dt', on_alert = 'alert', name = 'val0')
+        data = [
+            {'dt': [5.3, 3.2, 1.0, 0.5, 0.0]},
+            {'dt': [0.0, 1.0, 5.3, 3.2, 0.5]},
+        ]
+        print('\n-----Test7-----')
+        self.assertEqual(h1.check_sorted(data[0])['dt'], [5.3, 3.2, 1.0, 0.5, 0.0])
+        self.assertEqual(h1.check_sorted(data[0])['order'], 'descending')
+
+        self.assertEqual(h1.check_sorted(data[1])['dt'], [0.0, 1.0, 5.3, 3.2, 0.5])
+        self.assertEqual(h1.check_sorted(data[1])['order'], None)
