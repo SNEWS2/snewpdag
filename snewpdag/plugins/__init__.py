@@ -12,9 +12,9 @@ from .ShapeComparison import ShapeComparison
 from .BayesianBlocks import BayesianBlocks
 
 from .Histogram1D import Histogram1D
+from .Histogram1DRebin import Histogram1DRebin
 from .Accumulator import Accumulator
 
 from .SeriesBinner import SeriesBinner
 from .BinnedAccumulator import BinnedAccumulator
 from .ActionFilter import ActionFilter
-
