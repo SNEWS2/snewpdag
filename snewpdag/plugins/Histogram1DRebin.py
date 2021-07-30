@@ -1,15 +1,18 @@
 """
-Plugin to re-bin a 1D histogram
-Only combines integer numbers of bins
-Should listen to a Histogram1D; eg. a Histogram1D renderer can listen to this.
+Plugin to re-bin a 1D histogram, combining integer numbers of bins.
+This plugin should listen to a Histogram1D; can be listened-to by eg. a Histogram1D renderer
 
 Configuration options:
-    factor: number of old bins per new bin; eg. factor=5 would rebin a 100-bin hist to 20 bins
+    factor: number of old bins per new bin; eg. factor=5 would rebin a 100-bin hist to 20 bins.
+        If factor does not divide nbins, the upper x limit is reduced and excess counts are added to the overflow.
 
 Input data:
-    - Reponds only to 'report' (this is the only signal Histogram1D seems to use)
-    - Rewrites nbins; bins in the data
-
+    action: report or alert
+    Histogram dictionary as produced by Histogram1D; namely must contain
+    - xlow, xhigh; x-axis limits
+    - nbins; number of bins
+    - bins; array of bin counts
+    - overflow
 """
 
 import numpy as np
@@ -19,6 +22,7 @@ from snewpdag.dag import Node
 
 
 class Histogram1DRebin(Node):
+
     def __init__(self, factor, **kwargs):
         self.factor = factor
         super().__init__(**kwargs)
@@ -30,7 +34,7 @@ class Histogram1DRebin(Node):
         new_nbins = old_nbins // self.factor
         new_bins = np.empty(new_nbins, 'float64')
 
-        print("Rebinning {}->{} bins".format(old_nbins, new_nbins))
+        logging.log("Rebinning {}->{} bins".format(old_nbins, new_nbins))
 
         for i_new_bin in range(new_nbins):
             new_bin_value = np.sum(data['bins'][i_new_bin * self.factor : (i_new_bin + 1) * self.factor])
