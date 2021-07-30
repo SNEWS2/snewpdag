@@ -19,8 +19,8 @@ def run():
   i = 0
   imax = int(args.number)
   while i < imax:
-    print(json.dumps({ 'action': 'alert', 'id': i, 'name': args.name }))
-    print(json.dumps({ 'action': 'reset', 'id': i, 'name': args.name }))
+    print(json.dumps({ 'action': 'alert', 'burst_id': i, 'name': args.name }))
+    print(json.dumps({ 'action': 'reset', 'burst_id': i, 'name': args.name }))
     i += 1
   print(json.dumps({ 'action': 'report', 'name': args.name }))
 

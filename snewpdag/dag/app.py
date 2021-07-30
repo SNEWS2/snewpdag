@@ -73,10 +73,10 @@ def csv_eval(infile):
     #print('New row:  {}'.format(row))
     if len(row) == 0:
       continue # blank line
-    if row[0] == '' or row[0] == '#':
+    if row[0] == '' or row[0][0] == '#':
       continue # comment line
     if len(row) < 2:
-      logging.error('Node specific requires at least 2 fields')
+      logging.error('Node specification requires at least 2 fields')
       continue
     node = { 'name': row[0], 'class': row[1] }
     if len(row) >= 3 and len(row[2]) > 0:
@@ -121,17 +121,17 @@ def configure(nodespecs):
       c = find_class(spec['class'])
     else:
       logging.error('No class field in node specification')
-      sys.exit(2)
+      return None
 
     if 'name' in spec:
       name = spec['name']
     else:
       logging.error('No name field in node specification')
-      sys.exit(2)
+      return None
 
     if name in nodes:
       logging.error('Duplicate node name {}'.format(name))
-      sys.exit(2)
+      return None
 
     kwargs = spec['kwargs'] if 'kwargs' in spec else {}
     kwargs['name'] = spec['name']
@@ -139,15 +139,18 @@ def configure(nodespecs):
       nodes[name] = c(**kwargs)
     except TypeError:
       logging.error('While creating node {0}: {1}'.format(name, sys.exc_info()))
-      sys.exit(2)
+      return None
 
     if 'observe' in spec:
       for obs in spec['observe']:
-        if obs in nodes:
+        if obs == name:
+          logging.error('{0} observing itself'.format(name))
+          return None
+        elif obs in nodes:
           nodes[obs].attach(nodes[name])
         else:
           logging.error('{0} observing unknown node {1}'.format(name, obs))
-          sys.exit(2)
+          return None
 
   return nodes
 
@@ -172,6 +175,9 @@ def inject_one(dags, data, nodespecs):
     burst_id = data['burst_id']
   if burst_id not in dags:
     dags[burst_id] = configure(nodespecs)
+    if dags[burst_id] == None:
+      logging.error('Invalid configuration for burst id {}'.format(burst_id))
+      sys.exit(2)
   dag = dags[burst_id]
   dag[data['name']].update(data)
 
