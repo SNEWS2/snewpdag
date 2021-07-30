@@ -28,13 +28,17 @@ class Histogram1DRebin(Node):
         super().__init__(**kwargs)
 
     def report(self, data):
+        if not ("xlow" in data and "xhigh" in data and "nbins" in data and "bins" in data and "overflow" in data):
+            logging.error("Histogram1DRebin has not been supplied with a valid histogram")
+            return False
+
         old_nbins = data['nbins']
         old_bin_width = (data['xhigh'] - data['xlow']) / old_nbins
 
         new_nbins = old_nbins // self.factor
         new_bins = np.empty(new_nbins, 'float64')
 
-        logging.log("Rebinning {}->{} bins".format(old_nbins, new_nbins))
+        logging.info("Rebinning {}->{} bins".format(old_nbins, new_nbins))
 
         for i_new_bin in range(new_nbins):
             new_bin_value = np.sum(data['bins'][i_new_bin * self.factor : (i_new_bin + 1) * self.factor])
