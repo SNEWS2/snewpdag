@@ -7,42 +7,41 @@ Constructor Arguments:
                 options: "ARCA", "IC", "SK", "HK", "JUNO"
     second_det: string, "second detector name"
                 options: "ARCA", "IC", "SK", "HK", "JUNO"
+    detector_location: csv file ('detector_location.csv')
 
 Output added to data: gen_to (true time delay)
 
 """
 
 import logging
+import csv
+import time
 import numpy as np
 import random as rm
 from datetime import datetime
 from snewpdag.dag import Node
 
-class TrueTimeDelay(Node):
+class TrueTimeDelay():
 
-    #Input detector coordinate information 
-    lonKM3 = np.radians(16.+6./60.) #Letter Of Intent
-    latKM3 = np.radians(36.+16./60.) #Letter Of Intent  
-    lonIC = -np.radians(63+27/60.+11./3600.) #wiki
-    latIC = -np.radians(89.+59./60.+24./3600.) #wiki
-    lonSK = np.radians(137. + 18./60. + 37.1/3600.) #http://www-sk.icrr.u-tokyo.ac.jp/~masato_s/class/sk-detector.pdf
-    latSK = np.radians(36. + 25./60. + 32.6/3600.)  #http://www-sk.icrr.u-tokyo.ac.jp/~masato_s/class/sk-detector.pdf
-    lonHK = np.radians(137. + 18./60. + 49.137/3600.) #https://arxiv.org/pdf/1805.04163.pdf 
-    latHK = np.radians(36. + 21./60. + 20.105/3600.)  #https://arxiv.org/pdf/1805.04163.pdf 
-    lonJUNO = np.radians(112.51867) #arXiv:1909.03151
-    latJUNO = np.radians(22.11827) #arXiv:1909.03151
-
-    det_coord = {
-            "ARCA": [lonKM3,latKM3],
-            "IC": [lonIC,latIC],
-            "SK": [lonSK,latSK],
-            "HK": [lonHK,latHK],
-            "JUNO": [lonJUNO,latJUNO]
-            }
-
-    def __init__(self, first_det, second_det, **kwargs):
+    #Define detector location
+    def __init__(self, first_det, second_det, detector_location, **kwargs):
         self.first_det = first_det
         self.second_det = second_det
+
+        with open(detector_location, 'r') as f:
+            detectors = csv.reader(f)
+            for detector in detectors:
+                if detector[0] == first_det: 
+                    first_lon = np.radians(float(detector[1]))
+                    first_lat = np.radians(float(detector[2]))
+                    first_height = float(detector[3])
+                    self.first_det_info = [first_lon, first_lat, first_height]
+                if detector[0] == second_det:
+                    second_lon = np.radians(float(detector[1]))
+                    second_lat = np.radians(float(detector[2]))
+                    second_height = float(detector[3])
+                    self.second_det_info = [second_lon, second_lat, second_height]
+
         super().__init__(**kwargs)
 
 
@@ -66,24 +65,15 @@ class TrueTimeDelay(Node):
         return source
 
 
-    #randomly generate a time for SN neutrino signal to arrive on Earth
-    #base time: 2000-03-20, 12:00 PM UTC
+    #randomly generate a time between 2000-1-1, 00:00 and 2000-12-31, 23:59:59 UTC for SN neutrino signal to arrive on Earth
+    #base time (vernal equinox): 2000-03-20, 12:00 PM UTC
     def generate_time(self):
-        month = rm.randrange(1,13)
-        if month in [1,3,5,7,8,10,12]:
-            day = rm.randrange(1,32)
-        elif month == 2:
-            day = rm.randrange(1,29)
-        else:
-            day = rm.randrange(1,31)
-        hour = rm.randrange(0,24)
-        minute = rm.randrange(0,60)
-        second = rm.randrange(0,60)
-        if month <3:
-            year = 2001
-        else:
-            year = 2000
-        return datetime(year, month, day, hour, minute, second)
+        d = rm.randrange(0, 31536000)
+        start_range = datetime(2000,1,1,0,0,0)
+        start_unix = time.mktime(start_range.timetuple())
+        random_unix = d + start_unix 
+        generated_time = datetime.fromtimestamp(random_unix)
+        return generated_time
 
 
     #calculate the distance between two detectors
@@ -95,15 +85,14 @@ class TrueTimeDelay(Node):
         
         #take into account the time dependence of longitude  
         #reference: arXiv:1304.5006
-        t = arrival.hour*60*60 + arrival.minute*60 + arrival.second
-        T = (arrival - datetime(2000,3,20,12)).total_seconds()
+        t = arrival.hour*60*60 + arrival.minute*60 + arrival.second  #(0 <= t <= 24h)
+        T = (arrival - datetime(2000,3,20,12)).total_seconds() #time elapsed after the vernal point when the detector received the SN neutrinos
         
         first_lon = first_det[0] + ang_rot*t - ang_sun*T - np.pi
         first_lat = first_det[1]
         second_lon = second_det[0] + ang_rot*t - ang_sun*T - np.pi
         second_lat = second_det[1]
         
-
         #If the height of detector is not given, assume at sea level
         if len(first_det)>2:
             first_h = first_det[2]
@@ -140,11 +129,11 @@ class TrueTimeDelay(Node):
 
     def alert(self, data):
         nvec = self.generate_n()
-        time = self.generate_time()
-        first_det = self.det_coord[self.first_det]
-        second_det = self.det_coord[self.second_det]
-        posdiff = self.detector_diff(first_det, second_det, time)
+        t = self.generate_time() 
+        posdiff = self.detector_diff(self.first_det_info, self.second_det_info, t)
         truedelay = self.time_delay(nvec, posdiff)
-        d = {'gen_t0': truedelay}
+        print(truedelay)
+        detector_pair = self.first_det + ', ' + self.second_det
+        d = {detector_pair: truedelay}
         data.update(d)
         return True
