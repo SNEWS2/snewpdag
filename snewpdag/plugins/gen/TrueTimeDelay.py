@@ -21,7 +21,7 @@ import random as rm
 from datetime import datetime
 from snewpdag.dag import Node
 
-class TrueTimeDelay():
+class TrueTimeDelay(Node):
 
     #Define detector location
     def __init__(self, first_det, second_det, detector_location, **kwargs):
