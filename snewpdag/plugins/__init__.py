@@ -5,6 +5,8 @@ from .TimeDistInput import TimeDistInput
 from .TimeDistFileInput import TimeDistFileInput
 from .SkymapInput import SkymapInput
 
+from .SubtractOffset import SubtractOffset
+
 from .NthTimeDiff import NthTimeDiff
 from .CombineMaps import CombineMaps
 from .TimeDistDiff import TimeDistDiff
