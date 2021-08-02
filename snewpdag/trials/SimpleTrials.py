@@ -32,10 +32,14 @@ def trials(spec, ntrials=1000):
   followed by a report action.
   """
   nodes = configure(spec)
+  if nodes == None:
+    logging.error('Invalid configuration specified')
+    return
+
   i = 0
   while i < ntrials:
-    data = [ { 'action': 'alert', 'id': i, 'name': 'Control' },
-             { 'action': 'reset', 'id': i, 'name': 'Control' } ]
+    data = [ { 'action': 'alert', 'burst_id': i, 'name': 'Control' },
+             { 'action': 'reset', 'burst_id': i, 'name': 'Control' } ]
     inject(nodes, data, spec)
     i += 1
   data = [ { 'action': 'report', 'name': 'Control' } ]
