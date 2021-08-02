@@ -3,59 +3,47 @@ TrueTimeDelay: Calculate the true time delay of the neutrino arrival between two
 by randomly generate a neutrino directional vector and a arrival time 
 
 Constructor Arguments:
-    first_det: string, "first detector name"
-                options: "ARCA", "IC", "SK", "HK", "JUNO"
-    second_det: string, "second detector name"
-                options: "ARCA", "IC", "SK", "HK", "JUNO"
+    detector_list: list of strings, ["first_detector", "second_detector", ...]
+                the list of detectors that we want to generate true time delay
+                options: "HK", "IC", "JUNO", "KM3", "SK"
     detector_location: csv file ('detector_location.csv')
 
-Output added to data: gen_to (true time delay)
+Output added to data: dictionary with key ("det1", "det2") and the corresponding true time delay
 
 """
 
-import logging
 import csv
 import time
 import numpy as np
 import random as rm
+import itertools
 from datetime import datetime
 from snewpdag.dag import Node
 
 class TrueTimeDelay(Node):
 
     #Define detector location
-    def __init__(self, first_det, second_det, detector_location, **kwargs):
-        self.first_det = first_det
-        self.second_det = second_det
-
+    def __init__(self, detector_list, detector_location, **kwargs):
+        self.detector_info = {}
         with open(detector_location, 'r') as f:
             detectors = csv.reader(f)
             for detector in detectors:
-                if detector[0] == first_det: 
-                    first_lon = np.radians(float(detector[1]))
-                    first_lat = np.radians(float(detector[2]))
-                    first_height = float(detector[3])
-                    self.first_det_info = [first_lon, first_lat, first_height]
-                if detector[0] == second_det:
-                    second_lon = np.radians(float(detector[1]))
-                    second_lat = np.radians(float(detector[2]))
-                    second_height = float(detector[3])
-                    self.second_det_info = [second_lon, second_lat, second_height]
-
+                name = detector[0]
+                if name in detector_list: 
+                    lon = np.radians(float(detector[1]))
+                    lat = np.radians(float(detector[2]))
+                    height = float(detector[3])
+                    self.detector_info[name] = [lon, lat, height]
         super().__init__(**kwargs)
 
 
-    #Randomly generate the direction vector for incoming neutrino flux
-
+    #Randomly generate the direction vector for incoming neutrino flux, using right-ascention(alpha) and declination(delta)
     def generate_n(self):
-
-    #randomly generate a SN coordinate in the sky in terms of right-ascention alpha (-180° - 180°)
-    #and declination delta (-90° - 90°)
         alpha_deg = rm.uniform(-180,180)
-        delta_deg = rm.uniform(-90,90)
-    
         alpha = np.radians(alpha_deg)
-        delta = np.radians(delta_deg)
+
+        delta_distribution = rm.uniform(-1,1)
+        delta = np.arccos(delta_distribution)
         
         nx = -np.cos(alpha)*np.cos(delta)
         ny = -np.sin(alpha)*np.cos(delta)
@@ -77,7 +65,7 @@ class TrueTimeDelay(Node):
 
 
     #calculate the distance between two detectors
-    #Input: longitude, latitude, height(optional)
+    #Input: first_det/second_det are arrays of the form [lon, lat, height], and arrival is a datetime object 
     def detector_diff(self, first_det, second_det, arrival=datetime(2000,3,20,12)):
         earth = 6.37e6 #m
         ang_rot = 7.29e-5 #radians/s
@@ -90,20 +78,12 @@ class TrueTimeDelay(Node):
         
         first_lon = first_det[0] + ang_rot*t - ang_sun*T - np.pi
         first_lat = first_det[1]
+        first_h = first_det[2] 
         second_lon = second_det[0] + ang_rot*t - ang_sun*T - np.pi
         second_lat = second_det[1]
+        second_h = second_det[2]
         
-        #If the height of detector is not given, assume at sea level
-        if len(first_det)>2:
-            first_h = first_det[2]
-        else:
-            first_h = 0
-            
-        if len(second_det)>2:
-            second_h = second_det[2]
-        else:
-            second_h = 0
-        
+        #Calculate the displacement vector of the given two detectors
         first_rx = (earth+first_h)*np.cos(first_lon)*np.cos(first_lat)
         first_ry = (earth+first_h)*np.sin(first_lon)*np.cos(first_lat)
         first_rz = (earth+first_h)*np.sin(first_lat)
@@ -114,26 +94,28 @@ class TrueTimeDelay(Node):
 
         first_r = np.array([first_rx, first_ry, first_rz])
         second_r = np.array([second_rx, second_ry, second_rz])
-
         diff_r = np.subtract(first_r, second_r)
         return diff_r
 
 
-    #calculate the arrival time difference given SN location and distance
-    #between two detectors
+    #calculate the arrival time difference given SN location and distance between two detectors
     def time_delay(self, detector_diff, source):
         c = 3e8
         t = np.dot(detector_diff, source)/c
         return t
 
 
-    def alert(self, data):
+    #Generate neutrino flux direction and arrival time
+    #Calculate the true time delay between every combination of the desired detectors
+    def alert(self,data):
         nvec = self.generate_n()
         t = self.generate_time() 
-        posdiff = self.detector_diff(self.first_det_info, self.second_det_info, t)
-        truedelay = self.time_delay(nvec, posdiff)
-        print(truedelay)
-        detector_pair = self.first_det + ', ' + self.second_det
-        d = {detector_pair: truedelay}
+        d = {}
+        for pair in itertools.combinations(self.detector_info, 2):
+            detector_one = self.detector_info[pair[0]]
+            detector_two = self.detector_info[pair[1]]
+            posdiff = self.detector_diff(detector_one, detector_two, t)
+            truedelay = self.time_delay(nvec, posdiff)
+            d[pair] = truedelay
         data.update(d)
         return True
