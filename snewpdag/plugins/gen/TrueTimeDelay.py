@@ -42,8 +42,9 @@ class TrueTimeDelay(Node):
         alpha_deg = rm.uniform(-180,180)
         alpha = np.radians(alpha_deg)
 
-        delta_distribution = rm.uniform(-1,1)
-        delta = np.arccos(delta_distribution)
+        polar = rm.uniform(-1,1)
+        theta = np.arccos(polar)
+        delta = np.pi/2 - theta
         
         nx = -np.cos(alpha)*np.cos(delta)
         ny = -np.sin(alpha)*np.cos(delta)
@@ -54,27 +55,30 @@ class TrueTimeDelay(Node):
 
 
     #randomly generate a time between 2000-1-1, 00:00 and 2000-12-31, 23:59:59 UTC for SN neutrino signal to arrive on Earth
-    #base time (vernal equinox): 2000-03-20, 12:00 PM UTC
+    #unix time for 2000-1-1, 00:00 is 946713600.0
     def generate_time(self):
+        start_unix = 946713600.0
         d = rm.randrange(0, 31536000)
-        start_range = datetime(2000,1,1,0,0,0)
-        start_unix = time.mktime(start_range.timetuple())
-        random_unix = d + start_unix 
-        generated_time = datetime.fromtimestamp(random_unix)
-        return generated_time
+        nano = rm.randrange(0,1e9)
+        ns = nano*1e-9
+        random_unix = start_unix + d + ns
+        return random_unix
 
 
-    #calculate the distance between two detectors
-    #Input: first_det/second_det are arrays of the form [lon, lat, height], and arrival is a datetime object 
-    def detector_diff(self, first_det, second_det, arrival=datetime(2000,3,20,12)):
+   #calculate the distance between two detectors
+   #Input: first_det/second_det are arrays of the form [lon, lat, height], 
+   #Default arrival time: (vernal equinox): 2000-03-20, 12:00 PM UTC; its unix time is 953582400.0
+    def detector_diff(self, first_det, second_det, arrival=953582400.0):
         earth = 6.37e6 #m
         ang_rot = 7.29e-5 #radians/s
         ang_sun = 2e-7 #radians/s   2pi/365days
         
         #take into account the time dependence of longitude  
         #reference: arXiv:1304.5006
-        t = arrival.hour*60*60 + arrival.minute*60 + arrival.second  #(0 <= t <= 24h)
-        T = (arrival - datetime(2000,3,20,12)).total_seconds() #time elapsed after the vernal point when the detector received the SN neutrinos
+        arrival_date = datetime.fromtimestamp(arrival)
+        decimal  = arrival - int(arrival)
+        t = arrival_date.hour*60*60 + arrival_date.minute*60 + arrival_date.second + decimal  #(0 <= t <= 24h)
+        T = arrival - 953582400.0 #time elapsed after the vernal point when the detector received the SN neutrinos
         
         first_lon = first_det[0] + ang_rot*t - ang_sun*T - np.pi
         first_lat = first_det[1]
@@ -117,5 +121,5 @@ class TrueTimeDelay(Node):
             posdiff = self.detector_diff(detector_one, detector_two, t)
             truedelay = self.time_delay(nvec, posdiff)
             d[pair] = truedelay
-        data.update(d)
+        data['gen_dts'] = d
         return True
