@@ -23,14 +23,21 @@ To read a csv-formatted configuration file,
   trials(spec)
 """
 import sys
+import numpy as np
+from snewpdag.dag import Node
 from snewpdag.dag.app import configure, inject
 
-def trials(spec, ntrials=1000):
+def trials(spec, ntrials=1000, seed=None):
   """
   Configure nodes using spec (a list of dictionaries).
   Then run alert/reset pairs for as many times as given in ntrials,
   followed by a report action.
   """
+  if seed == None:
+    Node.rng = np.random.default_rng()
+  else:
+    Node.rng = np.random.default_rng(seed)
+
   nodes = configure(spec)
   if nodes == None:
     logging.error('Invalid configuration specified')
