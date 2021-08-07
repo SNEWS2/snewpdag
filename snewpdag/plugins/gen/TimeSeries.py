@@ -5,7 +5,6 @@ TimeSeries:  generates a time series on each alert, based on a histogram
 
 configuration:
   sig_mean:  mean number of events to be generated for each alert.
-  seed:  random number seed (integer)
 
 output added to data:
   'times': times of individual events based on histogram.
@@ -15,12 +14,12 @@ output added to data:
 import logging
 import numpy as np
 import matplotlib.pyplot as plt
+from snewpdag.dag import Node
 from . import TimeDistSource
 
 class TimeSeries(TimeDistSource):
 
-  def __init__(self, seed, **kwargs):
-    self.rng = np.random.default_rng(seed)
+  def __init__(self, **kwargs):
     super().__init__(**kwargs)
     area = sum(self.mu)
     # Define mean (total number of signal events) as the integral of the lightcurve model
@@ -36,12 +35,12 @@ class TimeSeries(TimeDistSource):
 
   def alert(self, data):
     tdelay = data['sig_t_delay'] if 'sig_t_delay' in data else 0
-    nev = self.rng.poisson(self.mean)
+    nev = Node.rng.poisson(self.mean)
     size = len(self.mu)
-    j = self.rng.choice(size, nev, p=self.nmu, replace=True, shuffle=False)
+    j = Node.rng.choice(size, nev, p=self.nmu, replace=True, shuffle=False)
     t0 = self.tedges[j]
     dt = self.tedges[j+1] - t0
-    a = self.rng.random(nev) * dt + t0 + tdelay
+    a = Node.rng.random(nev) * dt + t0 + tdelay
     a.flags.writeable = False
 
     ngen = { 'times': a, 'gen_t_delay': tdelay }
