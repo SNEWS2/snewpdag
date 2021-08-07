@@ -35,7 +35,8 @@ class GenerateSGBG(TimeDistSource):
   def alert(self, data):
     logging.info('times are {}'.format(self.t[-1]))
     new_times = np.arange(self.tmin,self.tmax,0.001)
-    self.tdelay = int(np.random.uniform(-20,20))
+    self.tdelay = int(Node.rng.uniform(-20.0, 20.0))
+
     t_true = self.tdelay
     logging.info('t_true {}'.format(t_true))
     new_data = []
