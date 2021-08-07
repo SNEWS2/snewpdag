@@ -12,7 +12,7 @@ import numpy as np
 
 from snewpdag.dag import Node
 
-class True_VS_Fit(Node):
+class TrueVsFit(Node):
   def __init__(self, in_field, **kwargs):
     self.map = {}
 

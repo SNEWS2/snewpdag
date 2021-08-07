@@ -45,7 +45,7 @@ class GenerateSGBG(TimeDistSource):
     for i,ti in enumerate(new_times):
       bg = self.bg
       if ti>=t_true/1000. and ti<self.t[-1]-0.001+t_true/1000.:                                                                                   
-        signal = self.mu[i-t_true+self.tmin*1000-1]*(10./dist)**2
+        signal = self.mu[i-t_true+self.tmin*1000-1]*(10./self.dist)**2
         new_data.append(signal+bg)
       else:
         new_data.append(bg)

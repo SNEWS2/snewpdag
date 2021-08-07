@@ -40,7 +40,7 @@ def run():
 
   # initialize random number generator
   if args.seed:
-    Node.rng = np.random.default_rng(args.seed)
+    Node.rng = np.random.default_rng(int(args.seed))
   else:
     Node.rng = np.random.default_rng()
 
