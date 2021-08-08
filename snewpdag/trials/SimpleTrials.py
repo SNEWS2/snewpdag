@@ -21,6 +21,11 @@ To read a csv-formatted configuration file,
   with open(filename, 'r') as f:
     spec = csv_eval(f)
   trials(spec)
+
+Note that trial_id keeps track of which trial is being run.
+burst_id is always 0.  The reason for this is that a new burst_id
+would trigger inject() to create a new DAG from scratch.
+So we keep burst_id the same, but count using trial_id.
 """
 import sys
 import numpy as np
@@ -45,10 +50,12 @@ def trials(spec, ntrials=1000, seed=None):
 
   i = 0
   while i < ntrials:
-    data = [ { 'action': 'alert', 'burst_id': i, 'name': 'Control' },
-             { 'action': 'reset', 'burst_id': i, 'name': 'Control' } ]
+    data = [ { 'action': 'alert', 'burst_id': 0, 'trial_id': i,
+               'name': 'Control' },
+             { 'action': 'reset', 'burst_id': 0, 'trial_id': i,
+               'name': 'Control' } ]
     inject(nodes, data, spec)
     i += 1
-  data = [ { 'action': 'report', 'name': 'Control' } ]
+  data = [ { 'action': 'report', 'burst_id': 0, 'name': 'Control' } ]
   inject(nodes, data, spec)
 
