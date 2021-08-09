@@ -50,18 +50,20 @@ class TrueVsFit(Node):
     # start constructing output data.
     data['dt_true'] = {}
     dt_fit = -9999
-    dt_JUNO = -9999
-    dt_IC = -9999
+    dt_1 = -9999
+    dt_2 = -9999
     # do the calculation
-    for n,i in enumerate(self.map):
-       if(i=='JUNO'):
-         dt_JUNO = self.map[i]['t_true']
-       if(i=='IceCube'):
-         dt_IC = self.map[i]['t_true']
-       if(i=='Diff1'):
-         dt_fit = self.map[i]['tdelay']
 
-    data['dt_true'] = dt_fit - (dt_IC - dt_JUNO)
+    for n,i in enumerate(self.map):
+       if(i!='Diff1'):
+         if(dt_1==-9999):
+           dt_1 = self.map[i]['t_true']
+         else:
+           dt_2 = self.map[i]['t_true']
+       else:
+         dt_fit = self.map[i][self.field]
+       print(i, dt_1, dt_2, dt_fit)
+    data['dt_true'] = dt_fit - (dt_1 - dt_2)
 
     hlist = []
     for k in self.map:
