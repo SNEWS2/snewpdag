@@ -56,15 +56,11 @@ class TrueVsFit(Node):
     for n,i in enumerate(self.map):
        if(i=='JUNO'):
          dt_JUNO = self.map[i]['t_true']
-         print('Hey there', self.map[i]['t_true'])
        if(i=='IceCube'):
          dt_IC = self.map[i]['t_true']
-         print('Hey there', self.map[i]['t_true'])
        if(i=='Diff1'):
-         dt_fit = self.map[i][self.field][self.index][self.index2]
-         print('Hey there', self.map[i][self.field][self.index][self.index2])
-       print('hihi', n,i)
-    print('Heeeeelo', dt_fit, dt_IC, dt_JUNO)
+         dt_fit = self.map[i]['tdelay']
+
     data['dt_true'] = dt_fit - (dt_IC - dt_JUNO)
 
     hlist = []
@@ -75,5 +71,3 @@ class TrueVsFit(Node):
       action_verb = 'alert'
       data['history'].combine(hlist)
       self.notify(action_verb, data)
-    #print('I notify', data, result)
-    #exit()
