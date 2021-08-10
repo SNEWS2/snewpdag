@@ -36,4 +36,4 @@ class Offset(Node):
             offsetted_time = rm.gauss(true_arrival, offset)
             d = {detector:offsetted_time}
             data['gen_dts'].update(d)
-        return data
+        return True
