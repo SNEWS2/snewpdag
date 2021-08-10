@@ -16,7 +16,7 @@ from snewpdag.dag import Node
 
 class Offset(Node):
     
-    #arrivial time uncertainties 
+    #arrivial time uncertainties (s)
     detector_offset = {'SK':0.0009,
                        'JUNO':0.0012,
                        'IC':0.001,
