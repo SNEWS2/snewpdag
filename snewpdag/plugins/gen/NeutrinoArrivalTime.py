@@ -34,49 +34,46 @@ class NeutrinoArrivalTime(Node):
 
 
     #Randomly generate the direction vector for incoming neutrino flux, using right-ascention(alpha) and declination(delta)
+    #costheta gives the polar angle distribution, and delta = pi/2 - polar
     def generate_n(self):
         alpha_deg = rm.uniform(-180,180)
         alpha = np.radians(alpha_deg)
+        costheta = rm.uniform(-1,1)  #cos(theta) = sin(delta)
 
-        polar = rm.uniform(-1,1)
-        theta = np.arccos(polar)
-        delta = np.pi/2 - theta
+        nx = -np.cos(alpha)*np.sqrt(1-costheta*costheta)
+        ny = -np.sin(alpha)*np.sqrt(1-costheta*costheta)
+        nz = -costheta  
 
-        nx = -np.cos(alpha)*np.cos(delta)
-        ny = -np.sin(alpha)*np.cos(delta)
-        nz = -np.sin(delta)
-
-        source = np.array([nx, ny, nz])
+        source = (nx, ny, nz)
         return source
 
 
-    #randomly generate a time between 2000-1-1, 00:00 and 2000-12-31, 23:59:59 UTC for SN neutrino signal to arrive at the center of the earth
+    #randomly generate a time between 2000-1-1, 00:00 and 2000-12-31, 23:59:59 UTC for SN neutrino signal to arrive on Earth
     #unix time for 2000-1-1, 00:00 is 946713600.0
     def generate_time(self):
-        start_unix = 946713600.0
-        d = rm.randrange(0, 31536000)
-        nano = rm.randrange(0,1e9)
-        ns = nano*1e-9
-        random_unix = start_unix + d + ns
-        return random_unix
+        start_unix = 946713600
+        random_time = rm.randrange(0, 31536000) #number of second in a year
+        s = start_unix + random_time 
+        ns = rm.randrange(0,1e9)
+        return (s, ns)
 
 
-    #calculate the distance of the detector with respect to the center of the earth
-    #Input: detector are arrays of the form [lon, lat, height], 
+    #calculate the distance between two detectors
+    #Input: first_det/second_det are arrays of the form [lon, lat, height], 
     #Default arrival time: (vernal equinox): 2000-03-20, 12:00 PM UTC; its unix time is 953582400.0
-    def detector_diff(self, detector, arrival=953582400.0):
+    def detector_diff(self, detector, arrival=(953582400, 0)):
         earth = 6.37e6 #m
         ang_rot = 7.29e-5 #radians/s
         ang_sun = 2e-7 #radians/s   2pi/365days
 
         #take into account the time dependence of longitude  
         #reference: arXiv:1304.5006
-        arrival_date = datetime.fromtimestamp(arrival)
-        decimal  = arrival - int(arrival)
-        t = arrival_date.hour*60*60 + arrival_date.minute*60 + arrival_date.second + decimal  #(0 <= t <= 24h)
-        T = arrival - 953582400.0 #time elapsed after the vernal point when the detector received the SN neutrinos
+        arrival_date = datetime.fromtimestamp(arrival[0])
+        decimal = arrival[1]*1e-9
+        t_rot = arrival_date.hour*60*60 + arrival_date.minute*60 + arrival_date.second + decimal  #(0 <= t <= 24h)
+        t_sun = arrival[0] - 953582400 + decimal #time elapsed after the vernal point when the detector received the SN neutrinos
 
-        lon = detector[0] + ang_rot*t - ang_sun*T - np.pi
+        lon = detector[0] + ang_rot*t_rot - ang_sun*t_sun - np.pi
         lat = detector[1]
         h = detector[2] 
 
@@ -85,7 +82,7 @@ class NeutrinoArrivalTime(Node):
         ry = (earth+h)*np.sin(lon)*np.cos(lat)
         rz = (earth+h)*np.sin(lat)
 
-        r = np.array([rx, ry, rz])
+        r = (rx, ry, rz)
         return r
 
 
@@ -101,11 +98,30 @@ class NeutrinoArrivalTime(Node):
     def alert(self, data):
         nvec = self.generate_n()
         t = self.generate_time() 
-        d = {}
+        d = {'sn_direction':nvec,
+             'sn_times':{
+                'Earth':t
+                        }
+            }
         for name in self.detector_info:
             detector = self.detector_info[name]
             posdiff = self.detector_diff(detector, t)
-            time_delay = self.time_delay(nvec, posdiff) 
-            d[name] = t+time_delay
-        data['gen_dts'] = d
+            time_delay = self.time_delay(posdiff, nvec) 
+            s = t[0]
+            ns = t[1]+ round(time_delay*1e9)
+            #consider the case when go over/below 1s boundary
+            if len(str(ns)) > 9:
+                s = t[0] + int(str(ns)[0:-9]) 
+                ns = int(str(ns)[-9:])
+            elif ns < 0:
+                s = t[0] - 1
+                ns = int(1e9) + ns
+            else:
+                pass
+            d['sn_times'][name] = (s,ns)
+
+        if 'gen' in data:
+            data['gen'].update(d)
+        else:
+            data['gen'] = d
         return True
