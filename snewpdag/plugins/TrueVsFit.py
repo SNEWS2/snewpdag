@@ -62,7 +62,7 @@ class TrueVsFit(Node):
            dt_2 = self.map[i]['t_true']
        else:
          dt_fit = self.map[i][self.field]
-       print(i, dt_1, dt_2, dt_fit)
+       #print(i, dt_1, dt_2, dt_fit)
     data['dt_true'] = dt_fit - (dt_1 - dt_2)
 
     hlist = []
