@@ -1,6 +1,6 @@
 "Control","Pass",,"'line’: 100",,
-"SNOplus-ts","gen.TimeSeries","Control","'mean’: 200, ‘seed’:12345, ‘sig_filetype’:’tn’, ‘sig_filename’: ‘snewpdag/data/output_scint20kt_27_Shen_1D_solar_mass_progenitor.fits_1msbin.txt’",,
-"JUNO-ts","gen.TimeSeries","Control","'mean’: 2000, ‘seed’:5831, ‘sig_filetype’:’tn’, ‘sig_filename’: ‘snewpdag/data/output_scint20kt_27_Shen_1D_solar_mass_progenitor.fits_1msbin.txt’",,
+"SNOplus-ts","gen.TimeSeries","Control","'mean’: 200, ‘sig_filetype’:’tn’, ‘sig_filename’: ‘snewpdag/data/output_scint20kt_27_Shen_1D_solar_mass_progenitor.fits_1msbin.txt’",,
+"JUNO-ts","gen.TimeSeries","Control","'mean’: 2000, ‘sig_filetype’:’tn’, ‘sig_filename’: ‘snewpdag/data/output_scint20kt_27_Shen_1D_solar_mass_progenitor.fits_1msbin.txt’",,
 "SNOplus","gen.Combine","SNOplus-ts",,,
 "JUNO","gen.Combine","JUNO-ts",,,
 "SNOplus-bin","SeriesBinner","SNOplus","'in_field’:’times’, ‘nbins’:20000, ‘xlow’:-10.0, ‘xhigh’:10.0, ‘out_xfield’:’t’, ‘out_yfield’:’n’",,

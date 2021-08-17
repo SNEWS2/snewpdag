@@ -12,7 +12,7 @@ import numpy as np
 
 from snewpdag.dag import Node
 
-class True_VS_Fit(Node):
+class TrueVsFit(Node):
   def __init__(self, in_field, **kwargs):
     self.map = {}
 
@@ -50,22 +50,20 @@ class True_VS_Fit(Node):
     # start constructing output data.
     data['dt_true'] = {}
     dt_fit = -9999
-    dt_JUNO = -9999
-    dt_IC = -9999
+    dt_1 = -9999
+    dt_2 = -9999
     # do the calculation
+
     for n,i in enumerate(self.map):
-       if(i=='JUNO'):
-         dt_JUNO = self.map[i]['t_true']
-         print('Hey there', self.map[i]['t_true'])
-       if(i=='IceCube'):
-         dt_IC = self.map[i]['t_true']
-         print('Hey there', self.map[i]['t_true'])
-       if(i=='Diff1'):
-         dt_fit = self.map[i][self.field][self.index][self.index2]
-         print('Hey there', self.map[i][self.field][self.index][self.index2])
-       print('hihi', n,i)
-    print('Heeeeelo', dt_fit, dt_IC, dt_JUNO)
-    data['dt_true'] = dt_fit - (dt_IC - dt_JUNO)
+       if(i!='Diff1'):
+         if(dt_1==-9999):
+           dt_1 = self.map[i]['t_true']
+         else:
+           dt_2 = self.map[i]['t_true']
+       else:
+         dt_fit = self.map[i][self.field]
+       #print(i, dt_1, dt_2, dt_fit)
+    data['dt_true'] = dt_fit - (dt_1 - dt_2)
 
     hlist = []
     for k in self.map:
@@ -75,5 +73,3 @@ class True_VS_Fit(Node):
       action_verb = 'alert'
       data['history'].combine(hlist)
       self.notify(action_verb, data)
-    #print('I notify', data, result)
-    #exit()

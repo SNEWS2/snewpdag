@@ -9,6 +9,8 @@ import importlib
 import logging
 import ast
 import csv
+import numpy as np
+from . import Node
 
 def run():
   """
@@ -27,6 +29,7 @@ def run():
   parser.add_argument('--jsonlines', action='store_true',
                       help='each input line contains one JSON object to inject')
   parser.add_argument('--log', help='logging level')
+  parser.add_argument('--seed', help='random number seed')
   args = parser.parse_args()
 
   if args.log:
@@ -34,6 +37,12 @@ def run():
     if not isinstance(numeric_level, int):
       raise ValueError('Invalid log level {}'.format(args.log))
     logging.basicConfig(level=numeric_level)
+
+  # initialize random number generator
+  if args.seed:
+    Node.rng = np.random.default_rng(int(args.seed))
+  else:
+    Node.rng = np.random.default_rng()
 
   cfn, cfx = os.path.splitext(args.config)
   if cfx == '.csv':

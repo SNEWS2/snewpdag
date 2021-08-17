@@ -10,6 +10,9 @@ from snewpdag.values import History
 
 class Node:
 
+  # shared random number generator - initialized by app
+  rng = None
+
   def __init__(self, name, **kwargs):
     """
     Initialize the node.
