@@ -46,24 +46,19 @@ class TimeOffset(Node):
             offsetted_ns = round(rm.gauss(true_arrival[1], offset*1e9))
 
             #Consider the case when go over/below the 1s boundary 
-            if len(str(offsetted_ns)) > 9:
-                #if there is a gaussian noise larger than one second, take only the ns part
-                if int(str(offsetted_ns)[0:-9]) > 1 or int(str(offsetted_ns)[0:-9]) < -1:
-                    offsetted_s = true_arrival[0]
-                    if offsetted_ns < 0:
-                        offsetted_ns = int(1e9) + int(str(offsetted_ns)[-9:])
-                    else:
-                        offsetted_ns = int(str(offsetted_ns)[-9:])
-                    logging.warning('Detector {} has a unusally large offset: more than one second.'.format(detector))
+            if offsetted_ns not in range(0,int(1e9)):
+                if offsetted_ns > 999999999:
+                    offsetted_ns = offsetted_ns - int(1e9)
+                    offsetted_s = offsetted_s + 1
                 else:
-                    offsetted_s = true_arrival[0] + int(str(offsetted_ns)[0:-9])
+                    offsetted_ns = int(1e9) + offsetted_ns
+                    offsetted_s = offsetted_s - 1
+                #if there is a gaussian noise larger/smaller than one second, don't change the s part and take only the last 9 digit of the ns part, log warning message
+                if offsetted_ns not in range(0,int(1e9)):
+                    offsetted_s = true_arrival[0]
                     offsetted_ns = int(str(offsetted_ns)[-9:])
-            elif offsetted_ns < 0:
-                offsetted_s = true_arrival[0] -1
-                offsetted_ns = int(1e9) + offsetted_ns
-            else:
-                pass
-                    
+                    logging.warning('Detector {} has a unusally large offset: more than one second.'.format(detector))
+                        
             d = {detector:(offsetted_s, offsetted_ns)}
             data['gen']['sn_times'].update(d)
         return True
