@@ -29,7 +29,7 @@ class TimeOffset(Node):
         
     #Add time offset to true arrival time and update payload
     def alert(self, data):
-        for item in data['gen']['sn_times'].items():
+        for item in data['gen']['sn_time'].items():
             detector = item[0]
             true_arrival = item[1]
             
@@ -60,5 +60,5 @@ class TimeOffset(Node):
                     logging.warning('Detector {} has a unusally large offset: more than one second.'.format(detector))
                         
             d = {detector:(offsetted_s, offsetted_ns)}
-            data['gen']['sn_times'].update(d)
+            data['gen']['sn_time'].update(d)
         return True
