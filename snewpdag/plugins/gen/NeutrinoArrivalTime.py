@@ -110,9 +110,9 @@ class NeutrinoArrivalTime(Node):
             s = t[0]
             ns = t[1]+ round(time_delay*1e9)
             #consider the case when go over/below 1s boundary
-            if len(str(ns)) > 9:
-                s = t[0] + int(str(ns)[0:-9]) 
-                ns = int(str(ns)[-9:])
+            if ns > 999999999:
+                s = t[0] + 1
+                ns = ns - int(1e9) 
             elif ns < 0:
                 s = t[0] - 1
                 ns = int(1e9) + ns
