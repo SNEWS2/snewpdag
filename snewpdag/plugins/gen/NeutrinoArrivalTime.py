@@ -99,7 +99,7 @@ class NeutrinoArrivalTime(Node):
         nvec = self.generate_n()
         t = self.generate_time() 
         d = {'sn_direction':nvec,
-             'sn_times':{
+             'sn_time':{
                 'Earth':t
                         }
             }
@@ -118,7 +118,7 @@ class NeutrinoArrivalTime(Node):
                 ns = int(1e9) + ns
             else:
                 pass
-            d['sn_times'][name] = (s,ns)
+            d['sn_time'][name] = (s,ns)
 
         if 'gen' in data:
             data['gen'].update(d)
