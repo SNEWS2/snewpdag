@@ -16,6 +16,7 @@ import numpy as np
 import random as rm
 from datetime import datetime
 from snewpdag.dag import Node
+from snewpdag.dag import lib
 
 class NeutrinoArrivalTime(Node):
     #Define detector location
@@ -109,16 +110,9 @@ class NeutrinoArrivalTime(Node):
             time_delay = self.time_delay(posdiff, nvec) 
             s = t[0]
             ns = t[1]+ round(time_delay*1e9)
-            #consider the case when go over/below 1s boundary
-            if ns > 999999999:
-                s = t[0] + 1
-                ns = ns - int(1e9) 
-            elif ns < 0:
-                s = t[0] - 1
-                ns = int(1e9) + ns
-            else:
-                pass
-            d['sn_time'][name] = (s,ns)
+            a = (s, ns)
+            arrival_time = tuple(lib.normalize_time(a))
+            d['sn_times'][name] = arrival_time
 
         if 'gen' in data:
             data['gen'].update(d)
