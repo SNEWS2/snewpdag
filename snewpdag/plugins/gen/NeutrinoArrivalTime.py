@@ -59,7 +59,7 @@ class NeutrinoArrivalTime(Node):
         return (s, ns)
 
 
-    #calculate the distance between two detectors
+    #calculate the distance between the detector and the center of the Earth
     #Input: first_det/second_det are arrays of the form [lon, lat, height], 
     #Default arrival time: (vernal equinox): 2000-03-20, 12:00 PM UTC; its unix time is 953582400.0
     def detector_diff(self, detector, arrival=(953582400, 0)):
@@ -100,7 +100,7 @@ class NeutrinoArrivalTime(Node):
         nvec = self.generate_n()
         t = self.generate_time() 
         d = {'sn_direction':nvec,
-             'sn_time':{
+             'sn_times':{
                 'Earth':t
                         }
             }
