@@ -52,8 +52,8 @@ class TimeOffset(Node):
             a = (offsetted_s, offsetted_ns)
             offsetted_time = tuple(lib.normalize_time(a))
             d = {detector:offsetted_time}
-            if 'neutrino_time' in data:
-                data['neutrino_time'].update(d)
+            if 'neutrino_times' in data['gen']:
+                data['gen']['neutrino_times'].update(d)
             else:
-                data['neutrino_time'] = d
+                data['gen']['neutrino_times'] = d
         return True
