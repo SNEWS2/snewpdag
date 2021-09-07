@@ -7,6 +7,7 @@ Constructor Arguments:
 
 """
 
+import logging
 from snewpdag.dag import Node
 
 class DetectorTime(Node):
@@ -16,16 +17,13 @@ class DetectorTime(Node):
         super().__init__(**kwargs)
     
     def alert(self, data):
+        if self.detector not in data['gen']['sn_times']:
+            logging.error("{} is not in the payload.".format(self.detector))
+            return True
         true_time = data['gen']['sn_times'][self.detector]
         observed_time = data['gen']['neutrino_times'][self.detector]
         a = {self.detector: true_time}
         b = {self.detector: observed_time}
-        if 'sn_time' in data:
-            data['sn_time'].update(a)
-        else:
-            data['sn_time'] = a
-        if 'neutrino_time' in data:
-            data['neutrino_time'].update(b)
-        else:
-            data['neutrino_time'] = b
+        data['sn_time'] = a
+        data['neutrino_time'] = b
         return True
