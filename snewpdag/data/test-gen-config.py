@@ -17,7 +17,6 @@
     "observe": [ "Control" ],
     "kwargs": {
       "mean": 1548.0,
-      "seed": 12345,
       "sig_filetype": "tn",
       "sig_filename":
       "snewpdag/data/output_icecube_27_Shen_1D_solar_mass_progenitor.fits_1msbin.txt"
@@ -31,7 +30,6 @@
     "comment": "do I need to introduce a time delay?",
     "kwargs": {
       "mean": 0.001,
-      "seed": 5831,
       "sig_filetype": "tn",
       "sig_filename":
       "snewpdag/data/output_scint20kt_27_Shen_1D_solar_mass_progenitor.fits_1msbin.txt"

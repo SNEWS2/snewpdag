@@ -26,7 +26,6 @@ Output json:
         mean, rms (if 'stats' flag)
 """
 import logging
-import math
 import numpy as np
 
 from snewpdag.dag import Node

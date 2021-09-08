@@ -12,7 +12,7 @@ Configuration options:
   filename:  output filename, with fields
              {0} renderer name
              {1} count index, starting from 0
-             {2} id from update data (default 0 if no such field)
+             {2} burst_id from update data (default 0 if no such field)
              {3} source name (which this renderer observes)
 
 Plots y vs x.
@@ -47,7 +47,7 @@ class TimeProfile(Node):
     self.count += 1
 
   def alert(self, data):
-    burst_id = data.get('id', 0)
+    burst_id = data.get('burst_id', 0)
     d = data[self.in_field] if self.in_field else data
     nm = d['name']
     if 'comment' in d:

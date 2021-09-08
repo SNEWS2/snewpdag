@@ -108,3 +108,21 @@ class TestApp(unittest.TestCase):
     self.assertEqual(nodes[0]['Diff3'].last_data['action'], 'alert')
     self.assertAlmostEqual(nodes[0]['Diff3'].last_data['dt'], -0.7)
 
+  def test_cyclic_error(self):
+    spec = [
+      { 'class': 'TimeSeriesInput', 'name': 'Input1' },
+      { 'class': 'TimeSeriesInput', 'name': 'Input2' },
+      { 'class': 'NthTimeDiff',
+        'name': 'Diff1',
+        'kwargs': { 'nth': 1 },
+        'observe': [ 'Input1', 'Diff1' ] }, # should be an error
+      { 'class': 'NthTimeDiff',
+        'name': 'Diff3',
+        'kwargs': { 'nth': 3 },
+        'observe': [ 'Input1', 'Input2' ] },
+      ]
+    with self.assertLogs() as cm:
+      nodes = configure(spec)
+    self.assertEqual(cm.output, [
+        'ERROR:root:Diff1 observing itself' ])
+

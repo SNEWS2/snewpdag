@@ -9,6 +9,8 @@ import importlib
 import logging
 import ast
 import csv
+import numpy as np
+from . import Node
 
 def run():
   """
@@ -27,6 +29,7 @@ def run():
   parser.add_argument('--jsonlines', action='store_true',
                       help='each input line contains one JSON object to inject')
   parser.add_argument('--log', help='logging level')
+  parser.add_argument('--seed', help='random number seed')
   args = parser.parse_args()
 
   if args.log:
@@ -35,41 +38,17 @@ def run():
       raise ValueError('Invalid log level {}'.format(args.log))
     logging.basicConfig(level=numeric_level)
 
+  # initialize random number generator
+  if args.seed:
+    Node.rng = np.random.default_rng(int(args.seed))
+  else:
+    Node.rng = np.random.default_rng()
+
   cfn, cfx = os.path.splitext(args.config)
   if cfx == '.csv':
     # name, class, observe
-    nodespecs = []
     with open(args.config, 'r') as f:
-      reader = csv.reader(f, quotechar='"')
-      for row in reader:
-        #print('New row:  {}'.format(row))
-        if len(row) == 0:
-          continue # blank line
-        if row[0] == '' or row[0] == '#':
-          continue # comment line
-        if len(row) < 2:
-          logging.error('Node specific requires at least 2 fields')
-          continue
-        node = { 'name': row[0], 'class': row[1] }
-        if len(row) >= 3 and len(row[2]) > 0:
-          nl = []
-          ns = row[2].strip().split(',')
-          for n in ns:
-            s = n.strip()
-            if len(s) > 0:
-              nl.append(s)
-          node['observe'] = nl
-        if len(row) >= 4:
-          s = []
-          for i in range(3, len(row)):
-            if len(row[i]) > 0:
-              # replace special marks which might stand in for single quotes
-              r = row[i].replace("’","'").replace("‘","'").replace("`","'")
-              s.append(r)
-          node['kwargs'] = ast.literal_eval('{' + ','.join(s) + '}')
-        nodespecs.append(node)
-    #print(nodespecs)
-
+      nodespecs = csv_eval(f)
   else: # try python/json parsing if not csv
     with open(args.config, 'r') as f:
       nodespecs = ast.literal_eval(f.read())
@@ -95,6 +74,39 @@ def run():
       data = ast.literal_eval(sys.stdin.read())
       inject(dags, data, nodespecs)
 
+def csv_eval(infile):
+  # name, class, observe
+  nodespecs = []
+  reader = csv.reader(infile, quotechar='"')
+  for row in reader:
+    #print('New row:  {}'.format(row))
+    if len(row) == 0:
+      continue # blank line
+    if row[0] == '' or row[0][0] == '#':
+      continue # comment line
+    if len(row) < 2:
+      logging.error('Node specification requires at least 2 fields')
+      continue
+    node = { 'name': row[0], 'class': row[1] }
+    if len(row) >= 3 and len(row[2]) > 0:
+      nl = []
+      ns = row[2].strip().split(',')
+      for n in ns:
+        s = n.strip()
+        if len(s) > 0:
+          nl.append(s)
+      node['observe'] = nl
+    if len(row) >= 4:
+      s = []
+      for i in range(3, len(row)):
+        if len(row[i]) > 0:
+          # replace special marks which might stand in for single quotes
+          r = row[i].replace("’","'").replace("‘","'").replace("`","'")
+          s.append(r)
+      node['kwargs'] = ast.literal_eval('{' + ','.join(s) + '}')
+    nodespecs.append(node)
+  return nodespecs
+
 def find_class(name):
   s = name.split('.')
   base = ['snewpdag','plugins']
@@ -118,17 +130,17 @@ def configure(nodespecs):
       c = find_class(spec['class'])
     else:
       logging.error('No class field in node specification')
-      sys.exit(2)
+      return None
 
     if 'name' in spec:
       name = spec['name']
     else:
       logging.error('No name field in node specification')
-      sys.exit(2)
+      return None
 
     if name in nodes:
       logging.error('Duplicate node name {}'.format(name))
-      sys.exit(2)
+      return None
 
     kwargs = spec['kwargs'] if 'kwargs' in spec else {}
     kwargs['name'] = spec['name']
@@ -136,15 +148,18 @@ def configure(nodespecs):
       nodes[name] = c(**kwargs)
     except TypeError:
       logging.error('While creating node {0}: {1}'.format(name, sys.exc_info()))
-      sys.exit(2)
+      return None
 
     if 'observe' in spec:
       for obs in spec['observe']:
-        if obs in nodes:
+        if obs == name:
+          logging.error('{0} observing itself'.format(name))
+          return None
+        elif obs in nodes:
           nodes[obs].attach(nodes[name])
         else:
           logging.error('{0} observing unknown node {1}'.format(name, obs))
-          sys.exit(2)
+          return None
 
   return nodes
 
@@ -169,6 +184,9 @@ def inject_one(dags, data, nodespecs):
     burst_id = data['burst_id']
   if burst_id not in dags:
     dags[burst_id] = configure(nodespecs)
+    if dags[burst_id] == None:
+      logging.error('Invalid configuration for burst id {}'.format(burst_id))
+      sys.exit(2)
   dag = dags[burst_id]
   dag[data['name']].update(data)
 

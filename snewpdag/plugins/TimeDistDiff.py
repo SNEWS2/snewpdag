@@ -17,8 +17,8 @@ Data assumptions:
     - first 1000 bins of each data have not SN emission (they are used for background calculation)
 
 
-Author: V. Kulikovskiy (kulikovs@ge.infn.it)
-The algorithm is taken from github.com/SNEWS2/lightcurve_match.
+Authors: V. Kulikovskiy (kulikovs@ge.infn.it), M. Colomer, J. Tseng
+The algorithm is adapted from github.com/SNEWS2/lightcurve_match.
 """
 import logging
 import numpy as np
@@ -41,7 +41,7 @@ class TimeDistDiff(Node):
         self.map[source]['history'] = data['history'].copy() # keep local copy
         self.map[source]['valid'] = True
       else:
-        logging.error('[{}] Expected t and n arrays in time distribution'.format(self.name))
+        logging.error('[{}] Expected t_low and t_bins arrays in time distribution'.format(self.name))
         return
     elif action == 'revoke':
       if source in self.map:
@@ -63,20 +63,16 @@ class TimeDistDiff(Node):
 
 
     # start constructing output data.
-    data['tdelay'] = {}
+  
     # do the calculation
-    count=0
     #ndata = data.copy()
-    result = 0
+    result = -9999
     for i in self.map:
         for j in self.map:
             if i < j:
-                count+=1
                 #here the main time difference calculation comes
-                #print(count, gettdelay(self.map[i]['t'],self.map[i]['n'],self.map[j]['t'],self.map[j]['n']))
-                #result = gettdelay(self.map[i]['t'],self.map[i]['n'],self.map[j]['t'],self.map[j]['n'])
-                data['tdelay'][(i,j)] = gettdelay(self.map[i]['t_low'],self.map[i]['t_bins'],self.map[j]['t_low'],self.map[j]['t_bins'])
-                #print('Hola', i, j, ndata, 'result', result)
+                result = gettdelay(self.map[i]['t_low'],self.map[i]['t_bins'],self.map[j]['t_low'],self.map[j]['t_bins'])
+    data['tdelay'] = result
     # notify
     # (JCT: notify if have a diff to forward)
     #action_verb = 'revoke' if len(hlist) <= 1 else 'alert'
@@ -162,4 +158,4 @@ def gettdelay(t1,n1,t2,n2):
             minchi2   = chi2sum
     print('This is the deltat:', mintdelay)
     #exit()
-    return (mintdelay,minchi2)
+    return (mintdelay)

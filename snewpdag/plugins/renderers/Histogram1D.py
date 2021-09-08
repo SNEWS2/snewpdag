@@ -1,6 +1,5 @@
 """
 1D Histogram renderer
-
 Configuration options:
   title:  histogram title (top of plot)
   xlabel:  x axis label
@@ -8,14 +7,12 @@ Configuration options:
   filename:  output filename, with fields
              {0} renderer name
              {1} count index, starting from 0
-             {2} id from update data (default 0 if no such field)
+             {2} burst_id from update data (default 0 if no such field)
   true_dist: true distance if needed (used for Gaussian fitting comparisons)
-
 Might be nice to allow options to be configured here as well.
-
 Input data:
   action - only respond to 'report'
-  id - burst id
+  burst_id - burst identifier
   xlow
   xhigh
   bins - uniform bin contents
@@ -85,7 +82,7 @@ class Histogram1D(Node):
     plt.clf()
 
   def report(self, data):
-    burst_id = data.get('id', 0)
+    burst_id = data.get('burst_id', 0)
     d = data[self.in_field] if self.in_field else data
 
     if self.mode:
@@ -99,4 +96,3 @@ class Histogram1D(Node):
       self.render(burst_id, d['xlow'], d['xhigh'], d['bins'])
 
     return True
-

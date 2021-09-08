@@ -12,7 +12,7 @@
     "name": "JUNO-ts", "class": "gen.TimeSeries",
     "observe": [ "Control" ],
     "kwargs": {
-      "mean": 1000, "seed": 5831,
+      "mean": 1000,
       "sig_filetype": "tn", "sig_filename":
       "snewpdag/data/output_scint20kt_27_Shen_1D_solar_mass_progenitor.fits_1msbin.txt"
     }
@@ -59,7 +59,7 @@
     "name": "SNOP-ts", "class": "gen.TimeSeries",
     "observe": [ "Control" ],
     "kwargs": {
-      "mean": 100, "seed": 1235,
+      "mean": 100,
       "sig_filetype": "tn", "sig_filename":
       "snewpdag/data/output_scint20kt_27_Shen_1D_solar_mass_progenitor.fits_1msbin.txt"
     }
