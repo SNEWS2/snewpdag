@@ -1,5 +1,5 @@
 '''
-This plugin estimate the distance to the supernova from the neutrino data and IMF weighted
+DistCalc1: estimates the distance to the supernova from the neutrino data and IMF weighted
 
 assuming that the measured count obeys inverse square law
 
@@ -41,25 +41,31 @@ class DistCalc1(Node):
                'JUNO, IO': [135.26455501942974, 18.91887993385422, 0.13986576107197238]}
     
     def __init__(self, detector, in_field, out_field, t0, **kwargs):
-        self.detector = detector
         self.in_field = in_field
         self.out_field = out_field
         self.t0 = t0
+        self.detector = detector
+        self.imf = self.IMF_signal[self.detector][0]
+        self.imf_err = self.IMF_signal[self.detector][1]
+        self.imf_ferr = self.IMF_signal[self.detector][2]
         super().__init__(**kwargs)
     
     def dist_calc1(self, data):
-        bg = np.mean(data[self.in_field][self.t0-100: self.t0]) #using first 100 bins to find background
+        bg = np.mean(data[self.in_field][0: self.t0]) #averaged bins before t0 to find background
         N50 = np.sum(data[self.in_field][self.t0: self.t0+50]-bg) #correct for background
         N50_err = np.sqrt(N50) #assume Gaussian
         
         dist_par = 10.0
-        dist1 = dist_par*np.sqrt(self.IMF_signal[self.detector][0]/N50)
-        dist1_err = 0.5*dist1*(np.sqrt((N50_err/N50)**2 + (self.IMF_signal[self.detector][2])**2))
-        
-        return dist1, dist1_err
+        dist1 = dist_par*np.sqrt(self.imf/N50)
+        dist1_stats = 0.5*dist1*N50_err/N50
+        dist1_sys = 0.5*dist1*self.imf_ferr
+        #dist1_err = 0.5*dist1*(np.sqrt((N50_err/N50)**2 + (self.IMF_signal[self.detector][2])**2))
+        dist1_err = np.sqrt(dist1_stats**2+dist1_sys**2)
+        return (dist1, dist1_err, dist1_stats, dist1_sys, bg, N50, self.imf, self.imf_err)
 
     def alert(self, data):
-        dist1, dist1_err = self.dist_calc1(data)
-        d = { self.out_field: (dist1, dist1_err) }
+        (dist1, dist1_err, dist1_stats, dist1_sys, bg, N50, imf, imf_err) = self.dist_calc1(data)
+        d = { self.out_field: dist1, self.out_field+"_err": dist1_err, self.out_field+"_stats": dist1_stats, self.out_field+"_sys": dist1_sys, \
+                self.out_field+"background": bg, self.out_field+"N50": N50}
         data.update(d)
         return True

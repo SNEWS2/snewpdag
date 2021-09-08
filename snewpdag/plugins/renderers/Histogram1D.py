@@ -35,7 +35,6 @@ class Histogram1D(Node):
     self.in_field = kwargs.pop('in_field', None)
     self.mode = kwargs.pop('mode', None)
     self.count = 0 # number of histograms made
-    self.true_dist = kwargs.pop('true_dist', None)
     super().__init__(**kwargs)
 
   def render(self, burst_id, xlo, xhi, bins):
@@ -76,7 +75,7 @@ class Histogram1D(Node):
     plt.plot(x_exp_Gauss, norm.pdf(x_exp_Gauss, exp_mean, exp_std) * scale, linewidth=2, color='g', label='Expected Distrib')
     plt.legend()
 
-    fname = self.filename.format(self.name, self.count, burst_id)
+    fname = self.filename.format(self.name, self.count, burst_id, exp_mean)
     plt.savefig(fname)
     self.count += 1
     plt.clf()
@@ -89,8 +88,8 @@ class Histogram1D(Node):
       if self.mode == 'Gaussian':
         mean = d['mean']
         std = d['std']
-        exp_mean = self.true_dist
-        exp_std = d['error_std']
+        exp_mean = data['sn_distance']
+        exp_std = d['stats_std']
         self.render_Gaussian(burst_id, d['xlow'], d['xhigh'], d['bins'], mean, std, exp_mean, exp_std)
     else:
       self.render(burst_id, d['xlow'], d['xhigh'], d['bins'])

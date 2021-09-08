@@ -1,0 +1,41 @@
+"Control","Pass",,"'line’: 100",,
+"TrueDist","gen.TrueDist","Control","'sn_distance': 'Random'",,
+
+"IceCube-SGBG","gen.GenerateSGBG","TrueDist","'detector':'IceCube', 'bg':0, ‘sig_filetype’:’tn’, ‘sig_filename’:’snewpdag/data/output_icecube_27_Shen_1D_solar_mass_progenitor.fits_1msbin.txt‘",,
+"JUNO-SGBG","gen.GenerateSGBG","TrueDist","'detector':'JUNO', 'bg':0, ‘sig_filetype’:’tn’, ‘sig_filename’:’snewpdag/data/output_scint20kt_27_Shen_1D_solar_mass_progenitor.fits_1msbin.txt‘",,
+"IceCube","gen.Combine","IceCube-SGBG",,,
+"JUNO","gen.Combine","JUNO-SGBG",,,
+"IceCube-bin","SeriesBinner","IceCube","'in_field’:’times’, ‘nbins’:250, ‘xlow’:-0.1, ‘xhigh’:0.15, ‘out_xfield’:’t’, ‘out_yfield’:’n’",,
+"JUNO-bin","SeriesBinner","JUNO","'in_field’:’times’, ‘nbins’:250, ‘xlow’:-0.1, ‘xhigh’:0.15, ‘out_xfield’:’t’, ‘out_yfield’:’n’",,
+
+"IceCube-DistCalc","MeanDist","IceCube-bin","'detector’:’IceCube, NO’, ‘in_field’:’n’, ‘out_field’:‘dist’, 't0':100",,
+"JUNO-DistCalc","MeanDist","JUNO-bin","'detector’:’JUNO, NO’, ‘in_field’:’n’, ‘out_field’:‘dist’, 't0':100",,
+
+"IceCube-Err","DistErrCalc","IceCube-DistCalc","'xno':30,'in_field':'dist'",,
+"JUNO-Err","DistErrCalc","JUNO-DistCalc","'xno':30,'in_field':'dist'",,
+"IceCube-Err-Scatter","ScatterPlot",IceCube-DistCalc,"'x_in_field':'sn_distance','y_in_field':'dist_stats'",,
+"JUNO-Err-Scatter","ScatterPlot",JUNO-DistCalc,"'x_in_field':'sn_distance','y_in_field':'dist_stats'",,
+
+"IceCube-dist-truedist","ScatterPlot",IceCube-DistCalc,"'x_in_field':'sn_distance','y_in_field':'dist'",,
+"JUNO-dist-truedist","ScatterPlot",JUNO-DistCalc,"'x_in_field':'sn_distance','y_in_field':'dist'",,
+
+"IceCube-res-truedist","Residual",IceCube-DistCalc,"'true_in_field':'sn_distance','calc_in_field':'dist'",,
+"JUNO-res-truedist","Residual",JUNO-DistCalc,"'true_in_field':'sn_distance','calc_in_field':'dist'",,
+
+,,,,,
+,"Renderers",,,,
+"IceCube-Err-Plot","renderers.DistErrPlot",IceCube-Err,"'title’:’relative error (IceCube)’,’xlabel’:’true distance [kpc]’,’ylabel’:’relative error [%]’,’filename’:’output/test-{}-{}-{}-SGBG.png’",,
+"JUNO-Err-Plot","renderers.DistErrPlot",JUNO-Err,"'title’:’relative error (JUNO)’,’xlabel’:’true distance [kpc]’,’ylabel’:’relative error [%]’,’filename’:’output/test-{}-{}-{}-SGBG.png’",,
+
+"IceCube-dist-truedist-Plot","renderers.ScatterPlot",IceCube-dist-truedist,"'plot_line': 'x','title': 'estimated distance against true distance (IceCube)','xlabel':'true distance [kpc]','ylabel':'estimated distance [kpc]','filename':'output/test-{}-SGBG.png'",,
+"JUNO-dist-truedist-Plot","renderers.ScatterPlot",JUNO-dist-truedist,"'plot_line': 'x','title': 'estimated distance against true distance (JUNO)','xlabel':'true distance [kpc]','ylabel':'estimated distance [kpc]','filename':'output/test-{}-SGBG.png'",,
+
+"IceCube-res-truedist-Plot","renderers.ScatterPlot",IceCube-res-truedist,"'plot_line': '0*x','title': 'residual against true distance (IceCube)','xlabel':'true distance [kpc]','ylabel':'residual [kpc]','filename':'output/test-{}-SGBG.png'",,
+"JUNO-res-truedist-Plot","renderers.ScatterPlot",JUNO-res-truedist,"'plot_line': '0*x','title': 'residual against true distance (JUNO)','xlabel':'true distance [kpc]','ylabel':'residual [kpc]','filename':'output/test-{}-SGBG.png'",,
+
+"IceCube-Err-Scatter-Plot","renderers.ScatterPlot",IceCube-Err-Scatter,"'title’:’statistical error (IceCube)’,’xlabel’:’true distance [kpc]’,’ylabel’:’error [kpc]’,’filename’:’output/test-{}-SGBG.png’",,
+"JUNO-Err-Scatter-Plot","renderers.ScatterPlot",JUNO-Err-Scatter,"'title’:’statistical error (JUNO)’,’xlabel’:’true distance [kpc]’,’ylabel’:’error [kpc]’,’filename’:’output/test-{}-SGBG.png’",,
+
+,,,,,
+,"Debugging",,,,
+"Out","Pass","IceCube-bin,JUNO-bin,IceCube-DistCalc,JUNO-DistCalc,IceCube-Err,JUNO-Err,IceCube-dist-truedist,JUNO-dist-truedist,IceCube-res-truedist,JUNO-res-truedist",,,"'line’:0,’dump’:0"

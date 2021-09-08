@@ -34,11 +34,11 @@ trial2:
 
 distcalc_trial:
 	python snewpdag/trials/Simple.py Control -n 1000 | \
-          python -m snewpdag --log INFO --jsonlines snewpdag/data/test-meandist-config-norm.csv
+          python -m snewpdag --log INFO --jsonlines snewpdag/data/test-single-SGBG.csv
 
 distcalc_err_trial:
 	python snewpdag/trials/Simple.py Control -n 1000 | \
-          python -m snewpdag --log INFO --jsonlines snewpdag/data/test-meandist-config-error.csv
+          python -m snewpdag --log INFO --jsonlines snewpdag/data/test-err-SGBG.csv
 
 init:
 	pip install -r requirements.txt

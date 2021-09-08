@@ -1,5 +1,5 @@
 '''
-This plugin render plots of relative error of mdist against true dist
+DistErrPlot: render plots of relative error of mdist against true dist
 
 Constructor arguments:
     xlow: low edge of true dist 
@@ -13,12 +13,14 @@ Constructor arguments:
 
 Input data:
     action: only respond to 'report'
-    rel_err: relative error of mdist
-    
-"""
+    rel_err: relative error of distant estimate
+    exp_rel_stats: expected relative statistical error
+    exp_rel_stats: expected relative systematic error
+    exp_rel_err: expected combined relative error
 
 '''
 
+import logging
 import matplotlib.pyplot as plt
 import numpy as np
 from snewpdag.dag import Node
@@ -29,16 +31,18 @@ class DistErrPlot(Node):
         self.xlabel = xlabel
         self.ylabel = ylabel
         self.filename = filename # include pattern to include index
-        self.xlow = 4#xlow
-        self.xhigh = 40#xhigh
-        self.xno = 100#xno
-        self.true_dist = np.linspace(self.xlow, self.xhigh, self.xno, endpoint=True)
+#        self.xlow = 4#xlow
+#        self.xhigh = 40#xhigh
+#        self.xno = 100#xno
+#        self.true_dist = np.linspace(self.xlow, self.xhigh, self.xno, endpoint=True)
         super().__init__(**kwargs)
 
-    def render(self, rel_err, exp_rel_err):
+    def render(self, true_dist, rel_err, exp_rel_err, exp_rel_stats, exp_rel_sys):
         fig, ax = plt.subplots()
-        ax.plot(self.true_dist, rel_err, label="Data")
-        ax.plot(self.true_dist, exp_rel_err, label="Expected")
+        ax.plot(true_dist, rel_err, label="Data")
+        ax.plot(true_dist, exp_rel_err, label="Expected (combined)")
+        ax.plot(true_dist, exp_rel_stats, label="Expected (statistical)")
+        ax.plot(true_dist, exp_rel_sys, label="Expected (systematic)")
         ax.set_xlabel(self.xlabel)
         ax.set_ylabel(self.ylabel)
         ax.set_title('{0}'.format(self.title))
@@ -48,7 +52,13 @@ class DistErrPlot(Node):
         plt.savefig(fname)
 
     def report(self, data):
+        d_lo = data["d_lo"]
+        d_hi = data["d_hi"]
+        d_no = data["d_no"]
+        true_dist = np.linspace(d_lo, d_hi, d_no, endpoint=True)
         rel_err = data["rel_err"]
         exp_rel_err = data["exp_rel_err"]
-        self.render(rel_err, exp_rel_err)
+        exp_rel_stats = data["exp_rel_stats"]
+        exp_rel_sys = data["exp_rel_sys"]
+        self.render(true_dist, rel_err, exp_rel_err, exp_rel_stats, exp_rel_sys)
         return True

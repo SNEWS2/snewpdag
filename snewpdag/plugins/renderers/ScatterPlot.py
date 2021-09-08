@@ -1,0 +1,58 @@
+'''
+ScatterPlot renderer
+
+Constructor arguments:
+    title:  string, plot title (top of plot)
+    xlabel:  string, x axis label
+    ylabel:  string, y axis label
+    filename:  string, output filename, with fields
+                {0} renderer name
+    x_in_field: string, name of field with array for x axis (default: x_array)
+    x_in_field2: string, secondary field if needed
+    y_in_field: string, name of field with array for y axis (default: y_array)
+    y_in_field2: string, secondary field if needed
+    plot_line: string, line to be plotted on top (as a function of x, e.g. '0*x+4' for y=4,'2*x**2+3' for y=2x^2+3) (optional)
+
+
+'''
+
+import logging
+import matplotlib.pyplot as plt
+import numpy as np
+from snewpdag.dag import Node
+
+class ScatterPlot(Node):
+    def __init__(self, title, xlabel, ylabel, filename, **kwargs):
+        self.title = title
+        self.xlabel = xlabel
+        self.ylabel = ylabel
+        self.filename = filename # include pattern to include index
+        self.x_in_field = kwargs.pop("x_in_field", "x_array")
+        self.x_in_field2 = kwargs.pop("x_in_field2", None)
+        self.y_in_field = kwargs.pop("y_in_field", "y_array")
+        self.y_in_field2 = kwargs.pop("y_in_field2", None)
+        self.line = kwargs.pop("plot_line", None)
+        super().__init__(**kwargs)
+
+    def render(self, x, y):
+        fig, ax = plt.subplots()
+        ax.scatter(x, y, marker='x')
+        if self.line != None:
+            y_line = eval(self.line)
+            ax.plot(x, y_line, '--r', label= 'y = '+ self.line)
+
+        ax.set_xlabel(self.xlabel)
+        ax.set_ylabel(self.ylabel)
+        ax.set_title('{0}'.format(self.title))
+        plt.legend()
+        fig.tight_layout()
+        fname = self.filename.format(self.name)
+        plt.savefig(fname)        
+
+    def report(self, data):
+        x = data[self.x_in_field][self.x_in_field2] if self.x_in_field2 != None else data[self.x_in_field]
+        y = data[self.y_in_field][self.y_in_field2] if self.y_in_field2 != None else data[self.y_in_field]
+        self.render(x, y)
+        #logging.info('{0}:{1}'.format(self.x_in_field, x))
+        #logging.info('{0}:{1}'.format(self.y_in_field, np.around(y, decimals=2)))
+        return True
