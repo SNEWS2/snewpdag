@@ -25,12 +25,12 @@ class TimeOffset(Node):
             next(f) #skip the heading 
             for detector in detectors:
                 name = detector[0]
-                self.detector_offset[name] = float(detector[4])
+                self.detector_offset[name] = [float(detector[4]), float(detector[5])]
         super().__init__(**kwargs)
         
     #Add time offset to true arrival time and update payload
     def alert(self, data):
-        for item in data['gen']['sn_time'].items():
+        for item in data['gen']['sn_times'].items():
             detector = item[0]
             true_arrival = item[1]
             
@@ -42,12 +42,18 @@ class TimeOffset(Node):
                 logging.error('Do not have a resolution parameter for detector {}.'.format(detector))
                 continue
 
-            offset = self.detector_offset[detector]
+            uncertainty = self.detector_offset[detector][0]
+            bias = self.detector_offset[detector][1]
+            
             offsetted_s = true_arrival[0]
-            offsetted_ns = round(rm.gauss(true_arrival[1], offset*1e9))
+            offset = round(rm.gauss(bias*1e9, uncertainty*1e9))
+            offsetted_ns = true_arrival[1] + offset 
 
             a = (offsetted_s, offsetted_ns)
             offsetted_time = tuple(lib.normalize_time(a))
             d = {detector:offsetted_time}
-            data['gen']['sn_time'].update(d)
+            if 'neutrino_times' in data['gen']:
+                data['gen']['neutrino_times'].update(d)
+            else:
+                data['gen']['neutrino_times'] = d
         return True
