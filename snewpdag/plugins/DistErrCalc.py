@@ -93,17 +93,15 @@ class DistErrCalc(Node):
         if self.changed:
             true_dist = np.linspace(data["d_lo"], data["d_hi"], data["d_no"], endpoint=True)
             #calculate covariance matrix
-            C = {}
-            for i in true_dist:
-                C[i] = np.cov(self.dist1_dict[i], self.dist2_dict[i])
+            #C = {}
+            #for i in true_dist:
+            #    C[i] = np.cov(self.dist1_dict[i], self.dist2_dict[i])
 
             #logging.info('Covariance matrix:{}'.format(C))
             
             #calculate errors
             std = np.sqrt(self.sum2/self.dist_count - (self.sum/self.dist_count)**2)
             rel_err = (std/true_dist)*100
-                #exp_rmse = np.sqrt(self.exp_err2/self.dist_count)
-                #exp_rel_err = (exp_rmse/self.true_dist)*100
 
             exp_rmse_stats = np.sqrt(self.exp_stats2/self.dist_count)
             exp_rel_stats = (exp_rmse_stats/true_dist)*100
@@ -115,6 +113,7 @@ class DistErrCalc(Node):
             exp_rel_err = (exp_rmse/true_dist)*100
             d = {"rel_err": rel_err, "exp_rel_err": exp_rel_err, "exp_rel_stats": exp_rel_stats, "exp_rel_sys": exp_rel_sys}
             data.update(d)
+            logging.info("{0} dist_count:{1}".format(self.name,self.dist_count))
             self.changed = False
             
             return True

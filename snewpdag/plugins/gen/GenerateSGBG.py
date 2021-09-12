@@ -36,7 +36,7 @@ class GenerateSGBG(TimeDistSource):
     self.new_mu = self.mu*self.mean/area
     self.tmin = -10
     self.tmax = 10
-    self.tdelay = 0##set to 0 for now
+    self.tdelay = 100 #set to 100ms to match t0
     
   def alert(self, data):
     #logging.info('times are {}'.format(self.t[-1]))

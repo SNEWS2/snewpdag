@@ -5,8 +5,8 @@ Constructor arguments:
     sn_distance: distance to source (in kpc) or "Random", 
                 then a distance is randomly chosen from a list that can be specify (default: 60 evenly spaced distances between 1 and 30)
     d_lo: (only if an_distance="random") lower bound of the list (default: 1)
-    d_hi: (only if an_distance="random") upper bound of the list (default: 30)
-    d_no: (only if an_distance="random") # of evenly spaced values in the list (default: 30)
+    d_hi: (only if an_distance="random") upper bound of the list (default: 25)
+    d_no: (only if an_distance="random") # of evenly spaced values in the list (default: 25)
 
 '''
 
@@ -18,8 +18,8 @@ class TrueDist(Node):
 
     def __init__(self, sn_distance, **kwargs):
         self.d_lo = kwargs.pop('d_lo', 1)
-        self.d_hi = kwargs.pop('d_hi', 30)
-        self.d_no = kwargs.pop('d_no', 30)
+        self.d_hi = kwargs.pop('d_hi', 25)
+        self.d_no = kwargs.pop('d_no', 25)
         self.input = sn_distance
         super().__init__(**kwargs)
 
