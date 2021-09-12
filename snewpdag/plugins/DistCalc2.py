@@ -50,17 +50,19 @@ class DistCalc2(Node):
     
     def dist_calc2(self, data):
         bg = np.mean(data[self.in_field][0: self.t0]) #averaged bins before t0 to find background
+        bg_err = 1.3*np.sqrt(bg) if data["detector_name"] == "IceCube" else np.sqrt(bg)
+        n50 = np.sum(data[self.in_field][self.t0: self.t0+50]) #uncorrected
+        n50_err = np.sqrt(n50)
         N50 = np.sum(data[self.in_field][self.t0: self.t0+50]-bg) #N(0-50ms) corrected for background
         N50_err = np.sqrt(N50) #assume Gaussian
+        n100_150 = np.sum(data[self.in_field][self.t0+100: self.t0+150])
+        n100_150_err = np.sqrt(n100_150)
         N100_150 = np.sum(data[self.in_field][self.t0+100: self.t0+150]-bg) #N(100-150ms) corrected for background
         N100_150_err = np.sqrt(N100_150) #assume Gaussian
         f_delta = N100_150/N50
         f_delta_err = f_delta*np.sqrt((N50_err/N50)**2+(N100_150_err/N100_150)**2)
-        
+
         dist_par = 10.0
-        #m = self.fit_par[self.detector][0]
-        #b = self.fit_par[self.detector][1]
-        #b_err = self.fit_par[self.detector][2]
         m = self.m
         b = self.b
         b_err = self.b_err
@@ -68,16 +70,21 @@ class DistCalc2(Node):
         N50_exp_err = np.sqrt(f_delta_err**2+b_err**2)/m
 
         dist2 = dist_par*np.sqrt(N50_exp/N50)
-        #dist2_err = 0.5*dist2*(np.sqrt((N50_err/N50)**2 + (N50_exp_err/N50_exp)**2))
-        dist2_stats = np.sqrt((10.0**2/m)*((((N100_150-b*N50)**(0.5)*N50**(-2)+0.5*b*N50**(-1)*(N100_150-b*N50)**(-0.5))*N50_err)**2+((0.5*(N100_150-b*N50)**(-0.5)/N50)*N100_150_err)**2))
+        #diff dist2 wrt N50 or n50
+        d1 = 10*m**(-0.5)*((N100_150-b*N50)**(0.5)*N50**(-2)+0.5*b*N50**(-1)*(N100_150-b*N50)**(-0.5))
+        #diff dist2 wrt N100_150 or n100_150
+        d2 = 10*m**(-0.5)*(0.5*(N100_150-b*N50)**(-0.5)/N50)
+        #diff dist2 wrt bg
+        d3 = -(d1 + d2)
+        dist2_stats = np.sqrt((d1*n50_err)**2 + (d2*n100_150_err)**2 + (d3*bg_err)**2)
         dist2_sys = np.sqrt((5*N50**(-1)*m**(-0.5)*(N100_150-b*N50)**(-0.5)*N50)**2*(b_err)**2)
         dist2_err = np.sqrt(dist2_stats**2+dist2_sys**2)
         
-        return (dist2, dist2_err, dist2_stats, dist2_sys, bg, N50, N100_150, m, b, b_err)
+        return (dist2, dist2_err, dist2_stats, dist2_sys, bg, n50, N50, n100_150, N100_150, m, b, b_err)
 
     def alert(self, data):
-        (dist2, dist2_err, dist2_stats, dist2_sys, bg, N50, N100_150, m, b, b_err) = self.dist_calc2(data)
+        (dist2, dist2_err, dist2_stats, dist2_sys, bg, n50, N50, n100_150, N100_150, m, b, b_err) = self.dist_calc2(data)
         d = { self.out_field: dist2, self.out_field+"_err": dist2_err, self.out_field+"_stats": dist2_stats, self.out_field+"_sys": dist2_sys, self.out_field+"background": bg, \
-                self.out_field+"N50": N50, self.out_field+"N100_150": N100_150}
+                self.out_field+"N50": N50, self.out_field+"N100_150": N100_150, self.out_field+"n50": n50, self.out_field+"n100_150": n100_150}
         data.update(d)
         return True
