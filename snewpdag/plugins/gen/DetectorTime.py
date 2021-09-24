@@ -22,8 +22,6 @@ class DetectorTime(Node):
             return True
         true_time = data['gen']['sn_times'][self.detector]
         observed_time = data['gen']['neutrino_times'][self.detector]
-        a = {self.detector: true_time}
-        b = {self.detector: observed_time}
-        data['sn_time'] = a
-        data['neutrino_time'] = b
+        data['sn_time'] = true_time
+        data['neutrino_time'] = observed_time
         return True
