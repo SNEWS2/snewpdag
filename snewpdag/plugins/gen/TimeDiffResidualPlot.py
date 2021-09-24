@@ -1,8 +1,7 @@
 """
 TimeDiffResidualPlot: Plot the time difference residual of each detector pair
 
-Output: histogram plot
-
+Output: histogram plot of the time difference residual of each detector pair
 """
 
 
@@ -71,21 +70,3 @@ class TimeDiffResidualPlot(Node):
             plt.bar(bin_centers, y, yerr=poisson_error, capsize = 2)
             plt.show()
             plt.savefig("Time Difference Residual Histogram {}.png".format(pair))
-
-
-# data = {'gen': {'sn_direction': (-0.16185868920607785,
-#    -0.962772080647027,
-#    0.21649869619719353),
-#   'sn_times': {'Earth': (964463992, 72076319),
-#    'HK': (964463992, 69764856),
-#    'IC': (964463992, 67480896),
-#    'JUNO': (964463992, 92146674),
-#    'KM3': (964463992, 91026287),
-#    'SK': (964463992, 69774908)},
-#   'neutrino_times': {'HK': (964463992, 71367521),
-#    'IC': (964463992, 73221140),
-#    'JUNO': (964463992, 91708247),
-#    'KM3': (964463992, 87471603),
-#    'SK': (964463992, 70815063)}}}
-# a = TimeDiffResidualPlot()
-# a.time_residual_hist(data)
