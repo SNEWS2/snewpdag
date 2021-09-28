@@ -1,12 +1,11 @@
 """
 Chi2Calculator: generates a skymap of SN direction probabilities
 
-Constructor Arguments:
-    detector_list: list of strings, ["first_detector", "second_detector", ...]
-                the list of detectors that we want to include in the calculations
-                options: "HK", "IC", "JUNO", "KM3", "SK"
-    detector_location: csv file name ('detector_location.csv')
-    DET0: detector with the lowest error (delta_ts are calculated w.r.t. this detector) (e.g. 'SK')
+Constructor Arguments:                                                          __
+    detector_list: list of strings, ["first_detector", "second_detector", ...]    \
+                the list of detectors that we want to include in the calculations  \
+                options: "HK", "IC", "JUNO", "KM3", "SK"                           / same as in NeutrinoArrivalTime
+    detector_location: csv file name ('detector_location.csv')                  __/
     NSIDE: (int) healpy map parameter, it describes map resolution (32 is a reasonable number)
 
 Output:
@@ -17,15 +16,18 @@ import csv
 import logging
 import numpy as np
 import healpy as hp
+from numpy.core.numeric import Inf
 from scipy.stats import chi2
 from datetime import datetime
+
+from scipy.stats.stats import _sum_of_squares
 
 from snewpdag.dag import Node
 
 
 class Chi2Calculator(Node):
     def __init__(self, detector_list, detector_location,
-                 det0, NSIDE, **kwargs):
+                NSIDE, **kwargs):
         self.detector_info = {}
         with open(detector_location, 'r') as f:
             detectors = csv.reader(f)
@@ -38,28 +40,47 @@ class Chi2Calculator(Node):
                 height = float(detector[3])
                 sigma = float(detector[4])
                 bias = float(detector[5])
-                if name == det0:
-                    self.d0_info = [
-                        lon, lat, height, sigma, bias, name]
-                else:
-                    self.detector_info[name] = [
-                        lon, lat, height, sigma, bias]
+                self.detector_info[name] = [lon, lat, height, sigma, bias]
         self.NSIDE = NSIDE
         self.NPIX = hp.nside2npix(NSIDE)
-        self.precision_matrix = self.generatePrecisionMatrix()
-        self.ndof = len(detector_list) - 3
+        self.map = {}
+
+        self.measured_times = {}
+        for detector in detector_list:
+            self.measured_times[detector] = None
 
         super().__init__(**kwargs)
 
+    # Makes handling times easier
+    def get_time_dicts(self):
+        measured = dict(filter(lambda element: element[1] != None, self.measured_times.items()))
+
+        det_0 = ""
+        sigma_0 = Inf
+
+        for det in measured:
+            if self.detector_info[det][3] < sigma_0:
+                sigma_0 = self.detector_info[det][3]
+                det_0 = det
+        det0_time = measured.pop(det_0)
+
+        measured_det_info = dict(filter(lambda element: element[0] in measured.keys(), self.detector_info.items()))
+        det0_info = self.detector_info[det_0]
+
+        return measured, measured_det_info, det0_time, det0_info
+
+
     # Generates precision matrix (inverse of covariance matrix)
-    def generatePrecisionMatrix(self):
-        n_detectors = len(self.detector_info)
-        sigma_0 = self.d0_info[3]
-        V = np.zeros((n_detectors, n_detectors))
-        for i in range(n_detectors):
-            for j in range(n_detectors):
+    def generatePrecisionMatrix(self, measured_det_info, det0_info):
+
+        n_det = len(measured_det_info)
+        sigma_0 = det0_info[3]
+        V = np.zeros((n_det, n_det))
+
+        for i in range(n_det):
+            for j in range(n_det):
                 if i == j:
-                    det = list(self.detector_info.keys())[i]
+                    det = list(measured_det_info.keys())[i]
                     V[i][j] = sigma_0**2 + self.detector_info[det][3]**2
                 else:
                     V[i][j] = sigma_0**2
@@ -111,30 +132,33 @@ class Chi2Calculator(Node):
         return (d.getT() @ (self.precision_matrix @ d))
 
     # Calculates vector d given supernova position and time differences
-    def d_vec(self, n, dt_i):
-        n_detectors = len(self.detector_info)
+    def d_vec(self, n, measured, measured_det_info, det0_time, det0_info):
+        n_detectors = len(measured)
         d = np.zeros(n_detectors)
 
         for i in range(n_detectors):
-            det = list(self.detector_info.keys())[i]
-            det0 = self.d0_info[-1]
-            d[i] = dt_i[det][0] + dt_i[det][1] / 1e9 \
-                 - dt_i[det0][0] - dt_i[det0][1] / 1e9
+            det = list(measured.keys())[i]
+            
+            d[i] = measured[det][0] + measured[det][1] / 1e9 \
+                 - det0_time[0] - det0_time[1] / 1e9
 
-            d[i] = d[i] - self.detector_info[det][4] + self.d0_info[4]
-            d[i] -= self.time_diff(self.detector_info[det], self.d0_info, n)
+            d[i] = d[i] - measured_det_info[det][4] + det0_info[4]
+            d[i] -= self.time_diff(measured_det_info[det], det0_info, n)
 
         return np.matrix(d).getT()
 
     # Generates chi2 map
-    def generate_map(self, dt_i):
+    def generate_map(self, measured, measured_det_info, det0_time, det0_info):
         map = np.zeros(self.NPIX)
 
         for i in range(self.NPIX):
-            delta, alpha = hp.pixelfunc.pix2ang(self.NSIDE, i, nest=True, lonlat=True)
+            delta, alpha = hp.pixelfunc.pix2ang(self.NSIDE, i, nest=True)
+
+            delta -= np.pi/2
+            alpha -= np.pi
 
             n_pointing = -1*self.angles_to_unit_vec(alpha, delta)
-            map[i] = self.chi2(self.d_vec(n_pointing, dt_i))
+            map[i] = self.chi2(self.d_vec(n_pointing, measured, measured_det_info, det0_time, det0_info))
 
         chi2_min = map.min()
         for i in range(self.NPIX):
@@ -142,17 +166,87 @@ class Chi2Calculator(Node):
 
         return map
 
+
     def alert(self, data):
-        if self.ndof < 1:
-            logging.error("Not enough data for chi2 map calculation")
+        time = data['neutrino_time']
+        if 'detector_id' in data:
+            det = data['detector_id']
+        else:
+            det = self.last_source
+
+        self.measured_times[det] = time
+
+        self.map[self.last_source] = data.copy()
+        self.map[self.last_source]['history'] = data['history'].copy()
+        self.map[self.last_source]['valid'] = True
+
+        measured, measured_det_info, det0_time, det0_info = self.get_time_dicts()
+
+        sum_s = det0_time[0]
+        sum_ns = det0_time[1]
+        for s, ns in measured.values():
+            sum_s += s
+            sum_ns += ns
+        self.arrival = (sum_s/(len(measured)+1), sum_ns/(len(measured)+1))
+
+        # Takes only the detectors for which time has been measured
+        if len(measured) < 2:
+            return False
+        ndof = len(measured) - 1
+
+        self.precision_matrix = self.generatePrecisionMatrix(measured_det_info, det0_info)
+        map = self.generate_map(measured, measured_det_info, det0_time, det0_info)
+
+        data['map'] = map
+        data['ndof'] = ndof
+
+        hlist = []
+        for k in self.map:
+            if self.map[k]['valid']:
+                hlist.append(self.map[k]['history'])
+        data['history'].combine(hlist)
+        return data
+
+    def revoke(self, data):
+        time = data['neutrino_time']
+        if 'detector_id' in data:
+            det = data['detector_id']
+        else:
+            det = self.last_source
+
+        # The time hasn't changed, no point in recalculating the skymap
+        if self.measured_times[det] == time:
             return False
 
-        dt_i = data['gen']['neutrino_times']
-        self.arrival = data['gen']['sn_times']['Earth']
+        self.measured_times[det] = time
 
-        map = self.generate_map(dt_i)
+        self.map[self.last_source] = data.copy()
+        self.map[self.last_source]['history'] = data['history'].copy()
+        self.map[self.last_source]['valid'] = True
 
-        data['chi2'] = map
-        data['ndof'] = self.ndof
+        measured, measured_det_info, det0_time, det0_info = self.get_time_dicts()
 
-        return True
+        sum_s = det0_time[0]
+        sum_ns = det0_time[1]
+        for s, ns in measured.values():
+            sum_s += s
+            sum_ns += ns
+        self.arrival = (sum_s/(len(measured)+1), sum_ns/(len(measured)+1))
+
+        # Takes only the detectors for which time has been measured
+        if len(measured) < 2:
+            return False
+        ndof = len(measured) - 1
+
+        self.precision_matrix = self.generatePrecisionMatrix(measured_det_info, det0_info)
+        map = self.generate_map(measured, measured_det_info, det0_time, det0_info)
+
+        data['map'] = map
+        data['ndof'] = ndof
+
+        hlist = []
+        for k in self.map:
+            if self.map[k]['valid']:
+                hlist.append(self.map[k]['history'])
+        data['history'].combine(hlist)
+        return data
