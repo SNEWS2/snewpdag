@@ -20,8 +20,6 @@ from numpy.core.numeric import Inf
 from scipy.stats import chi2
 from datetime import datetime
 
-from scipy.stats.stats import _sum_of_squares
-
 from snewpdag.dag import Node
 
 
