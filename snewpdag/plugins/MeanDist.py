@@ -44,7 +44,7 @@ class MeanDist(Node):
         mdist = (dist1/dist1_stats**2 + dist2/dist2_stats**2)/ (1.0/dist1_stats**2+1.0/dist2_stats**2)
         if bg1 == bg2:
             bg = bg1
-            bg_err = 1.3*np.sqrt(bg) if data["detector_name"] == "IceCube" else np.sqrt(bg)
+            bg_err = np.sqrt(bg)
         else:
             logging.warning("bg1({0}) and bg2({2}) don't match".format(bg1,bg2))
         if n50_1 == n50_2:    

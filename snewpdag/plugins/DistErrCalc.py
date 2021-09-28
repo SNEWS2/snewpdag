@@ -32,14 +32,11 @@ class DistErrCalc(Node):
     def clear(self):
         self.sum = np.zeros(self.xno)
         self.sum2 = np.zeros(self.xno)
-        self.exp_err2 = np.zeros(self.xno)
-        self.exp_stats2 = np.zeros(self.xno)
-        self.exp_sys2 = np.zeros(self.xno)
+        self.exp_mdist_stats2 = np.zeros(self.xno)
         self.dist_count = np.zeros(self.xno)
         self.changed = True
-        #for calculating cov matrix
-        self.dist1_dict = {}
-        self.dist2_dict = {}
+        self.exp_dist1_stats2 = np.zeros(self.xno)
+        self.exp_dist2_stats2 = np.zeros(self.xno)
 
     def fill(self,data):
         d_lo = data["d_lo"]
@@ -55,29 +52,17 @@ class DistErrCalc(Node):
         self.sum[index] += dist
         self.sum2[index] += dist**2
 
-        dist_err = data[self.in_field+"_err"]
-        self.exp_err2[index] += dist_err**2
-
         dist_stats = data[self.in_field+"_stats"]
-        self.exp_stats2[index] += dist_stats**2
+        self.exp_mdist_stats2[index] += dist_stats**2
+        dist1_stats = data["dist1_stats"]
+        self.exp_dist1_stats2[index] += dist1_stats**2
+        dist2_stats = data["dist2_stats"]
+        self.exp_dist2_stats2[index] += dist2_stats**2
 
-        dist_sys = data[self.in_field+"_sys"]
-        self.exp_sys2[index] += dist_sys**2
         #count the number of times a true distance is used
         self.dist_count[index]+=1
         self.changed = True
 
-        #for calculating cov matrix
-        dist1 = data["dist1"]
-        if true_dist in self.dist1_dict:
-            self.dist1_dict[true_dist].append(dist1)
-        else:
-            self.dist1_dict[true_dist] = [dist1]
-        dist2 = data["dist2"]
-        if true_dist in self.dist2_dict:
-            self.dist2_dict[true_dist].append(dist2)
-        else:
-            self.dist2_dict[true_dist] = [dist2]
 
     def alert(self, data):
         self.fill(data)
@@ -92,26 +77,20 @@ class DistErrCalc(Node):
     def report(self, data):
         if self.changed:
             true_dist = np.linspace(data["d_lo"], data["d_hi"], data["d_no"], endpoint=True)
-            #calculate covariance matrix
-            #C = {}
-            #for i in true_dist:
-            #    C[i] = np.cov(self.dist1_dict[i], self.dist2_dict[i])
-
-            #logging.info('Covariance matrix:{}'.format(C))
             
             #calculate errors
             std = np.sqrt(self.sum2/self.dist_count - (self.sum/self.dist_count)**2)
             rel_err = (std/true_dist)*100
 
-            exp_rmse_stats = np.sqrt(self.exp_stats2/self.dist_count)
-            exp_rel_stats = (exp_rmse_stats/true_dist)*100
+            exp_rmse_mdist_stats = np.sqrt(self.exp_mdist_stats2/self.dist_count)
+            exp_rel_mdist_stats = (exp_rmse_mdist_stats/true_dist)*100
 
-            exp_rmse_sys = np.sqrt(self.exp_sys2/self.dist_count)
-            exp_rel_sys = (exp_rmse_sys/true_dist)*100      
+            exp_rmse_dist1_stats = np.sqrt(self.exp_dist1_stats2/self.dist_count)
+            exp_rel_dist1_stats = (exp_rmse_dist1_stats/true_dist)*100      
                 
-            exp_rmse = np.sqrt(exp_rmse_stats**2+exp_rmse_sys**2)
-            exp_rel_err = (exp_rmse/true_dist)*100
-            d = {"rel_err": rel_err, "exp_rel_err": exp_rel_err, "exp_rel_stats": exp_rel_stats, "exp_rel_sys": exp_rel_sys}
+            exp_rmse_dist2_stats = np.sqrt(self.exp_dist2_stats2/self.dist_count)
+            exp_rel_dist2_stats = (exp_rmse_dist2_stats/true_dist)*100 
+            d = {"rel_err": rel_err, "exp_rel_dist1_stats": exp_rel_dist1_stats, "exp_rel_dist2_stats": exp_rel_dist2_stats, "exp_rel_mdist_stats": exp_rel_mdist_stats}
             data.update(d)
             logging.info("{0} dist_count:{1}".format(self.name,self.dist_count))
             self.changed = False

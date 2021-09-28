@@ -4,9 +4,9 @@ TrueDist: generates a true distance to the SN upon an alert, either specified or
 Constructor arguments:
     sn_distance: distance to source (in kpc) or "Random", 
                 then a distance is randomly chosen from a list that can be specify (default: 60 evenly spaced distances between 1 and 30)
-    d_lo: (only if an_distance="random") lower bound of the list (default: 1)
-    d_hi: (only if an_distance="random") upper bound of the list (default: 25)
-    d_no: (only if an_distance="random") # of evenly spaced values in the list (default: 25)
+    d_lo: (only if sn_distance="random") lower bound of the list (default: 1)
+    d_hi: (only if sn_distance="random") upper bound of the list (default: 25)
+    d_no: (only if sn_distance="random") # of evenly spaced values in the list (default: 25)
 
 '''
 

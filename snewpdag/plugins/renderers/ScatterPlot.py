@@ -12,7 +12,9 @@ Constructor arguments:
     y_in_field: string, name of field with array for y axis (default: y_array)
     y_in_field2: string, secondary field if needed
     plot_line: string, line to be plotted on top (as a function of x, e.g. '0*x+4' for y=4,'2*x**2+3' for y=2x^2+3) (optional)
-
+    flags: list of strings (default: off for all flags)
+        logx: log scale on x axis
+        logy: log scale on y axis
 
 '''
 
@@ -32,19 +34,24 @@ class ScatterPlot(Node):
         self.y_in_field = kwargs.pop("y_in_field", "y_array")
         self.y_in_field2 = kwargs.pop("y_in_field2", None)
         self.line = kwargs.pop("plot_line", None)
+        f = kwargs.pop('flags', [])
+        self.logx = "logx" in f
+        self.logy = "logy" in f
         super().__init__(**kwargs)
 
     def render(self, x, y):
         fig, ax = plt.subplots()
-        ax.scatter(x, y, marker='x')
+        ax.plot(x, y, 'x')
         if self.line != None:
             y_line = eval(self.line)
-            ax.plot(x, y_line, '--r', label= 'y = '+ self.line)
+            ax.plot(x, y_line, '-r', label= 'y = '+ self.line)
 
         ax.set_xlabel(self.xlabel)
         ax.set_ylabel(self.ylabel)
         ax.set_title('{0}'.format(self.title))
-        plt.legend()
+        if self.logx: ax.set_xscale('log')
+        if self.logy: ax.set_yscale('log')
+        if self.line != None: plt.legend()
         fig.tight_layout()
         fname = self.filename.format(self.name)
         plt.savefig(fname)        

@@ -77,7 +77,7 @@ class DistCalc2(Node):
         #diff dist2 wrt bg
         d3 = -(d1 + d2)
         dist2_stats = np.sqrt((d1*n50_err)**2 + (d2*n100_150_err)**2 + (d3*bg_err)**2)
-        dist2_sys = np.sqrt((5*N50**(-1)*m**(-0.5)*(N100_150-b*N50)**(-0.5)*N50)**2*(b_err)**2)
+        dist2_sys = 5*b_err*(m*(N100_150-b*N50))**(-0.5)
         dist2_err = np.sqrt(dist2_stats**2+dist2_sys**2)
         
         return (dist2, dist2_err, dist2_stats, dist2_sys, bg, n50, N50, n100_150, N100_150, m, b, b_err)

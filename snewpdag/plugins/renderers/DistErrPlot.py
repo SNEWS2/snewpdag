@@ -37,18 +37,18 @@ class DistErrPlot(Node):
 #        self.true_dist = np.linspace(self.xlow, self.xhigh, self.xno, endpoint=True)
         super().__init__(**kwargs)
 
-    def render(self, true_dist, rel_err, exp_rel_err, exp_rel_stats, exp_rel_sys):
+    def render(self, true_dist, rel_err, exp_rel_dist1_stats, exp_rel_dist2_stats, exp_rel_mdist_stats):
         fig, ax = plt.subplots()
         ax.plot(true_dist, rel_err, label="Data")
-        ax.plot(true_dist, exp_rel_err, label="Expected (combined)")
-        ax.plot(true_dist, exp_rel_stats, label="Expected (statistical)")
-        ax.plot(true_dist, exp_rel_sys, label="Expected (systematic)")
+        ax.plot(true_dist, exp_rel_dist1_stats, label="Expected (dist1)")
+        ax.plot(true_dist, exp_rel_dist2_stats, label="Expected (dist2)")
+        ax.plot(true_dist, exp_rel_mdist_stats, label="Expected (mdist)")
         ax.set_xlabel(self.xlabel)
         ax.set_ylabel(self.ylabel)
         ax.set_title('{0}'.format(self.title))
         ax.legend()
         fig.tight_layout()
-        fname = self.filename.format(self.name, 0, 0)
+        fname = self.filename.format(self.name)
         plt.savefig(fname)
 
     def report(self, data):
@@ -57,8 +57,8 @@ class DistErrPlot(Node):
         d_no = data["d_no"]
         true_dist = np.linspace(d_lo, d_hi, d_no, endpoint=True)
         rel_err = data["rel_err"]
-        exp_rel_err = data["exp_rel_err"]
-        exp_rel_stats = data["exp_rel_stats"]
-        exp_rel_sys = data["exp_rel_sys"]
-        self.render(true_dist, rel_err, exp_rel_err, exp_rel_stats, exp_rel_sys)
+        exp_rel_dist1_stats = data["exp_rel_dist1_stats"]
+        exp_rel_dist2_stats = data["exp_rel_dist2_stats"]
+        exp_rel_mdist_stats = data["exp_rel_mdist_stats"]
+        self.render(true_dist, rel_err, exp_rel_dist1_stats, exp_rel_dist2_stats, exp_rel_mdist_stats)
         return True
