@@ -50,7 +50,7 @@ class DistCalc2(Node):
     
     def dist_calc2(self, data):
         bg = np.mean(data[self.in_field][0: self.t0]) #averaged bins before t0 to find background
-        bg_err = 1.3*np.sqrt(bg) if data["detector_name"] == "IceCube" else np.sqrt(bg)
+        bg_err = np.sqrt(bg)
         n50 = np.sum(data[self.in_field][self.t0: self.t0+50]) #uncorrected
         n50_err = np.sqrt(n50)
         N50 = np.sum(data[self.in_field][self.t0: self.t0+50]-bg) #N(0-50ms) corrected for background

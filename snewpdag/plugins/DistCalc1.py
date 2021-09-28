@@ -54,7 +54,7 @@ class DistCalc1(Node):
         bg = np.mean(data[self.in_field][0: self.t0]) #averaged bins before t0 to find background
         n50 = np.sum(data[self.in_field][self.t0: self.t0+50]) #uncorrected
         N50 = np.sum(data[self.in_field][self.t0: self.t0+50]-bg) #correct for background
-        bg_err = 1.3*np.sqrt(bg) if data["detector_name"] == "IceCube" else np.sqrt(bg)
+        bg_err = np.sqrt(bg)
         n50_err = np.sqrt(n50)
         N50_err = np.sqrt(N50) #assume Gaussian
         
