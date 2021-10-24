@@ -21,6 +21,13 @@ from .SeriesBinner import SeriesBinner
 from .BinnedAccumulator import BinnedAccumulator
 from .ActionFilter import ActionFilter
 
+from .DistCalc1 import DistCalc1
+from .DistCalc2 import DistCalc2
+from .MeanDist import MeanDist
+from .DistErrCalc import DistErrCalc
+from .ScatterPlot import ScatterPlot
+from .Residual import Residual
+
 from .ValidateKey import ValidateKey
 from .ValidateKeyType import ValidateKeyType
 from .ValidateListType import ValidateListType

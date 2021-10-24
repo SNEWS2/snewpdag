@@ -25,6 +25,8 @@ Output json:
     sum, sum2
     count
     bins
+    mean, std
+    error_sum, error_sum2 (default 0.0)
     (doesn't delete input field, since it's not much data
     and may be part of an aggregate)
 """
@@ -58,6 +60,12 @@ class Histogram1D(Node):
     self.sum2 = 0.0
     self.count = 0
     self.changed = True
+    self.error_sum = 0.0
+    self.error_sum2 = 0.0
+    self.stats_sum =0.0
+    self.stats_sum2 = 0.0
+    self.sys_sum = 0.0
+    self.sys_sum2 = 0.0
 
   def fill(self, data):
     if self.field in data:
@@ -101,25 +109,54 @@ class Histogram1D(Node):
       self.bins[ix] += 1.0
     self.sum += x
     self.sum2 += x*x
+
+    if self.field+"_err" in data:
+      x_error = data[self.field+"_err"]
+      self.error_sum += x_error
+      self.error_sum2 += x_error**2
+
+      x_stats = data[self.field+"_stats"]
+      self.stats_sum += x_stats
+      self.stats_sum2 += x_stats**2
+
+      x_sys = data[self.field+"_sys"]
+      self.sys_sum += x_sys
+      self.sys_sum2 += x_sys**2
+
     self.count += 1
     self.changed = True
 
   def summary(self):
     return {
-             'name': self.name,
-             'nbins': self.nbins,
-             'xlow': self.xlow,
-             'xhigh': self.xhigh,
-             'in_field': self.field,
-             'in_index': self.index,
-             'in_index2': self.index2,
-             'underflow': self.underflow,
-             'overflow': self.overflow,
-             'sum': self.sum,
-             'sum2': self.sum2,
-             'count': self.count,
-             'bins': self.bins,
-           }
+            'name': self.name,
+            'nbins': self.nbins,
+            'xlow': self.xlow,
+            'xhigh': self.xhigh,
+            'in_field': self.field,
+            'in_index': self.index,
+            'in_index2': self.index2,
+            'underflow': self.underflow,
+            'overflow': self.overflow,
+            'sum': self.sum,
+            'sum2': self.sum2,
+            'count': self.count,
+            'bins': self.bins,
+            'mean': self.mean(),
+            'std': np.sqrt(self.variance()),
+            }
+
+  def summary_err(self):
+    return {
+            'error_sum': self.error_sum,
+            'error_sum2': self.error_sum2,
+            'error_std': np.sqrt( self.error_sum2 / self.count),
+            'stats_sum': self.stats_sum,
+            'stats_sum2': self.stats_sum2,
+            'stats_std': np.sqrt( self.stats_sum2 / self.count),
+            'sys_sum': self.sys_sum,
+            'sys_sum2': self.sys_sum2,
+            'sys_std': np.sqrt( self.sys_sum2 / self.count),
+            }
 
   def mean(self):
     return self.sum / self.count
@@ -141,10 +178,12 @@ class Histogram1D(Node):
 
   def report(self, data):
     if self.changed:
+      d = {**self.summary(), **self.summary_err()} if self.error_sum != 0.0 else self.summary()
+
       if self.out_field == None:
-        data.update(self.summary())
+        data.update(d)
       else:
-        data[self.out_field] = self.summary()
+        data[self.out_field] = d
       self.changed = False
       return True
     else:

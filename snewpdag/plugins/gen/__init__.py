@@ -5,3 +5,5 @@ from .TimeSeries import TimeSeries
 from .GenerateSGBG import GenerateSGBG
 
 from .Combine import Combine
+
+from .TrueDist import TrueDist
