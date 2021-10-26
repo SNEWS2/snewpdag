@@ -48,7 +48,7 @@ class DistErrPlot(Node):
         ax.set_title('{0}'.format(self.title))
         ax.legend()
         fig.tight_layout()
-        fname = self.filename.format(self.name)
+        fname = self.filename.format(self.name, 0, 0)
         plt.savefig(fname)
 
     def report(self, data):
