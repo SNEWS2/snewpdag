@@ -11,6 +11,7 @@ Output added to data: dictionary with key "detector_name" and corresponding arri
 
 """
 
+import logging
 import csv
 import numpy as np
 import random as rm
@@ -31,12 +32,31 @@ class NeutrinoArrivalTime(Node):
                     lat = np.radians(float(detector[2]))
                     height = float(detector[3])
                     self.detector_info[name] = [lon, lat, height]
+        n = kwargs.pop('fixed_n', None)
+        if n != None:
+            if len(n) == 3:
+                norm = np.sqrt(n[0]*n[0] + n[1]*n[1] + n[2]*n[2])
+                self.fixed_n = ( n[0]/norm, n[1]/norm, n[2]/norm )
+            elif len(n) == 2:
+                # (alpha, theta) in degrees
+                a = np.radians(n[0])
+                theta = np.radians(n[1])
+                nx = - np.cos(a) * np.sin(theta)
+                ny = - np.sin(a) * np.sin(theta)
+                nz = - np.cos(theta)
+                self.fixed_n = (nx, ny, nz)
+            else:
+                logging.error('Invalid fixed_n {}'.format(n))
+        else:
+            self.fixed_n = None
+        self.fixed_t = kwargs.pop('fixed_t', None)
         super().__init__(**kwargs)
 
 
     #Randomly generate the direction vector for incoming neutrino flux, using right-ascention(alpha) and declination(delta)
     #costheta gives the polar angle distribution, and delta = pi/2 - polar
     def generate_n(self):
+      if self.fixed_n == None:
         alpha_deg = rm.uniform(-180,180)
         alpha = np.radians(alpha_deg)
         costheta = rm.uniform(-1,1)  #cos(theta) = sin(delta)
@@ -47,16 +67,21 @@ class NeutrinoArrivalTime(Node):
 
         source = (nx, ny, nz)
         return source
+      else:
+        return self.fixed_n
 
 
     #randomly generate a time between 2000-1-1, 00:00 and 2000-12-31, 23:59:59 UTC for SN neutrino signal to arrive on Earth
     #unix time for 2000-1-1, 00:00 is 946713600.0
     def generate_time(self):
+      if self.fixed_t == None:
         start_unix = 946713600
         random_time = rm.randrange(0, 31536000) #number of second in a year
         s = start_unix + random_time 
         ns = rm.randrange(0,1e9)
         return (s, ns)
+      else:
+        return (self.fixed_t[0], self.fixed_t[1])
 
 
     #calculate the distance between the detector and the center of the Earth

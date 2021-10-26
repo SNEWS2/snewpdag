@@ -34,3 +34,7 @@ from .ValidateListType import ValidateListType
 from .ValidateSort import ValidateSort
 
 from .TrueVsFit import TrueVsFit
+
+from .Chi2Calculator import Chi2Calculator
+from .Chi2CL import Chi2CL
+
