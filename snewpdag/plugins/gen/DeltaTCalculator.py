@@ -11,7 +11,7 @@ import numpy as np
 from snewpdag.dag import Node, lib
 
 
-class DeltatCalculator(Node):
+class DeltaTCalculator(Node):
         def __init__(self, **kwargs):
             self.valid = [False, False]  # flags indicating valid data from sources
             self.t = [0.0, 0.0]  # observed first nu event time for each detector
@@ -31,35 +31,38 @@ class DeltatCalculator(Node):
                 return False
 
             newrevoke = False
-            self.t[index] = data['neutrino_time']
-            if self.t[index] == None:
-                if self.valid[index]:
-                    self.valid[index] = False
-                    newrevoke = True
-            else:
-                self.valid[index] = True
-            self.h[index] = data['history']  # a History object
+            time = self.t[index]
+            self.t[index] = data.get('neutrino_time') # return none if neutrino time is not in the payload
 
-            # check if there's a new revocation
-            # (since we only expect to observe 2 nodes,
-            # there's no way to update the time difference)
-            if newrevoke:
-                return True
+            if self.t[index] != time: # don't update the calculation if time has not changed
+                if self.t[index] == None:
+                    if self.valid[index]:
+                        self.valid[index] = False
+                        newrevoke = True
+                else:
+                    self.valid[index] = True
+                self.h[index] = data['history']  # a History object
 
-            # do the calculation if we have two valid inputs
-            if self.valid == [True, True]:
-                #compute time difference in sec and ns:
-                Deltat= np.subtract(self.t[0], self.t[1])
-                data['observed_dt'] = tuple(lib.normalize_time_difference(Deltat))
-                print(data['observed_dt'])
-                data['history'].combine(self.h)
-                print(data)
-                # data['history'] = ( self.h[0], self.h[1] )
-                # in fact, this should even work if we return True,
-                # since the payload has been updated in place.
-                return data
+                # If newrevoke is true, change the action from alert to revoke and return the payload
+                if newrevoke:
+                    data['action'] = 'revoke'
+                    return data
 
-            # no update
+                # do the calculation if we have two valid inputs
+                if self.valid == [True, True]:
+                    #compute time difference in sec and ns:
+                    DeltaT = np.subtract(self.t[0], self.t[1])
+                    data['observed_dt'] = tuple(lib.normalize_time_difference(DeltaT))
+                    data['history'].combine(self.h)
+                    logging.debug(data)
+                    # data['history'] = ( self.h[0], self.h[1] )
+                    # in fact, this should even work if we return True,
+                    # since the payload has been updated in place.
+                    return data
+
+                # no update
+                return False
+
             return False
 
         def revoke(self, data):
