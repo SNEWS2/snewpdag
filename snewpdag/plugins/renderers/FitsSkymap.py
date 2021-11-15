@@ -147,8 +147,9 @@ class FitsSkymap(Node):
 
   def alert(self, data):
     burst_id = data.get('burst_id', 0)
-    m = data.get(self.in_field, None)
-    if m == None:
+    if self.in_field in data:
+      m = data[self.in_field]
+    else:
       logger.warning('{}: no skymap to write'.format(self.name))
       return False
 

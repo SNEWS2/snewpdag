@@ -1,6 +1,9 @@
 """
 DiffPoint: generate a skymap of SN direction chi2's
   based on Wiktor Jasniak's Chi2Calculation
+
+Input: a delta-time in ns (presumably less than 40ms),
+       with an indication of the detector pair
 """
 import csv
 import logging
@@ -8,34 +11,50 @@ import numpy as np
 import healpy as hp
 from datetime import datetime
 
-from snewpdag.dag import Node
+from snewpdag.dag import Node, Detector, DetectorDB
+
+def equal_pair(p, q):
+  return (p[0] == q[0] and p[1] == q[1]) or
+         (p[0] == q[1] and p[1] == q[0])
 
 class DiffPoint(Node):
-  def __init__(self, detector_pairs, detector_location, nside, **kwargs):
-    self.pairs = []
-    for p in detector_pairs:
-      self.pairs.append(set(p))
-    dlist = []
-    for p in self.pairs:
-      dlist.extend(p) # add elements of pairs to dlist
-    self.dets = set(dlist) # unordered, unique elements
-    self.detector_info = {}
-    with open(detector_location, 'r') as f:
-      detectors = csv.reader(f)
-      for detector in detectors:
-        name = detector[0]
-        if name in self.dets:
-          lon = np.radians(float(detector[1]))
-          lat = np.radians(float(detector[2]))
-          height = float(detector[3])
-          sigma = float(detector[4])
-          bias = float(detector[5])
-          self.detector_info[name] = [lon, lat, height, sigma, bias]
+  def __init__(self, detector_location, nside, **kwargs):
+    self.db = DetectorDB(detector_location)
     self.nside = nside
     self.npix = hp.nside2npix(nside)
-    self.dts = {}
-    self.min_dts = 3
-    super().__init__(**kwargs)
+    self.cache = {} # (det1, det2): dt, bias, var, dsig1, dsig2
+
+
+
+
+  def d_vector(self, keys, direction):
+    c = 3.0e8 # m/s
+    dim = len(self.cache)
+    d = np.zeros(dim)
+    i = 0
+    for k in self.cache.keys()
+      diffr = DetectorDB.get(k[0]).r - DetectorDB.get(k[1]).r
+      dts = self.cache[k]
+      d[i] = dts['dt'] - dts['bias'] + direction * diffr / c
+      i += 1
+    return d
+
+  def weight_matrix(self, keys):
+    dim = len(self.cache)
+    v = np.zeros([dim, dim])
+    i = 0
+    for k1 in self.cache.keys():
+      d1 = self.cache[k1]
+      j = 0
+      for k2 in self.cache.keys():
+        d2 = self.cache[k2]
+        if i == j:
+          v[i,j] = d2['var']
+        else:
+          v[i,j] = d1['dsig1'] * d2['dsig1'] # fix
+    # then invert the matrix
+
+
 
 
   def angles_to_unit_vec(self, lon, lat):

@@ -15,9 +15,11 @@ class Skymap(Node):
     self.in_field = in_field
     self.title = title
     self.filename = filename
+    self.count = 0
     super().__init__(**kwargs)
 
   def alert(self, data):
+    burst_id = data.get('burst_id', 0)
     m = data.get(self.in_field, None)
     if m:
       # replace a lot of these options later
@@ -31,6 +33,8 @@ class Skymap(Node):
                   nest=True,
                  )
       hp.graticule()
-      plt.savefig(self.filename)
+      fname = self.filename.format(self.name, self.count, burst_id)
+      plt.savefig(fname)
+      self.count += 1
     return True
 

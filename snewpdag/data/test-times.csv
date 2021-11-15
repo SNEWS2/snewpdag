@@ -13,6 +13,7 @@
 ,,,
 "chi2","Chi2Calculator","IC, SK, JUNO","'detector_list': [ 'IC', 'SK', 'JUNO' ], 'detector_location': 'snewpdag/data/detector_location.csv', 'NSIDE': 32"
 "conf","Chi2CL","chi2","'in_field': 'map', 'out_field': 'clmap'"
-"skymap","renderers.Mollview","conf","'in_field': 'clmap', 'title': 'Test', 'filename': 'output/test-skymap.png'"
+"skymap","renderers.Mollview","conf","'in_field': 'clmap', 'title': 'Test', 'units': 'CL', 'coord': [ 'G' ], 'filename': 'output/test-times-{}-{}-{}.png'"
+"fits","renderers.FitsSkymap","conf","'in_field': 'clmap', 'filename': 'output/test-times-{}-{}-{}.fits'"
 ,,,
 "debug","Pass","conf, chi2","'line': 1, 'dump': 1"
