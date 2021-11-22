@@ -32,6 +32,10 @@ trial2:
 	python snewpdag/trials/Simple.py Control -n 10 | \
           python -m snewpdag --log INFO --jsonlines snewpdag/data/test-liq-config.py
 
+diffpoint:
+	python snewpdag/trials/Simple.py Control -n 1 | \
+          python -m snewpdag --log INFO --jsonlines snewpdag/data/test-diff.py
+
 distcalc_trial:
 	python snewpdag/trials/Simple.py Control -n 1000 | \
           python -m snewpdag --log INFO --jsonlines snewpdag/data/test-distcalc-single-config.csv

@@ -12,7 +12,7 @@ class DetectorDB:
   files = []
 
   def __init__(self, filename):
-    if len(DetectorDB.dets) > 0 and filename in files:
+    if len(DetectorDB.dets) > 0 and filename in DetectorDB.files:
       # check if already read in this file
       return
     logging.info('Read detector database file {}'.format(filename))
@@ -30,8 +30,11 @@ class DetectorDB:
           d = Detector(name, lon, lat, height, sigma, bias)
           DetectorDB.dets[name] = d
 
+  def has(self, name):
+    return name in DetectorDB.dets
+
   def get(self, name):
-    if name in DetectorDB.dets:
+    if self.has(name):
       return DetectorDB.dets[name]
     else:
       return None
