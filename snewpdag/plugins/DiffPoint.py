@@ -2,8 +2,28 @@
 DiffPoint: generate a skymap of SN direction chi2's
   based on Wiktor Jasniak's Chi2Calculation
 
-Input: a delta-time in ns (presumably less than 40ms),
-       with an indication of the detector pair
+Arguments:
+  detector_location: filename of detector database for DetectorDB
+  nside: healpix nside parameter, i.e., skymap resolution
+  min_dts: minimum number of time differences in order to do calculation
+
+Input payload:
+  dts: a dictionary of time differences. Keys are of form (det1,det2),
+    a list or tuple of detector names (as given in DetectorDB).  The values
+    are themselves dictionaries with the following keys:
+    required:
+      dt: time tuple (s,ns) of t1-t2.
+      t1: burst time tuple (s,ns) of det1.
+      t2: burst time tuple (s,ns) of det2.
+    optional (values derived from DetectorDB if not present):
+      bias: bias in dt in seconds, given as bias1-bias2.
+      var: variance (stddev**2) of dt in seconds.
+      dsig1: (d(dt)/dt1) * sigma1, in seconds, for covariance calculation.
+      dsig2: (d(dt)/dt2) * sigma2, in seconds, for covariance calculation.
+
+Output payload:
+  map: healpix map with specified nside, nested ordering.
+  ndof: 2
 """
 import logging
 import numpy as np

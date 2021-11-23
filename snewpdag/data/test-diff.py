@@ -9,7 +9,7 @@
   { "name": "Gen", "class": "gen.GenPoint", "observe": [ "Control" ],
     "kwargs": {
       "detector_location": "snewpdag/data/detector_location.csv",
-      "pair_list": [ ('IC','HK'), ('IC','KM3'), ('IC','JUNO') ],
+      "pair_list": [ ('SNOP','Borexino'), ('SNOP','KL'), ('SNOP','KM3') ],
       "ra": -60.0, # like longitude
       "dec": -30.0, # like latitude
       "smear": False,
@@ -38,5 +38,9 @@
                 "units": "CL", "min": 0, "max": 1,
                 "coord": [ 'G' ],
                 "filename": "output/test-diff-{}-{}-{}.png" }
+  },
+  { "name": "fits", "class": "renderers.FitsSkymap", "observe": [ "conf" ],
+    "kwargs": { "in_field": "clmap",
+                "filename": "output/test-diff-{}-{}-{}.fits" }
   },
 ]
