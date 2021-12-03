@@ -3,7 +3,7 @@ DtsCalculator: compute neutrino time dts between each detector sending an alert.
 
 Input payload:
     data[neutrino_time] = observed burst time for a detector (s,ns). For mc trials use
-    the Detector.py plugin to generate this.
+    the DetectorTime.py plugin to generate this.
 
 Output payload:
     dts: a dictionary of time differences. Keys are of form (det1, det2). The values are themselves dictionaries with
@@ -57,7 +57,7 @@ class DtsCalculator(Node):
                         return data
                 else:
                     self.valid[index] = True
-
+                self.h[index] = data['history']
                # compute the dts if we have two or more valid inputs
                 if sum(self.valid) >= 2:
                    # store dts in a 2d list:
@@ -74,8 +74,14 @@ class DtsCalculator(Node):
                                                                      't1': self.dets_nu_times[i], 't2': self.dets_nu_times[j]}})
 
                    # data['dt_uncertainties'] = {"Diff_t0s": max(self.uncertainties)}
-                    self.h[index] = data['history']
+
+                    logging.warning(self.h[0])
+                    logging.warning(self.h[1])
+                    logging.warning(self.h[2])
                     data['history'].combine(list(filter(None, self.h)))
+                    logging.warning(data)
+                    logging.warning(data['history'])
+
 
                    # data['history'].combine((self.h[0], self.h[1]))
                    # in fact, this should even work if we return True,
