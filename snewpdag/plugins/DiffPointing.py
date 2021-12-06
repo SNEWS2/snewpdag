@@ -189,7 +189,7 @@ class DiffPointing(Node):
               self.cache.pop(krev)
 
     if len(self.cache) >= self.min_dts:
-      return self.reevaluate()
+      return self.reevaluate(data)
     else:
       return True
 
