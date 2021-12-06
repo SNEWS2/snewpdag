@@ -18,13 +18,13 @@ import matplotlib.pyplot as plt
 from snewpdag.dag import Node
 from . import TimeDistSource
 
-#rdallava: function used to insert a dictionary into a tuple
-def add_dictionary_to_a_tuple(dictionary):
-  my_tuple = ()
-  my_tuple = list(my_tuple)
-  my_tuple.append(dictionary)
-  my_tuple = tuple(my_tuple)
-
+def store_a_dictionary_inside_a_tuple(dictionary):
+  '''
+  Function used to insert a dictionary into a tuple
+  '''
+  void_list = []
+  void_list.append(dictionary)
+  my_tuple = tuple(void_list)
   return my_tuple
 
 class TimeSeries(TimeDistSource):
@@ -45,6 +45,7 @@ class TimeSeries(TimeDistSource):
 
   def alert(self, data):
     sn_distance = data['sn_distance'] if 'sn_distance' in data else self.dist
+    data['detector_name'] = self.detector
     new_mu = self.new_mu*(10./sn_distance)**2
     # Define mean (total number of signal events) as the integral of the lightcurve model
     new_mean = sum(new_mu)
@@ -62,11 +63,11 @@ class TimeSeries(TimeDistSource):
     a.flags.writeable = False
 
     ngen = { 'times': a, 'gen_t_delay': tdelay }
+
     if 'gen' in data:
       data['gen'].update(ngen,)
-      #rdallava: Combine.py is looking for a tuple. Inserting data['gen'] into a tuple.
-      tuple_dict = add_dictionary_to_a_tuple(data['gen'])
-      data['gen'] = tuple_dict
+      ##rdallava: Combine.py is looking for a tuple. Inserting data['gen'] into a tuple.
+      data['gen'] = store_a_dictionary_inside_a_tuple(data['gen'])
 
     else:
       data['gen'] = (ngen, )
@@ -80,7 +81,5 @@ class TimeSeries(TimeDistSource):
     #print('lets see', nev, len(data['times']), self.name)
     #plt.hist(data['times'])
     #plt.show()
-    data['detector_name'] = self.detector 
-    
-    return True
+    return data
 
