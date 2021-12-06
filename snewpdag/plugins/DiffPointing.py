@@ -1,5 +1,5 @@
 """
-DiffPoint: generate a skymap of SN direction chi2's
+DiffPointing: generate a skymap of SN direction chi2's
   based on Wiktor Jasniak's Chi2Calculation
 
 Arguments:
@@ -33,7 +33,7 @@ from snewpdag.dag import Node, Detector, DetectorDB
 from snewpdag.dag.lib import normalize_time
 from astropy.time import Time
 
-class DiffPoint(Node):
+class DiffPointing(Node):
   def __init__(self, detector_location, nside, min_dts, **kwargs):
     self.db = DetectorDB(detector_location)
     self.nside = nside

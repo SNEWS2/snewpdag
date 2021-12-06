@@ -1,5 +1,5 @@
 #
-# test for GenPoint -> DiffPoint
+# test for GenPoint -> DiffPointing
 #
 
 [
@@ -19,7 +19,7 @@
   { "name": "Gen-out", "class": "Pass", "observe": [ "Gen" ],
     "kwargs": { "line": 1, "dump": 1 }
   },
-  { "name": "Diff", "class": "DiffPoint", "observe": [ "Gen" ],
+  { "name": "Diff", "class": "DiffPointing", "observe": [ "Gen" ],
     "kwargs": {
       "detector_location": "snewpdag/data/detector_location.csv",
       "nside": 32,
@@ -34,7 +34,7 @@
   },
   { "name": "skymap", "class": "renderers.Mollview", "observe": [ "conf" ],
     "kwargs": { "in_field": "clmap",
-                "title": "DiffPoint",
+                "title": "DiffPointing",
                 "units": "CL", "min": 0, "max": 1,
                 "coord": [ 'G' ],
                 "filename": "output/test-diff-{}-{}-{}.png" }
