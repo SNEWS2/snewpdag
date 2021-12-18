@@ -46,6 +46,8 @@ class GenPoint(Node):
     # given time is when wavefront arrives at Earth origin.
     g = 1000000000 / u.second
     ts = {}
+    bias = {}
+    sigma = {}
     for dname in self.dets:
       #c = 3.0e8 # m/s
       det = self.db.get(dname)
@@ -60,6 +62,8 @@ class GenPoint(Node):
       logging.info('  dt = {}'.format(dt))
       dtt = (self.ttuple[0], self.ttuple[1] + dt * g)
       ts[dname] = normalize_time(dtt)
+      bias[dname] = det.bias
+      sigma[dname] = det.sigma
       logging.info('  time[{}] = {}'.format(dname, ts[dname]))
 
     # generate pair times
@@ -68,7 +72,15 @@ class GenPoint(Node):
     for p in self.pairs:
       dt = subtract_time(ts[p[0]], ts[p[1]])
       logging.info('dt[{}] = {}'.format(p, dt))
-      dts[p] = { 'dt': dt, 't1': ts[p[0]], 't2': ts[p[1]] }
+      dts[p] = {
+                 'dt': dt, # (s, ns)
+                 't1': ts[p[0]], # (s, ns)
+                 't2': ts[p[1]], # (s, ns)
+                 'bias': bias[p[0]] - bias[p[1]], # sec
+                 'var': sigma[p[0]]**2 + sigma[p[1]]**2, # sec**2
+                 'dsig1': sigma[p[0]], # sec
+                 'dsig2': - sigma[p[1]], # sec
+               }
     data['dts'] = dts
     return data
 
