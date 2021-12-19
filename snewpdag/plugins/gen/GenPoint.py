@@ -37,10 +37,10 @@ class GenPoint(Node):
 
   def alert(self, data):
     # record truth information
-    if 'gen' not in data:
-      data['gen'] = {}
-    data['gen']['sn_ra'] = self.ra # radians
-    data['gen']['sn_dec'] = self.dec # radians
+    if 'truth' not in data:
+      data['truth'] = {}
+    data['truth']['sn_ra'] = self.ra # radians
+    data['truth']['sn_dec'] = self.dec # radians
 
     # generate times for each detector, including bias.
     # given time is when wavefront arrives at Earth origin.
