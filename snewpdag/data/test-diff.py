@@ -36,7 +36,7 @@
     "kwargs": { "in_field": "clmap",
                 "title": "DiffPointing",
                 "units": "CL", "min": 0, "max": 1,
-                "coord": [ 'G' ],
+                "coord": [ 'C' ], # geocentric celestial/equatorial
                 "filename": "output/test-diff-{}-{}-{}.png" }
   },
   { "name": "fits", "class": "renderers.FitsSkymap", "observe": [ "conf" ],
