@@ -1,0 +1,19 @@
+"Control","Pass",,"'line': 100"
+,,,
+"arrival","gen.NeutrinoArrivalTime","Control","'detector_list': [ 'IC', 'SK', 'JUNO' ], 'detector_location': 'snewpdag/data/detector_location.csv', 'fixed_n': [ 30, 30], 'fixed_t': [ 0, 0]"
+"smear","gen.TimeOffset","arrival","'detector_location': 'snewpdag/data/detector_location.csv'"
+"gen","Pass","arrival, smear","'line': 1, 'dump': 1"
+,,,
+,,,
+,,,
+"IC","gen.DetectorTime","smear","'detector': 'IC'"
+"SK","gen.DetectorTime","smear","'detector': 'SK'"
+"JUNO","gen.DetectorTime","smear","'detector': 'JUNO'"
+"det","Pass","IC, SK, JUNO","'line': 1, 'dump': 1"
+,,,
+"chi2","Chi2Calculator","IC, SK, JUNO","'detector_list': [ 'IC', 'SK', 'JUNO' ], 'detector_location': 'snewpdag/data/detector_location.csv', 'NSIDE': 32"
+"conf","Chi2CL","chi2","'in_field': 'map', 'out_field': 'clmap'"
+"skymap","renderers.Mollview","conf","'in_field': 'clmap', 'title': 'Test', 'units': 'CL', 'coord': [ 'G' ], 'filename': 'output/test-times-{}-{}-{}.png'"
+"fits","renderers.FitsSkymap","conf","'in_field': 'clmap', 'filename': 'output/test-times-{}-{}-{}.fits'"
+,,,
+"debug","Pass","conf, chi2","'line': 1, 'dump': 1"
