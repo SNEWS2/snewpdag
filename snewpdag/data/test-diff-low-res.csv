@@ -1,0 +1,11 @@
+"Control","Pass",,"'line': 100"
+,,,
+"Gen","gen.GenPoint","Control","'detector_location':'snewpdag/data/detector_location.csv', 'pair_list':[('SNOP','Borexino'),('SNOP','KL'),('SNOP','KM3')], 'ra':-60.0, 'dec':-30.0, 'smear': False, 'time':'2021-11-01 05:22:36.328'"
+"Gen-out","Pass","Gen","'line':1, 'dump':1"
+,,,
+"Diff","DiffPointing","Gen","'detector_location':'snewpdag/data/detector_location.csv', 'nside':8, 'min_dts':3"
+"Diff-out","Pass","Diff","'line':1, 'dump':1"
+,,,
+"conf","Chi2CL","Diff","'in_field':'map', 'out_field':'clmap'"
+"skymap","renderers.Mollview","conf","'in_field':'clmap', 'title':'DiffPointing', 'units':'CL', 'min':0, 'max':1, 'coord':['C'], 'filename':'output/test-diff-low-res-{}-{}-{}.png'"
+"fits","renderers.FitsSkymap","conf","'in_field':'clmap', 'filename':'output/test-diff-low-res-{}-{}-{}.fits'"

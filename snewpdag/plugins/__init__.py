@@ -1,4 +1,6 @@
 from .Pass import Pass
+from .Copy import Copy
+from .Write import Write
 
 from .TimeSeriesInput import TimeSeriesInput
 from .TimeDistInput import TimeDistInput
@@ -15,6 +17,7 @@ from .BayesianBlocks import BayesianBlocks
 
 from .Histogram1D import Histogram1D
 from .Histogram1DRebin import Histogram1DRebin
+from .HistogramSkymap import HistogramSkymap
 from .Accumulator import Accumulator
 
 from .SeriesBinner import SeriesBinner
