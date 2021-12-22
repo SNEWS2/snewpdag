@@ -1,5 +1,24 @@
 """
 GenPoint - generate time differences for a given SN direction
+
+Arguments:
+  detector_location: filename of detector database for DetectorDB
+  detectors: list of detectors for which to generate burst times
+  ra: right ascension (degrees)
+  dec: declination (degrees)
+  time: time string, e.g., '2021-11-01 05:22:36.328'
+  smear: (optional, default True) whether to smear output times
+
+Output:
+  truth/sn_ra: right ascension (radians)
+  truth/sn_dec: declination (radians)
+  dts/(<det1>,<det2>)/dt: time difference between detectors (s, ns)
+  dts/(<det1>,<det2>)/t1: arrival time for det1 (s, ns)
+  dts/(<det1>,<det2>)/t2: arrival time for det2 (s, ns)
+  dts/(<det1>,<det2>)/bias: bias1 - bias2 (sec)
+  dts/(<det1>,<det2>)/var: combined variance (sec^2)
+  dts/(<det1>,<det2>)/dsig1: sigma1 (sec)
+  dts/(<det1>,<det2>)/dsig2: -sigma2 (sec)
 """
 import logging
 import numpy as np

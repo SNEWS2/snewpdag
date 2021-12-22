@@ -14,14 +14,8 @@ from snewpdag.dag import Node
 
 class Pass(Node):
   def __init__(self, **kwargs):
-    self.line = 100
-    self.dump = 0
-    if 'line' in kwargs:
-      self.line = kwargs['line']
-      kwargs.pop('line')
-    if 'dump' in kwargs:
-      self.dump = kwargs['dump']
-      kwargs.pop('dump')
+    self.line = kwargs.pop('line', 100)
+    self.dump = kwargs.pop('dump', 0)
     self.count = 0
     super().__init__(**kwargs)
 
@@ -31,10 +25,11 @@ class Pass(Node):
         print('{0}{1}:'.format(indent, k))
         self.print_dict(indent + '  ', v)
       else:
-        print('{0}{1}: {2}'.format(indent, k, v))
+        print('{0}{1}: {2}'.format(indent, k, repr(v)))
 
   def alert(self, data):
     self.count += 1
+    logging.debug('{}: alert'.format(self.name))
     if self.line > 0:
       if self.count == 1 or self.count % self.line == 0:
         print('{0}: received {1} alerts'.format(self.name, self.count))
@@ -46,6 +41,7 @@ class Pass(Node):
     return True
 
   def revoke(self, data):
+    logging.debug('{}: revoke'.format(self.name))
     if self.dump > 0:
       print('>>>> {0} >>>> ({1}) revoke'.format(self.name, self.count))
       self.print_dict('', data)
@@ -53,12 +49,14 @@ class Pass(Node):
     return True
 
   def report(self, data):
+    logging.debug('{}: report'.format(self.name))
     print('>>>> {0} >>>> ({1}) report'.format(self.name, self.count))
     self.print_dict('', data)
     print('<<<< {} <<<<'.format(self.name))
     return True
 
   def reset(self, data):
+    logging.debug('{}: reset'.format(self.name))
     if self.dump > 0:
       print('>>>> {0} >>>> ({1}) reset'.format(self.name, self.count))
       self.print_dict('', data)

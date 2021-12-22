@@ -1,0 +1,40 @@
+"Control","Pass",,"'line': 100"
+,,,
+,,,"MC trials"
+,,,"Change ra/dec in Gen and Truth specifications"
+,,,
+"Gen","gen.GenPoint","Control","'detector_location':'snewpdag/data/detector_location.csv', 'pair_list':[('SNOP','Borexino'),('SNOP','KL'),('SNOP','KM3')], 'ra':60.0, 'dec':-30.0, 'smear': True, 'time':'2021-11-01 05:22:36.328'"
+,,,"Gen-out","Pass","Gen","'line':1, 'dump':1"
+,,,
+,,,"unsmeared probability maps - only do for trial_id=0"
+,,,
+"First","FilterValue","Control","'in_field':'trial_id', 'value':0"
+"Truth","gen.GenPoint","First","'detector_location':'snewpdag/data/detector_location.csv', 'pair_list':[('SNOP','Borexino'),('SNOP','KL'),('SNOP','KM3')], 'ra':60.0, 'dec':-30.0, 'smear': False, 'time':'2021-11-01 05:22:36.328'"
+"Truth-out","Pass","Truth","'line':1, 'dump':1"
+,,,
+,,,"high-resolution truth map"
+,,,
+"Hires","DiffPointing","Truth","'detector_location':'snewpdag/data/detector_location.csv', 'nside':32, 'min_dts':3"
+"Hires-out","Pass","Hires","'line':1, 'dump':1"
+"Hires-CL","Chi2CL","Hires","'in_field':'map', 'out_field':'clmap'"
+"Hires-skymap","renderers.Mollview","Hires-CL","'in_field':'clmap', 'title':'High resolution truth map', 'units':'CL', 'range':(0,1), 'coord':['C'], 'filename':'output/pointing-{}-{}-{}.png'"
+,,,
+,,,"low-resolution truth map"
+,,,
+"Lores","DiffPointing","Truth","'detector_location':'snewpdag/data/detector_location.csv', 'nside':8, 'min_dts':3"
+"Lores-out","Pass","Lores","'line':1, 'dump':1"
+"Lores-CL","Chi2CL","Lores","'in_field':'map', 'out_field':'clmap'"
+"Lores-skymap","renderers.Mollview","Lores-CL","'in_field':'clmap', 'title':'Low resolution truth map', 'units':'CL', 'range':(0,1), 'coord':['C'], 'filename':'output/pointing-{}-{}-{}.png'"
+,,,
+,,,"MC trials processing"
+,,,
+"Point","DiffPointing","Gen","'detector_location':'snewpdag/data/detector_location.csv', 'nside':8, 'min_dts':3"
+"Count","HistogramSkymap","Point","'nside':8, 'in_field':'map_zeroes', 'out_field':'hist', 'out_err_field':'histerr'"
+"Count-out","Pass","Count","'line':1, 'dump':1"
+"Count-skymap","renderers.Mollview","Count","'on':['report'], 'in_field':'hist', 'title':'MC trials', 'units':'Counts', 'range':(0,), 'coord':['C'], 'filename':'output/pointing-{}-{}-{}.png'"
+,,,
+,,,"Comparison of MC trials with low-resolution truth map"
+,,,
+"Compare","CompareHistogram","Count,Lores-CL","'in_count_field':'hist', 'in_prob_field':'clmap', 'out_field':'diff'"
+"Compare-skymap","renderers.Mollview","Compare","'on':['report'], 'in_field':'diff', 'title':'Comparison counts-pred/err', 'units':'diff/err', 'coord':['C'], 'filename':'output/pointing-{}-{}-{}.png'"
+"Compare-out","Pass","Compare","'line':1, 'dump':1"

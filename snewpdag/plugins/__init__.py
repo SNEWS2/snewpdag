@@ -19,6 +19,7 @@ from .Histogram1D import Histogram1D
 from .Histogram1DRebin import Histogram1DRebin
 from .HistogramSkymap import HistogramSkymap
 from .Accumulator import Accumulator
+from .CompareHistogram import CompareHistogram
 
 from .SeriesBinner import SeriesBinner
 from .BinnedAccumulator import BinnedAccumulator
@@ -35,6 +36,7 @@ from .ValidateKey import ValidateKey
 from .ValidateKeyType import ValidateKeyType
 from .ValidateListType import ValidateListType
 from .ValidateSort import ValidateSort
+from .FilterValue import FilterValue
 
 from .TrueVsFit import TrueVsFit
 

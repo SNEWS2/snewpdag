@@ -1,5 +1,17 @@
 """
-TrueTimes - generate true times
+TrueTimes - generate true arrival times
+
+Arguments:
+  detector_location: filename of detector database for DetectorDB
+  detectors: list of detectors for which to generate burst times
+  ra: right ascension (degrees)
+  dec: declination (degrees)
+  time: time string, e.g., '2021-11-01 05:22:36.328'
+
+Output:
+  truth/true_sn_ra: right ascension (radians)
+  truth/true_sn_dec: declination (radians)
+  truth/dets/<det_id>/true_t: arrival time (s, ns), s in unix time
 """
 import logging
 import numpy as np

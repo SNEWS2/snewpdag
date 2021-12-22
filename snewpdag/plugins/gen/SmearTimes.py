@@ -1,5 +1,16 @@
 """
 SmearTimes - smear true times
+
+Arguments:
+  detector_location: filename of detector database for DetectorDB
+
+Input:
+  truth/dets/<det_id>/true_t: arrival time (s, ns), s in unix time
+
+Output:
+  truth/dets/det_id>/neutrino_time: smeared time (s, ns)
+  truth/dets/bias: bias (s), from db
+  truth/dets/sigma: sigma (s), from db
 """
 import logging
 import numpy as np
