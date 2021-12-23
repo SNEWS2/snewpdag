@@ -19,7 +19,9 @@ from .Histogram1D import Histogram1D
 from .Histogram1DRebin import Histogram1DRebin
 from .HistogramSkymap import HistogramSkymap
 from .Accumulator import Accumulator
-from .CompareHistogram import CompareHistogram
+from .CompareHistograms import CompareHistograms
+from .NormHistogram import NormHistogram
+from .AccHistogram import AccHistogram
 
 from .SeriesBinner import SeriesBinner
 from .BinnedAccumulator import BinnedAccumulator

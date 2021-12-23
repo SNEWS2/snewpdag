@@ -45,6 +45,10 @@ diffpointing_smear:
 	python snewpdag/trials/Simple.py Control -n 10000 | \
           python -m snewpdag --jsonlines snewpdag/data/test-pointing.csv
 
+diffpointing_weighted:
+	python snewpdag/trials/Simple.py Control -n 1000 | \
+          python -m snewpdag --jsonlines snewpdag/data/test-pointing-weighted.csv
+
 distcalc_trial:
 	python snewpdag/trials/Simple.py Control -n 1000 | \
           python -m snewpdag --log INFO --jsonlines snewpdag/data/test-distcalc-single-config.csv

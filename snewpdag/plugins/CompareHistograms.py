@@ -1,12 +1,28 @@
 """
-CompareHistogram - compare count vs a probability map
+CompareHistograms - compare count vs a probability map
+
+Arguments:
+  in_count_field: name of field containing histogram of event counts
+  in_prob_field: name of field containing probability map
+  out_field: field to contain diff/err
+
+Input payload (alert):
+  in_prob_field: probability map
+  Consumes alert.
+
+Input payload (report):
+  in_count_field: histogram of event counts
+  in_prob_field (optional): probability map
+
+Output payload (report only):
+  out_field: diff/err map
 """
 import logging
 import numpy as np
 
 from snewpdag.dag import Node
 
-class CompareHistogram(Node):
+class CompareHistograms(Node):
   def __init__(self, in_count_field, in_prob_field, out_field, **kwargs):
     self.in_count_field = in_count_field
     self.in_prob_field = in_prob_field
