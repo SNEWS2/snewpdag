@@ -10,6 +10,7 @@ standalone_unittests:
 	python -m unittest snewpdag.tests.test_app
 	python -m unittest snewpdag.tests.test_inputs
 	python -m unittest snewpdag.tests.test_combinemaps
+	python -m unittest snewpdag.tests.test_copy
 
 test: standalone_unittests lightcurvesim
 	python -m unittest snewpdag.tests.test_timedistdiff
@@ -34,7 +35,19 @@ trial2:
 
 diffpointing:
 	python snewpdag/trials/Simple.py Control -n 1 | \
-          python -m snewpdag --log INFO --jsonlines snewpdag/data/test-diff.py
+          python -m snewpdag --log INFO --jsonlines snewpdag/data/test-diff.csv
+
+diffpointing_smear:
+	#python snewpdag/trials/Simple.py Control -n 1 | \
+        #  python -m snewpdag --jsonlines snewpdag/data/test-diff-low-res.csv
+	#python snewpdag/trials/Simple.py Control -n 10000 | \
+        #  python -m snewpdag --jsonlines snewpdag/data/test-diff-smear.csv
+	python snewpdag/trials/Simple.py Control -n 10000 | \
+          python -m snewpdag --jsonlines snewpdag/data/test-pointing.csv
+
+diffpointing_weighted:
+	python snewpdag/trials/Simple.py Control -n 1000 | \
+          python -m snewpdag --jsonlines snewpdag/data/test-pointing-weighted.csv
 
 distcalc_trial:
 	python snewpdag/trials/Simple.py Control -n 1000 | \

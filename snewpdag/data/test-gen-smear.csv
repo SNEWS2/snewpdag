@@ -1,0 +1,21 @@
+"Control","Pass",,"'line': 100"
+,,,
+"SN","gen.TrueTimes","Control","'detector_location':'snewpdag/data/detector_location.csv', 'detectors': ['SNOP','Borexino','KL','KM3'], 'ra':-60.0, 'dec':-30.0, 'time':'2021-11-01 05:22:36.328'"
+"SN-out","Pass","SN","'line':1, 'dump':1"
+,,,
+"Smear","gen.SmearTimes","SN","'detector_location':'snewpdag/data/detector_location.csv'"
+,,,
+"SNOP-cp","Copy","Smear","'cp':( ('truth/dets/SNOP/neutrino_time', 'neutrino_time'), ('truth/dets/SNOP/bias', 'bias'), ('truth/dets/SNOP/sigma', 'sigma') )"
+"SN-debug","Pass","SNOP-cp","'line':1, 'dump':1"
+"SNOP","Write","SNOP-cp","'write':[ ['detector_name', 'SNOP'] ]"
+,,,
+"Borexino-cp","Copy","Smear","'cp':( ('truth/dets/Borexino/neutrino_time', 'neutrino_time'), ('truth/dets/Borexino/bias', 'bias'), ('truth/dets/Borexino/sigma', 'sigma') )"
+"Borexino","Write","Borexino-cp","'write':[ ['detector_name', 'Borexino'] ]"
+,,,
+"KL-cp","Copy","Smear","'cp':( ('truth/dets/KL/neutrino_time', 'neutrino_time'), ('truth/dets/KL/bias', 'bias'), ('truth/dets/KL/sigma', 'sigma') )"
+"KL","Write","KL-cp","'write':[ ['detector_name', 'KL'] ]"
+,,,
+"KM3-cp","Copy","Smear","'cp':( ('truth/dets/KM3/neutrino_time', 'neutrino_time'), ('truth/dets/KM3/bias', 'bias'), ('truth/dets/KM3/sigma', 'sigma') )"
+"KM3","Write","KM3-cp","'write':[ ['detector_name', 'KM3'] ]"
+,,,
+"Output","Pass","SNOP,Borexino,KL,KM3","'line':1, 'dump':1"

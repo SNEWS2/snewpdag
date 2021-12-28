@@ -152,6 +152,7 @@ class DiffPointing(Node):
     m -= chi2_min
     data['map'] = m
     data['ndof'] = 2
+    data['map_zeroes'] = np.where(m == 0.0)
     return data
 
   def alert(self, data):

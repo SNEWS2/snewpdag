@@ -14,3 +14,6 @@ from .DetectorTime import DetectorTime
 
 from .GenPoint import GenPoint
 
+from .TrueTimes import TrueTimes
+from .SmearTimes import SmearTimes
+
