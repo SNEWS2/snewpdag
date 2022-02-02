@@ -1,0 +1,41 @@
+"Control","Pass",,"'line’: 100",,
+"TrueDist","gen.TrueDist","Control","'sn_distance': 'Random'",,
+
+"KM3-SGBG","gen.GenerateSGBG","TrueDist","'detector':'KM3NeT', 'bg':3000.0, ‘sig_filetype’:’tn’, ‘sig_filename’:’snewpdag/data/output_km3net_27_Shen_1D_solar_mass_progenitor.fits_1msbin.txt‘",,
+"JUNO-SGBG","gen.GenerateSGBG","TrueDist","'detector':'JUNO', 'bg':3, ‘sig_filetype’:’tn’, ‘sig_filename’:’snewpdag/data/output_lightcurve_for_snewpdag_11Msun.txt‘",,
+"KM3","gen.Combine","KM3-SGBG",,,
+"JUNO","gen.Combine","JUNO-SGBG",,,
+"KM3-bin","SeriesBinner","KM3","'in_field’:’times’, ‘nbins’:250, ‘xlow’:0, ‘xhigh’:0.25, ‘out_xfield’:’t’, ‘out_yfield’:’n’",,
+"JUNO-bin","SeriesBinner","JUNO","'in_field’:’times’, ‘nbins’:250, ‘xlow’:0, ‘xhigh’:0.25, ‘out_xfield’:’t’, ‘out_yfield’:’n’",,
+
+"KM3-DistCalc","MeanDist","KM3-bin","'detector’:’KM3, NO’, ‘in_field’:’n’, ‘out_field’:‘dist’, 't0':100",,
+"JUNO-DistCalc","MeanDist","JUNO-bin","'detector’:’JUNO, MM’, ‘in_field’:’n’, ‘out_field’:‘dist’, 't0':100",,
+
+"KM3-Err","DistErrCalc","KM3-DistCalc","'xno':25,'in_field':'dist'",,
+"JUNO-Err","DistErrCalc","JUNO-DistCalc","'xno':25,'in_field':'dist'",,
+"KM3-Err-Scatter","ScatterPlot",KM3-DistCalc,"'x_in_field':'sn_distance','y_in_field':'dist_stats'",,
+"JUNO-Err-Scatter","ScatterPlot",JUNO-DistCalc,"'x_in_field':'sn_distance','y_in_field':'dist_stats'",,
+
+"KM3-dist-truedist","ScatterPlot",KM3-DistCalc,"'x_in_field':'sn_distance','y_in_field':'dist'",,
+"JUNO-dist-truedist","ScatterPlot",JUNO-DistCalc,"'x_in_field':'sn_distance','y_in_field':'dist'",,
+
+"KM3-res-truedist","Residual",KM3-DistCalc,"'true_in_field':'sn_distance','calc_in_field':'dist'",,
+"JUNO-res-truedist","Residual",JUNO-DistCalc,"'true_in_field':'sn_distance','calc_in_field':'dist'",,
+
+,,,,,
+,"Renderers",,,,
+"KM3-Err-Plot","renderers.DistErrPlot",KM3-Err,"'title’:’relative error (KM3NeT)’,’xlabel’:’true distance [kpc]’,’ylabel’:’relative error [%]’,’filename’:’output/test-{}-{}-{}-SGBG-bg.png’",,
+"JUNO-Err-Plot","renderers.DistErrPlot",JUNO-Err,"'title’:’relative error (JUNO MM)’,’xlabel’:’true distance [kpc]’,’ylabel’:’relative error [%]’,’filename’:’output/test-{}-{}-{}-MM-SGBG-bg.png’",,
+
+"KM3-dist-truedist-Plot","renderers.ScatterPlot",KM3-dist-truedist,"'plot_line': 'x','title': 'estimated distance against true distance (KM3NeT)','xlabel':'true distance [kpc]','ylabel':'estimated distance [kpc]','filename':'output/test-{}-SGBG-bg.png'",,
+"JUNO-dist-truedist-Plot","renderers.ScatterPlot",JUNO-dist-truedist,"'plot_line': 'x','title': 'estimated distance against true distance (JUNO MM)','xlabel':'true distance [kpc]','ylabel':'estimated distance [kpc]','filename':'output/test-{}-MM-SGBG-bg.png'",,
+
+"KM3-res-truedist-Plot","renderers.ScatterPlot",KM3-res-truedist,"'plot_line': '0*x','title': 'residual against true distance (KM3NeT)','xlabel':'true distance [kpc]','ylabel':'residual [kpc]','filename':'output/test-{}-SGBG-bg.png'",,
+"JUNO-res-truedist-Plot","renderers.ScatterPlot",JUNO-res-truedist,"'plot_line': '0*x','title': 'residual against true distance (JUNO MM)','xlabel':'true distance [kpc]','ylabel':'residual [kpc]','filename':'output/test-{}-MM-SGBG-bg.png'",,
+
+"KM3-Err-Scatter-Plot","renderers.ScatterPlot",KM3-Err-Scatter,"'title’:’statistical error (KM3NeT)’,’xlabel’:’true distance [kpc]’,’ylabel’:’error [kpc]’,’filename’:’output/test-{}-SGBG-bg.png’",,
+"JUNO-Err-Scatter-Plot","renderers.ScatterPlot",JUNO-Err-Scatter,"'title’:’statistical error (JUNO MM)’,’xlabel’:’true distance [kpc]’,’ylabel’:’error [kpc]’,’filename’:’output/test-{}-MM-SGBG-bg.png’",,
+
+,,,,,
+,"Debugging",,,,
+"Out","Pass","KM3-bin,KM3-DistCalc,KM3-Err,km3-dist-truedist,KM3-res-truedist",,,"'line’:0,’dump’:0"

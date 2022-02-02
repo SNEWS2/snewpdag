@@ -1,0 +1,33 @@
+"Control","Pass",,"'line’: 100",,
+"TrueDist","gen.TrueDist","Control","'sn_distance': 10",,
+
+"KM3-SGBG","gen.GenerateSGBG","TrueDist","'detector':'KM3NeT', 'bg':3000.0, ‘sig_filetype’:’tn’, ‘sig_filename’:’snewpdag/data/output_km3net_27_Shen_1D_solar_mass_progenitor.fits_1msbin.txt‘",,
+"JUNO-SGBG","gen.GenerateSGBG","TrueDist","'detector':'JUNO', 'bg':0, ‘sig_filetype’:’tn’, ‘sig_filename’:’/home/marta/JUNO_SASI/ligthcurve_elecsim_gar81125_10kpc.txt‘",,
+"KM3","gen.Combine","KM3-SGBG",,,
+"JUNO","gen.Combine","JUNO-SGBG",,,
+"KM3-bin","SeriesBinner","KM3","'in_field’:’times’, ‘nbins’:250, ‘xlow’:0, ‘xhigh’:0.25, ‘out_xfield’:’t’, ‘out_yfield’:’n’",,
+"JUNO-bin","SeriesBinner","JUNO","'in_field’:’times’, ‘nbins’:250, ‘xlow’:0, ‘xhigh’:0.25, ‘out_xfield’:’t’, ‘out_yfield’:’n’",,
+
+"KM3-DistCalc","MeanDist","KM3-bin","'detector’:’KM3, NO’, ‘in_field’:’n’, ‘out_field’:‘dist’, 't0':100",,
+"JUNO-DistCalc","MeanDist","JUNO-bin","'detector’:’JUNO, MM’, ‘in_field’:’n’, ‘out_field’:‘dist’, 't0':100",,
+"KM3-DistCalc-td","Histogram1D","KM3-DistCalc","'nbins’:200, ‘xlow’: 10, ‘xhigh’:30, ‘in_field’:’dist’",,
+"JUNO-DistCalc-td","Histogram1D","JUNO-DistCalc","'nbins’:50, ‘xlow’: 7, ‘xhigh’:33, ‘in_field’:’dist’",,
+
+"KM3-DistCalc1-td","Histogram1D","KM3-DistCalc","'nbins’:200, ‘xlow’: 10, ‘xhigh’:30, ‘in_field’:’dist1’",,
+"JUNO-DistCalc1-td","Histogram1D","JUNO-DistCalc","'nbins’:50, ‘xlow’: 7, ‘xhigh’:33, ‘in_field’:’dist1’",,
+
+"KM3-DistCalc2-td","Histogram1D","KM3-DistCalc","'nbins’:200, ‘xlow’: 10, ‘xhigh’:30, ‘in_field’:’dist2’",,
+"JUNO-DistCalc2-td","Histogram1D","JUNO-DistCalc","'nbins’:100, ‘xlow’: 5, ‘xhigh’:40, ‘in_field’:’dist2’",,
+,,,,,
+,Renderers,,,,
+"KM3-DistCalc-h","renderers.Histogram1D","KM3-DistCalc-td","'title’:’distance estimate (KM3NeT)’,’xlabel’:’mdist [kpc]’,’ylabel’:’freq’,’filename’:’output/test-{}-{}-{}-{}kpc-SGBG-bg.png’,'mode':'Gaussian'",,
+"JUNO-DistCalc-h","renderers.Histogram1D","JUNO-DistCalc-td","'title’:’distance estimate (JUNO)’,’xlabel’:’mdist [kpc]’,’ylabel’:’freq’,’filename’:’output/test4-{}-MM-{}-{}-{}kpc-SGBG-bg.png’,'mode':'Gaussian'"
+
+"KM3-DistCalc1-h","renderers.Histogram1D","KM3-DistCalc1-td","'title’:’distance estimate (KM3NeT)’,’xlabel’:’dist1 [kpc]’,’ylabel’:’freq’,’filename’:’output/test-{}-{}-{}-{}kpc-SGBG-bg.png’,'mode':'Gaussian'",,
+"JUNO-DistCalc1-h","renderers.Histogram1D","JUNO-DistCalc1-td","'title’:’distance estimate (JUNO MM)’,’xlabel’:’dist1 [kpc]’,’ylabel’:’freq’,’filename’:’output/test4-{}-MM-{}-{}-{}kpc-SGBG-bg.png’,'mode':'Gaussian'"
+
+"KM3-DistCalc2-h","renderers.Histogram1D","KM3-DistCalc2-td","'title’:’distance estimate (KM3NeT)’,’xlabel’:’dist2 [kpc]’,’ylabel’:’freq’,’filename’:’output/test-{}-{}-{}-{}kpc-SGBG-bg.png’,'mode':'Gaussian'",,
+"JUNO-DistCalc2-h","renderers.Histogram1D","JUNO-DistCalc2-td","'title’:’distance estimate (JUNO MM)’,’xlabel’:’dist2 [kpc]’,’ylabel’:’freq’,’filename’:’output/test4-{}-MM-{}-{}-{}kpc-SGBG-bg.png’,'mode':'Gaussian'"
+,,,,,
+,"Debugging",,,,
+"Out","Pass",",KM3-bin,JUNO-bin,KM3-DistCalc-td,JUNO-DistCalc-td,KM3-DistCalc1-td,JUNO-DistCalc1-td,KM3-DistCalc2-td,JUNO-DistCalc2-td",,,"'line’:0,’dump’:0"

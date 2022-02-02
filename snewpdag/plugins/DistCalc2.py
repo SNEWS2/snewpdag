@@ -36,8 +36,10 @@ class DistCalc2(Node):
                'DUNE, NO': [0.0158, -0.0304, 0.0641], \
                'DUNE, IO': [0.00978, -0.706, 0.0411], \
                'JUNO, NO': [0.0109, 0.746, 0.0909], \
-               'JUNO, IO': [0.0088, 0.319, 0.0515]}
-    
+               'JUNO, IO': [0.0088, 0.319, 0.0515], \
+               'JUNO, MM': [0.0011, 1.327, 0.1774], \
+               'KM3, NO': [0.00409, 0.68618, 0.12385]}
+               
     def __init__(self, detector, in_field, out_field, t0, **kwargs):
         self.in_field = in_field
         self.out_field = out_field
