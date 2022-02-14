@@ -5,6 +5,7 @@ from .TimeSeries import TimeSeries
 from .GenerateSGBG import GenerateSGBG
 from .Generate_bg_glitch import Generate_bg_glitch
 from .Generate_delta_peak import Generate_delta_peak
+from .GenerateSGBG_deadtimes import GenerateSGBG_deadtimes
 
 from .Combine import Combine
 
