@@ -34,8 +34,8 @@ class Generate_delta_peak(Node):
     self.mean = mean #mean number of events per ms bin
     self.tmin = -10
     self.tmax = 10
-    self.tstart = 0.5 #maybe put as input field?
-    self.duration = 0.5 #maybe put as input field?
+    self.tstart = int(Node.rng.uniform(-2, 2)) #random tstart between -2 and 2 sec
+    self.duration = int(Node.rng.uniform(0.2, 0.8)) #random weight of peak between [200 and 800 ms]
     
   def alert(self, data):
     
@@ -45,7 +45,7 @@ class Generate_delta_peak(Node):
 
     #logging.info('t_true {}'.format(t_true))
     new_data = []
-    t_true = self.tstart
+    t_true = self.tstart/1000.
     dist = data['sn_distance'] if 'sn_distance' in data else self.dist
 
     #Construct new data with tdelay and sg + bg
