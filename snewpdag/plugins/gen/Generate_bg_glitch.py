@@ -37,9 +37,9 @@ class Generate_bg_glitch(TimeDistSource):
     self.tmin = -10
     self.tmax = 10
     self.tdelay = 0 #maybe put as input field?
-    self.glitch_tstart = 0.5 #int(Node.rng.uniform(-1, 3)) #random glitch start between -1 s and 3 s
-    self.glitch_duration = 0.2 #int(Node.rng.uniform(0.05, 0.5)) #random glitch duration between 50 ms and 500 ms
-    self.glitch_amplitude = 1.5 #int(Node.rng.uniform(1.2, 3.2)) #random glitch amplitude between 1.2*bg and 3.2*bg
+    self.glitch_tstart = Node.rng.uniform(-1, 3) #random glitch start between -1 s and 3 s
+    self.glitch_duration = Node.rng.uniform(0.05, 0.5) #random glitch duration between 50 ms and 500 ms
+    self.glitch_amplitude = Node.rng.uniform(1.2, 3.2) #random glitch amplitude between 1.2*bg and 3.2*bg
     print(self.mean, area)
     
   def alert(self, data):
