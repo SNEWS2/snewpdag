@@ -15,8 +15,8 @@
 ,"Renderers",,,,
 "Diff1-true-render","renderers.Histogram1D","Diff1-hist-true","'title’:’Time uncertainty’,’xlabel’:’t_fit - t_true [ms]’,’ylabel’:’entries/0.5ms’,’filename’:’output/gen-test-{}-{}-{}.png’",,
 "Diff1-dt-render","renderers.Histogram1D","Diff1-dt","'title’:’time difference’,’xlabel’:’dt [ms]’,’ylabel’:’entries/1ms’,’filename’:’output/gen-test-{}-{}-{}.png’",,
-"IceCube-acc-render","renderers.Histogram1D","IceCube-acc","'title’:’IceCube t’,’xlabel’:’t [ms]’, ‘ylabel’:’entries/1ms’, ‘filename’:’output/gen-test-glitch-{}-{}-{}.png’",,
-"JUNO-acc-render","renderers.Histogram1D","JUNO-acc","'title’:’JUNO t’,’xlabel’:’t [ms]’, ‘ylabel’:’entries/1ms’, ‘filename’:’output/gen-test-glitch-{}-{}-{}.png’",,
+"IceCube-acc-render","renderers.Histogram1D","IceCube-acc","'title’:’IceCube t’,’xlabel’:’Time [s]’, ‘ylabel’:’Events/1ms’, ‘filename’:’output/gen-test-glitch-{}-{}-{}.png’",,
+"JUNO-acc-render","renderers.Histogram1D","JUNO-acc","'title’:’JUNO t’,’xlabel’:’Time [s]’, ‘ylabel’:’Events/1ms’, ‘filename’:’output/gen-test-glitch-{}-{}-{}.png’",,
 ,,,,,
 ,"Debugging",,,,
 "Out","Pass","IceCube,JUNO,IceCube-bin,JUNO-bin,Diff1",,,"'line’:1,’dump’:1"

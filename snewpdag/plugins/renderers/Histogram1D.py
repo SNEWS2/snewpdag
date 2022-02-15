@@ -42,11 +42,13 @@ class Histogram1D(Node):
     step = (xhi - xlo) / n
     x = np.arange(xlo, xhi, step)
 
+    plt.rcParams.update({'font.size': 12})
+    
     fig, ax = plt.subplots()
     ax.bar(x, bins, width=step, align='edge')
     #ax.plot(x, bins)
-    ax.set_xlabel(self.xlabel)
-    ax.set_ylabel(self.ylabel)
+    ax.set_xlabel(self.xlabel,size=15)
+    ax.set_ylabel(self.ylabel,size=15)
     ax.set_title('{0} (burst {1} count {2})'.format(
                  self.title, burst_id, self.count))
     fig.tight_layout()
