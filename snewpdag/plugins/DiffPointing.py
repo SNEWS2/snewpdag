@@ -151,11 +151,9 @@ class DiffPointing(Node):
     m -= chi2_min
     data['map'] = m
     data['ndof'] = 2
-    print(data)
     return data
 
   def alert(self, data):
-    print(data)
     ###################fake dts: alert nu_times being sent from the server right now are of the order of seconds
     data['dts'][list(data['dts'].keys())[0]]['dt'] = (0, 40)
     try:
