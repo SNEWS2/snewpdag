@@ -45,17 +45,16 @@ class DiffPointing(Node):
   def cache_values(self, k1, k2, dts):
     d1 = self.db.get(k1)
     d2 = self.db.get(k2)
-    required_keys = [ 'dt', 't1', 't2', 'bias', 'var', 'dsig1', 'dsig2' ]
-    for k in required_keys:
-      if k not in dts:
-        return None
-    dt = dts['dt'] # (s, ns)
-    t1 = dts['t1'] # (s, ns)
-    t2 = dts['t2'] # (s, ns)
-    bias = dts['bias'] # sec
-    var = dts['var'] # sec**2
-    dsig1 = dts['dsig1'] # sec
-    dsig2 = dts['dsig2'] # sec
+    if 'dt' in dts and 't1' in dts and 't2' in dts:
+      dt = dts['dt'] # (s, ns)
+      t1 = dts['t1'] # (s, ns)
+      t2 = dts['t2'] # (s, ns)
+    else:
+      return None
+    bias = dts['bias'] if 'bias' in dts else d1.bias - d2.bias # sec
+    var = dts['var'] if 'var' in dts else d1.sigma**2 + d2.sigma**2 # sec**2
+    dsig1 = dts['dsig1'] if 'dsig1' in dts else d1.sigma # sec
+    dsig2 = dts['dsig2'] if 'dsig2' in dts else - d2.sigma # sec
     # we actually want a time basis in ms for all times
     g = 1.0e-6
     nrow = {
@@ -152,10 +151,31 @@ class DiffPointing(Node):
     m -= chi2_min
     data['map'] = m
     data['ndof'] = 2
-    data['map_zeroes'] = np.where(m == 0.0)
+    print(data)
     return data
 
   def alert(self, data):
+    print(data)
+    ###################fake dts: alert nu_times being sent from the server right now are of the order of seconds
+    data['dts'][list(data['dts'].keys())[0]]['dt'] = (0, 40)
+    try:
+      data['dts'][list(data['dts'].keys())[1]]['dt'] = (0, 40)
+    except:
+      pass
+    try:
+      data['dts'][list(data['dts'].keys())[2]]['dt'] = (0, 40)
+    except:
+      pass
+    try:
+      data['dts'][list(data['dts'].keys())[3]]['dt'] = (0, 40)
+    except:
+      pass
+    try:
+      data['dts'][list(data['dts'].keys())[4]]['dt'] = (0, 40)
+    except:
+      pass
+    ########################
+
     if 'dts' in data: # dictionary of time differences
       for k in data['dts']:
         # verify that the detector is in the database
@@ -171,9 +191,6 @@ class DiffPointing(Node):
           nrow = self.cache_values(k[0], k[1], data['dts'][k])
           if nrow != None:
             self.cache[k] = nrow
-          else:
-            logging.warning('Missing fields in dt dict for {}: {}'.format(
-                            k, data['dts'][k]))
 
     if len(self.cache) >= self.min_dts:
       return self.reevaluate(data)
@@ -194,7 +211,7 @@ class DiffPointing(Node):
               self.cache.pop(krev)
 
     if len(self.cache) >= self.min_dts:
-      return self.reevaluate(data)
+      return self.reevaluate()
     else:
       return True
 
