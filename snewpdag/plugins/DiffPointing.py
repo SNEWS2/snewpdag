@@ -151,6 +151,7 @@ class DiffPointing(Node):
     m -= chi2_min
     data['map'] = m
     data['ndof'] = 2
+    data['map_zeroes'] = np.where(m == 0.0)
     return data
 
   def alert(self, data):
@@ -189,6 +190,9 @@ class DiffPointing(Node):
           nrow = self.cache_values(k[0], k[1], data['dts'][k])
           if nrow != None:
             self.cache[k] = nrow
+          else:
+            logging.warning('Missing fields in dt dict for {}: {}'.format(
+                            k, data['dts'][k]))            
 
     if len(self.cache) >= self.min_dts:
       return self.reevaluate(data)
@@ -207,9 +211,11 @@ class DiffPointing(Node):
             krev = (k[1], k[0]) # reverse order
             if krev in self.cache:
               self.cache.pop(krev)
+            
+                                    
 
     if len(self.cache) >= self.min_dts:
-      return self.reevaluate()
+      return self.reevaluate(data)
     else:
       return True
 
