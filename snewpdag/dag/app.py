@@ -4,13 +4,55 @@ SNEWPDAG application.
 See README for details of the configuration and input data files.
 """
 
-import os, sys, argparse
-import importlib
-import logging
-import ast
-import csv
+import os, sys, argparse, json, logging, importlib, ast, csv
 import numpy as np
 from . import Node
+
+parser = argparse.ArgumentParser()
+parser.add_argument('config', help='configuration py/json/csv file')
+parser.add_argument('--input', help='input data py/json file')
+parser.add_argument('--jsonlines', action='store_true', help='each input line contains one JSON object to inject')
+parser.add_argument('--log', help='logging level')
+parser.add_argument('--seed', help='random number seed')
+parser.add_argument('--stream', help="read from the hop alert stream server")
+args = parser.parse_args()
+if args.stream:
+  try:
+    from hop import stream
+  except:
+    logging.info('Cannot import the hop client')
+    pass
+
+# Possibly use snews_pt subscribe method in a near future
+def save_message(message, counter):
+  """ Save hop alert messages to a json file.
+  """
+  path = f'SNEWS_MSGs/'
+  os.makedirs(path, exist_ok=True)
+  file = path + 'subscribed_messages.json'
+  # read the existing file
+  try:
+    data = json.load(open(file))
+    if not isinstance(data, dict):
+      print('Incompatible file format!')
+      return None
+
+  except:
+    data = {}
+
+  # Adding fields to the alert message (which are needed to run the dags)
+  #### This parameters will be changed based on the actual alert message sent from the hop stream
+  index_coincidence = str(counter) # In reality, this has to be read from the hop alert message
+  if message['_id'].split("_")[3] == 'ALERT': # to change
+    message['action'] = 'alert'
+  message['name'] = 'Control' # keep this
+  message['number_of_coinc_dets'] = len(message['detector_names']) # keep this
+  message['coinc_id'] = 'coinc' + index_coincidence # In reality, this has to be read from the message
+  data['coinc' + index_coincidence] = message
+
+  with open(file, 'w') as outfile:
+    json.dump(data, outfile)
+
 
 def run():
   """
@@ -23,14 +65,11 @@ def run():
   I know, this kind of sucks, but the alternative is importing another
   third-party module which provides more functionality than is needed here.
   """
-  parser = argparse.ArgumentParser()
-  parser.add_argument('config', help='configuration py/json/csv file')
-  parser.add_argument('--input', help='input data py/json file')
-  parser.add_argument('--jsonlines', action='store_true',
-                      help='each input line contains one JSON object to inject')
-  parser.add_argument('--log', help='logging level')
-  parser.add_argument('--seed', help='random number seed')
-  args = parser.parse_args()
+  # use a local kafka topic, check the environment file of snews_pt for running online
+  alert_topic = "kafka://localhost:9092/snews.alert-test"
+  #alert_topic = "kafka://kafka.scimma.org/snews.alert-test" ## online alert topic for reading alerts. To use this you need credentials
+
+  counter = 0 # keep track of the number of coincidence, in reality, this has to be read from the hop alert message
 
   if args.log:
     numeric_level = getattr(logging, args.log.upper(), None)
@@ -61,18 +100,29 @@ def run():
       if args.jsonlines:
         for jsonline in f:
           data = ast.literal_eval(jsonline)
-          inject(dags, data, nodespecs)
+          inject(dags, data, nodespecs, counter)
       else:
         data = ast.literal_eval(f.read())
-        inject(dags, data, nodespecs)
+        inject(dags, data, nodespecs, counter)
+
+  elif args.stream:
+      s = stream.open(alert_topic, "r")
+      for message in s:
+        counter +=1 ### which coincidence is this? # In reality, this has to be read from the hop alert message
+        index_coincidence = str(counter)
+        save_message(message, counter)
+        with open('SNEWS_MSGs/subscribed_messages.json') as f:
+          data = ast.literal_eval(f.read())
+          # Iinjecting this data into a dag:
+          inject(dags, data['coinc' + index_coincidence], nodespecs, counter)
   else:
     if args.jsonlines:
       for jsonline in sys.stdin:
         data = ast.literal_eval(jsonline)
-        inject(dags, data, nodespecs)
+        inject(dags, data, nodespecs, counter)
     else:
       data = ast.literal_eval(sys.stdin.read())
-      inject(dags, data, nodespecs)
+      inject(dags, data, nodespecs, counter)
 
 def csv_eval(infile):
   # name, class, observe
@@ -163,30 +213,26 @@ def configure(nodespecs):
 
   return nodes
 
-def inject(dags, data, nodespecs):
+def inject(dags, data, nodespecs, counter):
   """
   Send data through DAG.
   If there is no burst identifier, assume it's 0.
-  If the DAG doesn't exist for this burst, create a new one.
+  If the DAG doesn't exist for this coincidence, create a new one.
   """
   if type(data) is dict:
-    inject_one(dags, data, nodespecs)
+    inject_one(dags, data, nodespecs, counter)
   elif type(data) is list:
     for d in data:
-      inject_one(dags, d, nodespecs)
+      inject_one(dags, d, nodespecs, counter)
+
   else:
     logging.error('What is this input data?')
     sys.exit(2)
 
-def inject_one(dags, data, nodespecs):
-  burst_id = 0
-  if 'burst_id' in data:
-    burst_id = data['burst_id']
-  if burst_id not in dags:
-    dags[burst_id] = configure(nodespecs)
-    if dags[burst_id] == None:
-      logging.error('Invalid configuration for burst id {}'.format(burst_id))
-      sys.exit(2)
-  dag = dags[burst_id]
+def inject_one(dags, data, nodespecs, counter):
+  index_coincidence = str(counter) # In reality, this has to be read from the hop alert message
+  if 'dag_coinc' + index_coincidence not in dags: # e.g. dag_coinc1, dag_coinc2
+    dags['dag_coinc' + index_coincidence] = configure(nodespecs)
+  dag = dags['dag_coinc' + index_coincidence]
   dag[data['name']].update(data)
 
