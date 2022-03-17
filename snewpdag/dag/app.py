@@ -41,7 +41,7 @@ def save_message(message, counter):
     data = {}
 
   # Adding fields to the alert message (which are needed to run the dags)
-  #### This parameters will be changed based on the actual alert message sent from the hop stream
+  # This parameters will be changed based on the actual alert message sent from the hop stream
   index_coincidence = str(counter) # In reality, this has to be read from the hop alert message
   if message['_id'].split("_")[3] == 'ALERT': # to change
     message['action'] = 'alert'
@@ -65,9 +65,9 @@ def run():
   I know, this kind of sucks, but the alternative is importing another
   third-party module which provides more functionality than is needed here.
   """
-  # use a local kafka topic, check the environment file of snews_pt for running online
+  # For testing purposes use a local kafka topic
   alert_topic = "kafka://localhost:9092/snews.alert-test"
-  #alert_topic = "kafka://kafka.scimma.org/snews.alert-test" ## online alert topic for reading alerts. To use this you need credentials
+  # alert_topic = "kafka://kafka.scimma.org/snews.alert-test" ## online alert topic for reading alerts. To use this you need credentials
 
   counter = 0 # keep track of the number of coincidence, in reality, this has to be read from the hop alert message
 
