@@ -8,7 +8,7 @@ class DS20K_validator(Node):
 
     def alert(self, data):
         for coinc_detector in data['detector_names']:
-            if coinc_detector == 'DS-20KnT':
+            if coinc_detector == 'DS-20K':
                 logging.info('FOUND DS-20K DATA')
                 data['det_data'] = 'DS-20K'
                 #### Add other conditions to veryfy the completness of the data
