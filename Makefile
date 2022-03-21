@@ -26,7 +26,7 @@ histogram:
           snewpdag/data/test-dags-hist-config.json
 
 Hop_stream:
-	python -m snewpdag --stream STREAM --log INFO --jsonlines snewpdag/data/test-hop-stream-config.py 
+	python -m snewpdag --stream STREAM --log INFO snewpdag/data/test-hop-stream-config.py 
         	  
 trial:
 	python snewpdag/trials/Simple.py Control -n 10 | \
