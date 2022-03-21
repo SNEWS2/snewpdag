@@ -225,7 +225,7 @@ def inject(dags, data, nodespecs):
     sys.exit(2)
 
 def inject_one(dags, data, nodespecs):
-  index_coincidence = str(data['sub list number']) # In reality, this has to be read from the hop alert message
+  index_coincidence = str(data['sub list number']) 
   if 'dag_coinc' + index_coincidence not in dags: # e.g. dag_coinc1, dag_coinc2
     dags['dag_coinc' + index_coincidence] = configure(nodespecs)
   dag = dags['dag_coinc' + index_coincidence]
