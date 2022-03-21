@@ -226,8 +226,20 @@ def inject(dags, data, nodespecs):
     sys.exit(2)
 
 def inject_one(dags, data, nodespecs):
-  index_coincidence = str(data['sub list number']) 
-  if 'dag_coinc' + index_coincidence not in dags: # e.g. dag_coinc1, dag_coinc2
-    dags['dag_coinc' + index_coincidence] = configure(nodespecs)
-  dag = dags['dag_coinc' + index_coincidence]
-  dag[data['name']].update(data)
+  try:
+    index_coincidence = str(data['sub list number'])
+    if 'dag_coinc' + index_coincidence not in dags: # e.g. dag_coinc1, dag_coinc2
+      dags['dag_coinc' + index_coincidence] = configure(nodespecs)
+    dag = dags['dag_coinc' + index_coincidence]
+    dag[data['name']].update(data)
+  except:
+    burst_id = 0
+    if 'burst_id' in data:
+      burst_id = data['burst_id']
+    if burst_id not in dags:
+      dags[burst_id] = configure(nodespecs)
+      if dags[burst_id] == None:
+        logging.error('Invalid configuration for burst id {}'.format(burst_id))
+        sys.exit(2)
+    dag = dags[burst_id]
+    dag[data['name']].update(data)
