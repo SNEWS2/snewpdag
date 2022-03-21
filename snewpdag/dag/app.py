@@ -64,9 +64,10 @@ def run():
   I know, this kind of sucks, but the alternative is importing another
   third-party module which provides more functionality than is needed here.
   """
-  ##use a local kafka topic, check the environment file of snews_pt for running online
-  alert_topic = "kafka://localhost:9092/snews.alert-test"
-  #alert_topic = "kafka://kafka.scimma.org/snews.alert-test" ## online alert topic for reading alerts. To use this you need credentials
+  ##use a local kafka topic
+  #alert_topic = "kafka://localhost:9092/snews.alert-test"
+  ##use an online kafka topic
+  alert_topic = "kafka://kafka.scimma.org/snews.alert-test" 
 
   if args.log:
     numeric_level = getattr(logging, args.log.upper(), None)
