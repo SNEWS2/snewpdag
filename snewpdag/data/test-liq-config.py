@@ -13,7 +13,7 @@
     "observe": [ "Control" ],
     "kwargs": {
       "mean": 1000,
-      "detector": "JUNO"
+      "detector": "JUNO",
       "sig_filetype": "tn", "sig_filename":
       "snewpdag/data/output_scint20kt_27_Shen_1D_solar_mass_progenitor.fits_1msbin.txt"
     }
