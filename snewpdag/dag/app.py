@@ -67,7 +67,9 @@ def run():
   ##use a local kafka topic
   #alert_topic = "kafka://localhost:9092/snews.alert-test"
   ##use an online kafka topic
-  alert_topic = "kafka://kafka.scimma.org/snews.alert-test" 
+  alert_topic = "kafka://kafka.scimma.org/snews.alert-test"
+  ###read from the firedrill topic (not exisisting yet)
+  #alert_topic="kafka://kafka.scimma.org/snews.alert-firedrill"
 
   if args.log:
     numeric_level = getattr(logging, args.log.upper(), None)
