@@ -42,28 +42,7 @@ class Skymap(Node):
       hp.graticule()
       fname = self.filename.format(self.name, self.count, burst_id)
       plt.savefig(fname)
-      plt.show()
-
-
-      ##################testing uploading on google drive
-      #headers = {
-      #    "Authorization": "ya29.A0ARrdaM949LsML0sxxLn7UaWUQcDrpO9hwW9yxK-bVeXfhNVLaR-1egT4MewfAAkBB3uUMuEcoqSEYrizmXTNo0qeNTnIxNoxm-NACw2RKaPr3ppiLNyLgGsV_Ue5VY4BdhRZyc3W3EAqkdYxWwfGl9mMMMA3"}
-      #para = {
-      #    "name": self.title,
-#
-      #}
-#
-      #files = {
-      #    'data': ('metadata', json.dumps(para), 'application/json; charset=UTF-8'),
-#
-      #    'file': open("./" + self.filename + '.png', "rb")
-      #}
-      #r = requests.post(
-      #    "https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart",
-      #    headers=headers,
-      #    files=files
-      #)
-      #print(r.text)
+      #plt.show()
 
       self.count += 1
 
