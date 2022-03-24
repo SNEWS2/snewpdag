@@ -13,6 +13,9 @@ from .DS20K_validator import DS20K_validator
 from .JUNO_validator import JUNO_validator
 from .Baksan_validator import Baksan_validator
 from .Xenon_validator import Xenon_validator
+from .SNOP_validator import SNOP_validator
+from .IC_validator import IC_validator
+from .KM3_validator import KM3_validator
 
 from .Combine import Combine
 
