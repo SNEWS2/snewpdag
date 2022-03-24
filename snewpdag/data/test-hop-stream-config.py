@@ -22,12 +22,12 @@
      "observe": ["Control"]
      },
 
-  {"name": "test_nutime_extraction", "class": "DtsCalculator",
+  {"name": "Neutrino_time_differences", "class": "DtsCalculator",
    "observe": ["Xenon_val", "DS20K_val", "Baksan_val", "JUNO_val", "DUNE_val"],
    "kwargs": {'detector_location': 'snewpdag/data/detector_location.csv'}
    },
 
- {"name": "Diffpoin", "class": "DiffPointing", "observe": ["test_nutime_extraction"],
+ {"name": "Diffpoin", "class": "DiffPointing", "observe": ["Neutrino_time_differences"],
   "kwargs": {
     "detector_location": "snewpdag/data/detector_location.csv",
     "nside": 32,
