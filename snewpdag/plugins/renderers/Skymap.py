@@ -6,6 +6,10 @@ Note that an LMap is stored in nested order.
 import matplotlib.pyplot as plt
 import numpy as np
 import healpy as hp
+import json
+import requests
+import os
+
 
 from snewpdag.dag import Node
 from snewpdag.values import LMap
@@ -19,11 +23,14 @@ class Skymap(Node):
     super().__init__(**kwargs)
 
   def alert(self, data):
-    burst_id = data.get('burst_id', 0)
+    print(data)
+    self.filename = data['coinc_id']
+    self.title = data['coinc_id']
+    burst_id = data.get('burst_id', 0) # TODO: decide if burstid = coincid
     m = data.get(self.in_field, None)
-    if m:
+    if np.any(m):
       # replace a lot of these options later
-      hp.mollview(m.map,
+      hp.mollview(m,
                   coord=["G", "E"],
                   title=self.title,
                   unit="mK",
@@ -35,6 +42,9 @@ class Skymap(Node):
       hp.graticule()
       fname = self.filename.format(self.name, self.count, burst_id)
       plt.savefig(fname)
+      #plt.show()
+
       self.count += 1
+
     return True
 

@@ -45,5 +45,6 @@ from .TrueVsFit import TrueVsFit
 from .Chi2Calculator import Chi2Calculator
 from .Chi2CL import Chi2CL
 
+from .DtsCalculator import DtsCalculator
 from .DiffPointing import DiffPointing
 
