@@ -6,9 +6,9 @@ Note that an LMap is stored in nested order.
 import matplotlib.pyplot as plt
 import numpy as np
 import healpy as hp
-import json
-import requests
-import os
+#import json
+#import requests
+#import os
 
 
 from snewpdag.dag import Node
