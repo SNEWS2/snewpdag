@@ -6,6 +6,11 @@ from snewpdag.dag.lib import *
 
 class TestLib(unittest.TestCase):
 
+  def test_convert(self):
+    t = time_tuple(3.5)
+    self.assertEqual(t[0], 3)
+    self.assertEqual(t[1], 500000000)
+
   def test_single(self):
     g = 1000000000
     ti = (5, 40)

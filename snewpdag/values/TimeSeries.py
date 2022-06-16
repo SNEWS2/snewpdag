@@ -8,35 +8,41 @@ i.e., the s field is seconds after some date.
 """
 import logging
 import numpy as np
-from snewpdag.dag.lib import normalize_time, subtract_time
+from snewpdag.dag.lib import normalize_time, subtract_time, ns_per_second
 
 class TimeSeries:
-  def __init__(self, start_time, start_ns):
+  def __init__(self, start_time, offsets=[]):
     """
-    start_time:  a datetime object
-    start_ns:  ns offset after start_time
+    start_time:  float or (s,ns)
+    offsetes (optional):  ns offsets from start_time
     """
-    self.start = np.array([start_time, start_ns])
-    self.times = np.array([])
+    if np.isscalar(start_time):
+      self.start = time_tuple(start_time)
+    else:
+      self.start = np.array(start_time)
+    if len(offsets) > 0:
+      self.times = np.array(offsets)
+      np.sort(self.times)
+    else:
+      self.times = np.array([])
 
   def add_offsets(self, offsets):
     """
     offsets:  an array of ns offsets from start time
     """
-    np.append(self.times, offsets)
-    np.sort(self.times)
+    t = np.append(self.times, offsets)
+    self.times = np.sort(t)
 
   def add_times(self, times):
     """
     times:  an array of (s,ns) times.  Subtract start time before storing.
     """
-    g = 1000000000
     if np.shape(times)[-1] < 2:
       logging.error("input array has wrong shape {}".format(np.shape(times)))
       return
     d = subtract_time(times, self.start)
-    b = np.array(d, 2) # [0] should be s, [1] should be ns
-    offsets = g * b[0] + b[1]
+    b = np.swapaxes(d, 0, 1) # [0] should be s, [1] should be ns
+    offsets = ns_per_second * b[0] + b[1]
     self.add_offsets(offsets)
 
   def event(self, index):

@@ -1,14 +1,24 @@
 """
 TimeHist - time histogram of events
+
+Data is stored (and can be manipulated) in self.data.
 """
 import logging
 import numpy as np
-from snewpdag.dag.lib import normalize_time, subtract_time
+from snewpdag.dag.lib import time_tuple, normalize_time, subtract_time, ns_per_second
 
 class TimeHist:
-  def __init__(self, start_time, start_ns, time_span_s, nbins=0, data=[]):
-    self.start = np.array([start_time, start_ns])
-    self.time_span_s = time_span_s
+  def __init__(self, start, time_span, nbins=0, data=[]):
+    """
+    start_time:  float or (s,ns)
+    time_span:  duration of histogram in seconds
+    nbins (optional):  number of bins
+    data (optional):  bin data
+    if nbins not specified, nbins set to length of data.
+    if data has more than nbins elements, it's truncated to nbins.
+    """
+    self.start = time_tuple(start) if np.isscalar(start) else np.array(start)
+    self.time_span = time_span
     if nbins == 0:
       self.bins = np.array(data)
     else:
@@ -21,9 +31,10 @@ class TimeHist:
     return len(self.bins)
 
   def bin_start(self, index):
-    i = np.array([index]) if np.isscalar(index) else np.array(index)
-    t0 = np.full((len(index), 2), self.start)
-    dt = i * time_span_s / self.nbins()
-    t1 = t0 + dt
-    return normalize_time(t1)
+    """
+    Return start time of bin number.
+    """
+    dt = self.time_span / len(self.bins)
+    t1 = self.start[1] + index * ns_per_second * dt
+    return normalize_time((self.start[0], t1))
 
