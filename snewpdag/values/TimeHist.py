@@ -5,7 +5,7 @@ Data is stored (and can be manipulated) in self.data.
 """
 import logging
 import numpy as np
-from snewpdag.dag.lib import time_tuple, normalize_time, subtract_time, ns_per_second
+from snewpdag.dag.lib import time_tuple_from_float, normalize_time, subtract_time, ns_per_second
 
 class TimeHist:
   def __init__(self, start, time_span, nbins=0, data=[]):
@@ -17,7 +17,7 @@ class TimeHist:
     if nbins not specified, nbins set to length of data.
     if data has more than nbins elements, it's truncated to nbins.
     """
-    self.start = time_tuple(start) if np.isscalar(start) else np.array(start)
+    self.start = time_tuple_from_float(start) if np.isscalar(start) else np.array(start)
     self.time_span = time_span
     if nbins == 0:
       self.bins = np.array(data)

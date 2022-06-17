@@ -6,13 +6,29 @@ import numpy as np
 
 ns_per_second = 1000000000
 
-def time_tuple(x):
+def time_tuple_from_float(x):
   """
-  Turn a float (seconds) into a time tuple of (s,ns).
+  Turn floats (seconds) into time tuples of (s,ns).
   """
-  s = int(x)
+  s = np.floor(x)
   ns = (x - s) * ns_per_second
-  return (s,ns)
+  return np.stack((s,ns), axis=-1)
+
+def time_tuple_from_offset(ns):
+  """
+  Turn offsets (ns) into time tuples of (s,ns).
+  """
+  if np.isscalar(ns):
+    return normalize_time((0, ns))
+  else:
+    s = np.zeros(len(ns))
+    return normalize_time(np.stack((s, ns), axis=-1))
+
+def offset_from_time_tuple(tt):
+  d = np.array(tt)
+  s = np.multiply(d[...,0], ns_per_second, dtype=np.int64)
+  t = np.add(s, d[...,1], dtype=np.int64)
+  return t
 
 def normalize_time(a):
   """

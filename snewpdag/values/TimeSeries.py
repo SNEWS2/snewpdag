@@ -8,7 +8,7 @@ i.e., the s field is seconds after some date.
 """
 import logging
 import numpy as np
-from snewpdag.dag.lib import normalize_time, subtract_time, ns_per_second
+from snewpdag.dag.lib import normalize_time, subtract_time, ns_per_second, time_tuple_from_float
 
 class TimeSeries:
   def __init__(self, start_time, offsets=[]):
@@ -17,21 +17,18 @@ class TimeSeries:
     offsetes (optional):  ns offsets from start_time
     """
     if np.isscalar(start_time):
-      self.start = time_tuple(start_time)
+      self.start = time_tuple_from_float(start_time)
     else:
       self.start = np.array(start_time)
+    self.times = np.array([], dtype=np.int64)
     if len(offsets) > 0:
-      self.times = np.array(offsets)
-      np.sort(self.times)
-    else:
-      self.times = np.array([])
+      self.times = np.sort(np.append(self.times, offsets))
 
   def add_offsets(self, offsets):
     """
     offsets:  an array of ns offsets from start time
     """
-    t = np.append(self.times, offsets)
-    self.times = np.sort(t)
+    self.times = np.sort(np.append(self.times, offsets))
 
   def add_times(self, times):
     """
@@ -41,9 +38,9 @@ class TimeSeries:
       logging.error("input array has wrong shape {}".format(np.shape(times)))
       return
     d = subtract_time(times, self.start)
-    b = np.swapaxes(d, 0, 1) # [0] should be s, [1] should be ns
-    offsets = ns_per_second * b[0] + b[1]
-    self.add_offsets(offsets)
+    t = np.multiply(d[...,0], ns_per_second, dtype=np.int64)
+    t = np.add(t, d[...,1], dtype=np.int64)
+    self.add_offsets(t)
 
   def event(self, index):
     """
@@ -52,11 +49,11 @@ class TimeSeries:
     if index is an array of indices, return corresponding results in array.
     """
     if np.isscalar(index):
-      i = np.array([index])
+      t1 = np.add(self.start, (0, self.times[index]))
     else:
       i = np.array(index)
-    t0 = np.full((len(index), 2), self.start)
-    dt = np.column_stack(np.zeros(len(index)), self.times[index])
-    t1 = t0 + dt
+      t0 = np.full((len(i), 2), self.start)
+      dt = np.column_stack((np.zeros(len(i)), self.times[i]))
+      t1 = t0 + dt
     return normalize_time(t1)
 
