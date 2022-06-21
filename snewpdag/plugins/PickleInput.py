@@ -1,6 +1,7 @@
 """
 PickleInput
 Configuration options:
+  on:  list of 'alert', 'report', 'revoke', 'reset' (default 'report')
   filename:  input filename
 """
 import logging
@@ -11,9 +12,10 @@ from snewpdag.dag import Node
 class PickleInput(Node):
   def __init__(self, filename, **kwargs):
     self.filename = filename
+    self.on = kwargs.pop('on', [ 'report' ])
     super().__init__(**kwargs)
 
-  def alert(self, data):
+  def ops(self, data):
     """
     load pickle, but keep the following payload fields:  action, name, history
     """
@@ -23,4 +25,16 @@ class PickleInput(Node):
       if k not in ('action', 'name', 'history'):
         data[k] = v # shallow copy, which should be fine here
     return data
+
+  def alert(self, data):
+    return self.ops(data) if 'alert' in self.on else False
+
+  def revoke(self, data):
+    return self.ops(data) if 'revoke' in self.on else True
+
+  def reset(self, data):
+    return self.ops(data) if 'reset' in self.on else True
+
+  def report(self, data):
+    return self.ops(data) if 'report' in self.on else False
 

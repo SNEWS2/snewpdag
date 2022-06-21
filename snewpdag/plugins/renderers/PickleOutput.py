@@ -1,5 +1,5 @@
 """
-PicklePayload
+PickleOutput
 Configuration options:
   filename:  output filename, with fields
              {0} renderer name
@@ -11,7 +11,7 @@ import pickle
 
 from snewpdag.dag import Node
 
-class PicklePayload(Node):
+class PickleOutput(Node):
   def __init__(self, filename, **kwargs):
     self.filename = filename
     self.count = 0

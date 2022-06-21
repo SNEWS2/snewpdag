@@ -9,5 +9,5 @@ from .Mollview import Mollview
 from .DistErrPlot import DistErrPlot
 from .ScatterPlot import ScatterPlot
 
-from .PicklePayload import PicklePayload
+from .PickleOutput import PickleOutput
 

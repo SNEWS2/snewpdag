@@ -52,7 +52,7 @@
       "title": "JUNO time profile",
       "xlabel": "time [s]",
       "ylabel": "entries/0.1s",
-      "filename": "output/gen-liq-{}-{}-{}.png"
+      "filename": "output/test-{}-{}-{}.png"
     }
   },
 
@@ -99,7 +99,7 @@
       "title": "SNOP time profile",
       "xlabel": "time [s]",
       "ylabel": "entries/0.1s",
-      "filename": "output/gen-liq-{}-{}-{}.png"
+      "filename": "output/test-{}-{}-{}.png"
     }
   },
 
@@ -138,16 +138,16 @@
       "title": "Time difference",
       "xlabel": "dt [s]",
       "ylabel": "entries/0.1s",
-      "filename": "output/gen-liq-{}-{}-{}.png"
+      "filename": "output/test-{}-{}-{}.png"
     }
   },
 
   {
     "name": "pickle",
-    "class": "renderers.PicklePayload",
+    "class": "renderers.PickleOutput",
     "observe": [ "Diff-dt" ],
     "kwargs": {
-      "filename": "output/pickle-{}-{}-{}.pickle"
+      "filename": "output/test-{}-{}-{}.pickle"
     }
   },
 

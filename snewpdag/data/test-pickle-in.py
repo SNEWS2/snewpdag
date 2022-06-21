@@ -10,7 +10,7 @@
     "class": "PickleInput",
     "observe": [ "Control" ],
     "kwargs": {
-      "filename": "output/pickle-pickle-0-0.pickle",
+      "filename": "output/test-pickle-0-0.pickle",
     },
   },
 
