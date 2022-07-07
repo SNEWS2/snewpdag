@@ -4,6 +4,32 @@ DAG library routines
 import logging
 import numpy as np
 
+ns_per_second = 1000000000
+
+def time_tuple_from_float(x):
+  """
+  Turn floats (seconds) into time tuples of (s,ns).
+  """
+  s = np.floor(x)
+  ns = (x - s) * ns_per_second
+  return np.stack((s,ns), axis=-1)
+
+def time_tuple_from_offset(ns):
+  """
+  Turn offsets (ns) into time tuples of (s,ns).
+  """
+  if np.isscalar(ns):
+    return normalize_time((0, ns))
+  else:
+    s = np.zeros(len(ns))
+    return normalize_time(np.stack((s, ns), axis=-1))
+
+def offset_from_time_tuple(tt):
+  d = np.array(tt)
+  s = np.multiply(d[...,0], ns_per_second, dtype=np.int64)
+  t = np.add(s, d[...,1], dtype=np.int64)
+  return t
+
 def normalize_time(a):
   """
   Normalize time array.
@@ -21,10 +47,9 @@ def normalize_time(a):
   if np.shape(a)[-1] < 2:
     logging.error("input array has wrong shape {}".format(np.shape(a)))
     return None
-  g = 1000000000
   t = np.array(a, copy=True)
-  np.add(t[...,0], np.floor_divide(t[...,1], g), out=t[...,0])
-  np.remainder(t[...,1], g, out=t[...,1])
+  np.add(t[...,0], np.floor_divide(t[...,1], ns_per_second), out=t[...,0])
+  np.remainder(t[...,1], ns_per_second, out=t[...,1])
   return t
 
 def normalize_time_difference(a):
@@ -34,10 +59,9 @@ def normalize_time_difference(a):
   In this case, s and ns have the same sign or zero.
   """
   t = normalize_time(a)
-  g = 1000000000
   mask = np.logical_and(np.less(t[...,0], 0), np.not_equal(t[...,1], 0))
   np.add(t[...,0], 1, out=t[...,0], where=mask)
-  np.subtract(t[...,1], g, out=t[...,1], where=mask)
+  np.subtract(t[...,1], ns_per_second, out=t[...,1], where=mask)
   return t
 
 def subtract_time(a, b):
@@ -50,7 +74,6 @@ def subtract_time(a, b):
   if np.shape(b)[-1] < 2:
     logging.error("input array has wrong shape {}".format(np.shape(b)))
     return None
-  g = 1000000000
   dt = np.subtract(a, b)
   return normalize_time_difference(dt)
 

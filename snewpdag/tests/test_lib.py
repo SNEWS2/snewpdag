@@ -6,8 +6,39 @@ from snewpdag.dag.lib import *
 
 class TestLib(unittest.TestCase):
 
+  def test_convert(self):
+    t = time_tuple_from_float(3.5)
+    self.assertEqual(t[0], 3)
+    self.assertEqual(t[1], 500000000)
+    t = time_tuple_from_float([4.5, 2.25])
+    self.assertEqual(t[0][0], 4)
+    self.assertEqual(t[0][1], 500000000)
+    self.assertEqual(t[1][0], 2)
+    self.assertEqual(t[1][1], 250000000)
+    t = time_tuple_from_float(-3.5)
+    self.assertEqual(t[0], -4)
+    self.assertEqual(t[1], 500000000)
+    t = time_tuple_from_float([-4.5, -0.25])
+    self.assertEqual(t[0][0], -5)
+    self.assertEqual(t[0][1], 500000000)
+    self.assertEqual(t[1][0], -1)
+    self.assertEqual(t[1][1], 750000000)
+    t = time_tuple_from_offset(8250000005)
+    self.assertEqual(t[0], 8)
+    self.assertEqual(t[1], 250000005)
+    t = time_tuple_from_offset([1234567890, 2345678901])
+    self.assertEqual(t[0][0], 1)
+    self.assertEqual(t[0][1], 234567890)
+    self.assertEqual(t[1][0], 2)
+    self.assertEqual(t[1][1], 345678901)
+    t = offset_from_time_tuple((3,5))
+    self.assertEqual(t, 3000000005)
+    t = offset_from_time_tuple([(3,5), (-1,5)])
+    self.assertEqual(t[0], 3000000005)
+    self.assertEqual(t[1], -999999995)
+
   def test_single(self):
-    g = 1000000000
+    g = ns_per_second
     ti = (5, 40)
     to = normalize_time(ti)
     self.assertEqual(to[0], 5)
@@ -54,7 +85,7 @@ class TestLib(unittest.TestCase):
     self.assertEqual(to[1], 0)
 
   def test_multi(self):
-    g = 1000000000
+    g = ns_per_second
     ti = [ (5, 40), (5, -40), (-5, 40), (-5, -40), (5, g+40), (5, g-40) ]
     to = normalize_time(ti)
     self.assertEqual(to[0,0], 5)
@@ -71,7 +102,7 @@ class TestLib(unittest.TestCase):
     self.assertEqual(to[5,1], g-40)
 
   def test_norm_dt(self):
-    g = 1000000000
+    g = ns_per_second
     ti = (5, 40)
     to = normalize_time_difference(ti)
     self.assertEqual(to[0], 5)
@@ -118,7 +149,7 @@ class TestLib(unittest.TestCase):
     self.assertEqual(to[1], 0)
 
   def test_subtract(self):
-    g = 1000000000
+    g = ns_per_second
     a = (5, 40)
     b = (5, 30)
     c = subtract_time(a, b)
