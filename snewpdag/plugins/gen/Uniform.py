@@ -30,7 +30,9 @@ class Uniform (Node):
           dt = v.time_span
       else if not isinstance(v. TimeSeries):
         return False # v is neither TimeHist nor TimeSeries
-      u = Node.rng.integers(0, dt * ns_per_second, dtype=np.int64)
+      mean = dt * self.rate # mean number of events in the time span
+      nev = Node.rng.poisson(mean) # Poisson fluctuations around mean
+      u = Node.rng.integers(0, dt * ns_per_second, size=nev, dtype=np.int64)
       v.add_offsets(u)
     else:
       return False
