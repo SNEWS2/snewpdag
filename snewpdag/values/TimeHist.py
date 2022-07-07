@@ -38,3 +38,25 @@ class TimeHist:
     t1 = self.start[1] + index * ns_per_second * dt
     return normalize_time((self.start[0], t1))
 
+  def add_offsets(self, offsets):
+    """
+    offsets:  an array of ns offsets from start time
+    """
+    dt = self.time_span * ns_per_second / len(self.bins)
+    i = np.array(offsets, dtype=np.int64) / dt
+    nb = len(self.bins)
+    h, bin_edges = np.histogram(i, bins=nb, range=(0, nb))
+    self.bins += h
+
+  def add_times(self, times):
+    """
+    times:  an array of (s,ns) times.  Subtract start time before storing.
+    """
+    if np.shape(times)[-1] < 2:
+      logging.error("input array has wrong shape {}".format(np.shape(times)))
+      return
+    d = subtract_time(times, self.start)
+    t = np.multiply(d[...,0], ns_per_second, dtype=np.int64)
+    t = np.add(t, d[...,1], dtype=np.int64)
+    self.add_offsets(t)
+

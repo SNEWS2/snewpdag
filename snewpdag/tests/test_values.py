@@ -2,6 +2,7 @@
 Unit tests for value objects
 """
 import unittest
+import numpy as np
 from snewpdag.values import Hist1D, TimeHist, TimeSeries
 from snewpdag.dag.lib import ns_per_second
 
@@ -21,6 +22,29 @@ class TestHist1D(unittest.TestCase):
     self.assertEqual(t3[0], 6)
     self.assertEqual(t3[1], 5)
     self.assertEqual(h.bins[3], 2)
+    offsets = np.array([0.6, 12.0, 3.2, -0.8]) * ns_per_second
+    h.add_offsets(offsets)
+    self.assertEqual(h.bins[0], 5)
+    self.assertEqual(h.bins[1], 5)
+    self.assertEqual(h.bins[2], 3)
+    self.assertEqual(h.bins[3], 2)
+    self.assertEqual(h.bins[4], 1)
+    self.assertEqual(h.bins[5], 10)
+    self.assertEqual(h.bins[6], 10)
+    self.assertEqual(h.bins[7], 8)
+    self.assertEqual(h.bins[8], 7)
+    self.assertEqual(h.bins[9], 6)
+    h.add_times([(3,7), (8,3), (2,1)])
+    self.assertEqual(h.bins[0], 6)
+    self.assertEqual(h.bins[1], 5)
+    self.assertEqual(h.bins[2], 3)
+    self.assertEqual(h.bins[3], 2)
+    self.assertEqual(h.bins[4], 1)
+    self.assertEqual(h.bins[5], 10)
+    self.assertEqual(h.bins[6], 10)
+    self.assertEqual(h.bins[7], 8)
+    self.assertEqual(h.bins[8], 7)
+    self.assertEqual(h.bins[9], 7)
 
   def test_timeseries(self):
     s = TimeSeries((3,5))
