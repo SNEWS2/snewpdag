@@ -38,6 +38,14 @@ trial2:
 	python snewpdag/trials/Simple.py Control -n 10 | \
           python -m snewpdag --log INFO --jsonlines snewpdag/data/test-liq-config.py
 
+pickle_output:
+	python snewpdag/trials/Simple.py Control -n 10 | \
+          python -m snewpdag --log INFO --jsonlines snewpdag/data/test-pickle-out.py
+
+pickle_input:
+	python snewpdag/trials/Simple.py Control -n 1 | \
+          python -m snewpdag --log INFO --jsonlines snewpdag/data/test-pickle-in.py
+
 diffpointing:
 	python snewpdag/trials/Simple.py Control -n 1 | \
           python -m snewpdag --log INFO --jsonlines snewpdag/data/test-diff.csv

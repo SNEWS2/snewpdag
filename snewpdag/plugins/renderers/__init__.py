@@ -10,4 +10,5 @@ from .DistErrPlot import DistErrPlot
 from .ScatterPlot import ScatterPlot
 
 from .Hist1D import Hist1D
+from .PickleOutput import PickleOutput
 
