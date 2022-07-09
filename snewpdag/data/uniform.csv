@@ -1,0 +1,17 @@
+"Control","Pass",,"'line’: 100",,
+"Series-new","ops.NewTimeSeries","Control","'out_field':'timeseries','start_time':(186,321)"
+"Hist-new","ops.NewTimeHist","Control","'out_field':'timehist','start_time':(184,321),'time_span':5,'nbins':100"
+"Uniform-series","gen.Uniform","Series-new","'field':'timeseries','rate':50,'time_span':10"
+"Uniform-hist","gen.Uniform","Hist-new","'field':'timehist','rate':100,'time_span':5"
+
+,"Convert series to histogram",,,,
+"Series-hist","ops.TimeSeriesToTimeHist","Uniform-series","'in_field':'timeseries','out_field':'timeserieshist','start_time':(184,321),'time_span':5,'nbins':100"
+
+,"Renderers",,,,
+"Hist-render","renderers.Hist1D","Uniform-hist","'on':['alert'],'in_field':'timehist','title':'TimeHist output','xlabel':'t [s]','ylabel':'entries','filename':'output/uniform-{}-{}-{}.png'"
+"Series-render","renderers.Hist1D","Series-hist","'on':['alert'],'in_field':'timeserieshist','title':'TimeSeries output','xlabel':'t [s]','ylabel':'entries','filename':'output/uniform-{}-{}-{}.png'"
+
+,"Debugging",,,,
+"Out","Pass","Series-new,Hist-new,Uniform-series,Uniform-hist,Series-hist",,,"'line’:1,’dump’:1"
+"Render","Pass","Hist-render,Series-render","'line':1,'dump':1"
+

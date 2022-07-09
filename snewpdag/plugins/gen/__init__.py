@@ -30,6 +30,4 @@ from .GenPoint import GenPoint
 from .TrueTimes import TrueTimes
 from .SmearTimes import SmearTimes
 
-from .NewTimeHist import NewTimeHist
-from .NewTimeSeries import NewTimeSeries
 from .Uniform import Uniform

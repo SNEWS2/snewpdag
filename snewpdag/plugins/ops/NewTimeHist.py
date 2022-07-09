@@ -8,12 +8,13 @@ Arguments:
   nbins:  number of bins
 """
 import logging
+import numpy as np
 
 from snewpdag.dag import Node
 from snewpdag.values import TimeHist
 
 class NewTimeHist(Node):
-  def __init__(self, out_field, start_time):
+  def __init__(self, out_field, start_time, time_span, nbins, **kwargs):
     self.out_field = out_field
     if np.isscalar(start_time):
       self.start = time_tuple_from_float(start_time)

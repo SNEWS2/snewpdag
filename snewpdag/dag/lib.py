@@ -77,3 +77,25 @@ def subtract_time(a, b):
   dt = np.subtract(a, b)
   return normalize_time_difference(dt)
 
+def fetch_field(data, fields):
+  """
+  Fetch a field from the payload (data).
+  If the field is not list-like, then just get it directly.
+  If the field is list-like, interpret each element as the field name
+    in each inner dictionary.
+  Return value (or None), and True/False depending on field(s) existing.
+  """
+  if isinstance(fields, (list, tuple)):
+    d = data
+    for f in fields:
+      if isinstance(d, dict) and f in d:
+        d = d[f]
+      else:
+        return None, False
+    return d, True
+  else:
+    if fields in data:
+      return data[fields], True
+    else:
+      return None, False
+

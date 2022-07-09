@@ -6,12 +6,13 @@ Arguments:
   start_time:  float or (s,ns) to indicate start time
 """
 import logging
+import numpy as np
 
 from snewpdag.dag import Node
 from snewpdag.values import TimeSeries
 
 class NewTimeSeries(Node):
-  def __init__(self, out_field, start_time):
+  def __init__(self, out_field, start_time, **kwargs):
     self.out_field = out_field
     if np.isscalar(start_time):
       self.start = time_tuple_from_float(start_time)

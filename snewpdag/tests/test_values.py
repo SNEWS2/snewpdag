@@ -15,9 +15,20 @@ class TestHist1D(unittest.TestCase):
     self.assertEqual(h.xhigh, 3.0)
     self.assertEqual(h.xwidth, 2.0)
 
+  def test_hist1d(self):
+    h = Hist1D(100, 1.0, 3.0)
+    h.fill(1.5)
+    self.assertEqual(h.bins[25], 1.0)
+    h.fill([2.0, 2.5, 3.5, 1.5, -1.0])
+    self.assertEqual(h.bins[25], 2.0)
+    self.assertEqual(h.bins[50], 1.0)
+    self.assertEqual(h.bins[75], 1.0)
+    self.assertEqual(h.overflow, 1.0)
+    self.assertEqual(h.underflow, 1.0)
+
   def test_timehist(self):
     h = TimeHist((3,5), 5, 10, [5, 4, 3, 2, 1, 10, 9, 8, 7, 6, 18])
-    self.assertEqual(h.nbins(), 10)
+    self.assertEqual(h.nbins, 10)
     t3 = h.bin_start(6)
     self.assertEqual(t3[0], 6)
     self.assertEqual(t3[1], 5)

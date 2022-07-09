@@ -40,20 +40,22 @@ class Hist1D:
       return False
 
   def fill(self, x, weight=1.0):
+    """
+    fill histogram.  x can be a scalar or an array of fill values.
+    """
+    v = np.array(x)
     try:
-      ix = int(self.nbins * (x - self.xlow) / self.xwidth)
+      ix = self.nbins * (v - self.xlow) / self.xwidth
     except:
       logging.info('Hist1D: index calculation error {}'.format(sys.exc_info()))
       return
-    if ix < 0:
-      self.underflow += weight
-    elif ix >= self.nbins:
-      self.overflow += weight
-    else:
-      self.bins[ix] += weight
-    self.sum += x
-    self.sum2 += x*x
-    self.count += weight
+    h, bin_edges = np.histogram(ix, bins=self.nbins, range=(0, self.nbins))
+    self.bins += h
+    self.underflow += weight * np.sum(ix < 0)
+    self.overflow += weight * np.sum(ix >= self.nbins)
+    self.sum += np.sum(v)
+    self.sum2 += np.sum(v*v)
+    self.count += weight * v.size
 
   def mean(self):
     return self.sum / self.count
