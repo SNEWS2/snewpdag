@@ -11,24 +11,34 @@ import numpy as np
 from snewpdag.dag.lib import normalize_time, subtract_time, ns_per_second, time_tuple_from_float
 
 class TimeSeries:
-  def __init__(self, start_time, offsets=[]):
+  def __init__(self, start, duration=0, offsets=[]):
     """
-    start_time:  float or (s,ns)
-    offsets (optional):  ns offsets from start_time
+    start:  float or (s,ns)
+    duration:  duration of span in seconds, or 0 if indeterminate
+    offsets (optional):  ns offsets from start
     """
-    if np.isscalar(start_time):
-      self.start = time_tuple_from_float(start_time)
+    if np.isscalar(start):
+      self.start = time_tuple_from_float(start)
     else:
-      self.start = np.array(start_time)
+      self.start = np.array(start)
+    self.duration = duration
     self.times = np.array([], dtype=np.int64)
     if len(offsets) > 0:
-      self.times = np.sort(np.append(self.times, offsets))
+      if duration == 0:
+        self.times = np.sort(np.append(self.times, offsets))
+      else:
+        self.times = np.sort(np.append(self.times, \
+                             offsets[offsets < duration * ns_per_second]))
 
   def add_offsets(self, offsets):
     """
     offsets:  an array of ns offsets from start time
     """
-    self.times = np.sort(np.append(self.times, offsets))
+    if self.duration == 0:
+      self.times = np.sort(np.append(self.times, offsets))
+    else:
+      self.times = np.sort(np.append(self.times, \
+                           offsets[offsets < duration * ns_per_second]))
 
   def add_times(self, times):
     """
@@ -48,12 +58,17 @@ class TimeSeries:
     if index is a simple number, just return one result.
     if index is an array of indices, return corresponding results in array.
     """
-    if np.isscalar(index):
-      t1 = np.add(self.start, (0, self.times[index]))
+    try:
+      if np.isscalar(index):
+        t1 = np.add(self.start, (0, self.times[index]))
+      else:
+        i = np.array(index)
+        t0 = np.full((len(i), 2), self.start)
+        dt = np.column_stack((np.zeros(len(i)), self.times[i]))
+        t1 = t0 + dt
+    except IndexError:
+      logging.error('TimeSeries: index out of bounds')
+      return None
     else:
-      i = np.array(index)
-      t0 = np.full((len(i), 2), self.start)
-      dt = np.column_stack((np.zeros(len(i)), self.times[i]))
-      t1 = t0 + dt
-    return normalize_time(t1)
+      return normalize_time(t1)
 

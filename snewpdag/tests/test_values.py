@@ -27,7 +27,7 @@ class TestHist1D(unittest.TestCase):
     self.assertEqual(h.underflow, 1.0)
 
   def test_timehist(self):
-    h = TimeHist((3,5), 5, 10, [5, 4, 3, 2, 1, 10, 9, 8, 7, 6, 18])
+    h = TimeHist((3,5), 5, 10, [5, 4, 3, 2, 1, 10, 9, 8, 7, 6])
     self.assertEqual(h.nbins, 10)
     t3 = h.bin_start(6)
     self.assertEqual(t3[0], 6)
