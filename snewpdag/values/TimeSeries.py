@@ -14,7 +14,7 @@ class TimeSeries:
   def __init__(self, start_time, offsets=[]):
     """
     start_time:  float or (s,ns)
-    offsetes (optional):  ns offsets from start_time
+    offsets (optional):  ns offsets from start_time
     """
     if np.isscalar(start_time):
       self.start = time_tuple_from_float(start_time)

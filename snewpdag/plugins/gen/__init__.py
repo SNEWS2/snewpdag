@@ -31,3 +31,4 @@ from .GenPointDts import GenPointDts
 from .TrueTimes import TrueTimes
 from .SmearTimes import SmearTimes
 
+from .Uniform import Uniform
