@@ -57,16 +57,20 @@ class TimeSeries:
   def add_times(self, times):
     """
     times:  an array of times.  Subtract start time before appending.
-      The array can be of (s,ns) or s in float.
+      s        a single time (float)
+      [s1,s2]  two times (floats)
+      (s,ns)   a single (s,ns) - specifically needs to be a tuple!
+      [(s1,ns1),(s2,ns2)]  two times (s,ns)
     """
     ts = np.array(times)
     shape = np.shape(ts)
-    if len(shape) == 1:
-      # array of s in float
-      tt = time_tuple_from_float(ts)
-    elif len(shape) == 2 and shape[1] == 2:
+    if (len(shape) == 2 and shape[1] == 2) or \
+        (shape == (2,0) and isinstance(times, tuple)):
       # array of (s,ns)
       tt = ts
+    elif shape == () or len(shape) == 1:
+      # array or scalar of s in float
+      tt = time_tuple_from_float(ts)
     else:
       logging.error("input array has wrong shape {}".format(shape))
       return
