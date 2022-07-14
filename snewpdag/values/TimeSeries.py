@@ -40,14 +40,37 @@ class TimeSeries:
       self.times = np.sort(np.append(self.times, \
                            offsets[offsets < duration * ns_per_second]))
 
+  def add_offsets_s(self, offsets):
+    """
+    offsets:  an array of offsets (in seconds) from start time
+    """
+    dt = np.array(offsets) * ns_per_second
+    self.add_offsets(dt)
+
+  def add_offsets_ms(self, offsets):
+    """
+    offsets:  an array of offsets (in ms) from start time
+    """
+    dt = np.array(offsets) * (ns_per_second / 1000)
+    self.add_offsets(dt)
+
   def add_times(self, times):
     """
-    times:  an array of (s,ns) times.  Subtract start time before storing.
+    times:  an array of times.  Subtract start time before appending.
+      The array can be of (s,ns) or s in float.
     """
-    if np.shape(times)[-1] < 2:
-      logging.error("input array has wrong shape {}".format(np.shape(times)))
+    ts = np.array(times)
+    shape = np.shape(ts)
+    if len(shape) == 1:
+      # array of s in float
+      tt = time_tuple_from_float(ts)
+    elif len(shape) == 2 and shape[1] == 2:
+      # array of (s,ns)
+      tt = ts
+    else:
+      logging.error("input array has wrong shape {}".format(shape))
       return
-    d = subtract_time(times, self.start)
+    d = subtract_time(tt, self.start)
     t = np.multiply(d[...,0], ns_per_second, dtype=np.int64)
     t = np.add(t, d[...,1], dtype=np.int64)
     self.add_offsets(t)

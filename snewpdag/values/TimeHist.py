@@ -41,15 +41,37 @@ class TimeHist(Hist1D):
     """
     self.fill(np.array(offsets) / ns_per_second)
 
+  def add_offsets_s(self, offsets):
+    """
+    offsets:  an array of offsets (in seconds) from start time
+    """
+    self.fill(np.array(offsets))
+
+  def add_offsets_ms(self, offsets):
+    """
+    offsets:  an array of offsets (in ms) from start time
+    """
+    self.fill(np.array(offsets) * 1000.0)
+
   def add_times(self, times):
     """
-    times:  an array of (s,ns) times.  Subtract start time before storing.
+    times:  an array of times.  Subtract start time before storing.
+      The array can be of (s,ns) or s in float.
     """
-    if np.shape(times)[-1] < 2:
-      logging.error("input array has wrong shape {}".format(np.shape(times)))
+    ts = np.array(times)
+    shape = np.shape(ts)
+    if len(shape) == 1:
+      # array of s in float
+      t0 = self.start[0] + self.start[1] / ns_per_second
+      t = ts - t0
+      self.add_offsets_s(t)
+    elif len(shape) == 2 and shape[1] == 2:
+      # array of (s,ns)
+      d = subtract_time(times, self.start)
+      t = np.multiply(d[...,0], ns_per_second, dtype=np.int64)
+      t = np.add(t, d[...,1], dtype=np.int64)
+      self.add_offsets(t)
+    else:
+      logging.error("input array has wrong shape {}".format(shape))
       return
-    d = subtract_time(times, self.start)
-    t = np.multiply(d[...,0], ns_per_second, dtype=np.int64)
-    t = np.add(t, d[...,1], dtype=np.int64)
-    self.add_offsets(t)
 
