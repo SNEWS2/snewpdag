@@ -65,7 +65,7 @@ class TimeSeries:
     ts = np.array(times)
     shape = np.shape(ts)
     if (len(shape) == 2 and shape[1] == 2) or \
-        (shape == (2,0) and isinstance(times, tuple)):
+        (shape == (2,) and isinstance(times, tuple)):
       # array of (s,ns)
       tt = ts
     elif shape == () or len(shape) == 1:
