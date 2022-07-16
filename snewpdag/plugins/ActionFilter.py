@@ -1,5 +1,4 @@
 """
-
 Action Filter: 
 This would respond to an action by consuming it (not passing it downstream),
 or by changing it to another type of action. For instance, it might be used
@@ -12,12 +11,9 @@ Input:
 Output:
 Depending on the newaction, choose which action to output.
 If no newaction exists, then the initial action is consumed by default.
-
 """
 
 import logging
-import numpy as np
-import healpy as hp
 from snewpdag.dag import Node
 
 class ActionFilter(Node):

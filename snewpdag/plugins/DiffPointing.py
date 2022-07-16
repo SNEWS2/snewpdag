@@ -30,8 +30,10 @@ import numpy as np
 import healpy as hp
 
 from snewpdag.dag import Node, Detector, DetectorDB
-from snewpdag.dag.lib import normalize_time
+from snewpdag.dag.lib import normalize_time, ns_per_second
+from astropy import units as u
 from astropy.time import Time
+from astropy.coordinates import GCRS, SkyCoord, CartesianRepresentation
 
 class DiffPointing(Node):
   def __init__(self, detector_location, nside, min_dts, **kwargs):
@@ -56,7 +58,7 @@ class DiffPointing(Node):
     dsig1 = dts['dsig1'] if 'dsig1' in dts else d1.sigma # sec
     dsig2 = dts['dsig2'] if 'dsig2' in dts else - d2.sigma # sec
     # we actually want a time basis in ms for all times
-    g = 1.0e-6
+    g = 1000.0 / ns_per_second
     nrow = {
              'dt': dt[0]*1000 + dt[1]*g,
              't1': t1[0]*1000 + t1[1]*g,
@@ -68,6 +70,24 @@ class DiffPointing(Node):
            }
     logging.info('cache ({}, {}): {}'.format(k1, k2, nrow))
     return nrow
+
+  def average_time(self):
+    """
+    Calculate average time over the detectors in the cache.
+    Returns an astropy.Time object.
+    """
+    dets = set()
+    ts = []
+    for k in self.cache.keys():
+      row = self.cache[k]
+      if k[0] not in dets:
+        ts.append(row['t1'])
+        dets.add(k[0])
+      if k[1] not in dets:
+        ts.append(row['t2'])
+        dets.add(k[1])
+    tu = np.average(ts) / 1000.0
+    return Time(tu, format='unix')
 
   def d_vectors(self, keys, directions):
     """
@@ -138,12 +158,33 @@ class DiffPointing(Node):
     keys = self.cache.keys() # keep list to preserve order
     w = self.weight_matrix(keys) # shape [nkeys,nkeys]
 
+    # Get the average time of the observing detectors.
+    # Use this for time for transforming ICRS into GCRS
+    # so triangulation can be done with Earth locations.
+    t0 = self.average_time()
+
     m = np.zeros(self.npix)
-    rs = hp.pixelfunc.pix2vec(self.nside, range(self.npix), nest=True)
+
+    # get unit vectors to pixel centers.
+    # The pixel centers are for a skymap in ICRS coordinates.
+    # We need the unit vectors in GCRS.
+    c = hp.pixelfunc.pix2ang(self.nside, range(self.npix), \
+                             nest=True, lonlat=True)
+    # c will be an np.array of lon, lat, with shape (2,npix)
+    sc = SkyCoord(ra=c[0], dec=c[1], unit=u.deg, frame='icrs', \
+                  representation_type='unitspherical', obstime=t0)
+    gc = sc.transform_to(GCRS)
+    # gc is now an array of SkyCoord, but in (ra,dec)
+    xyz = gc.represent_as(CartesianRepresentation)
+    # xyz is an array of (x,y,z) unit vectors
+    rs = np.stack( (xyz.x, xyz.y, xyz.z) ) # shape (3,npix)
+
+    # the following was used when we assumed skymap was in GCRS
+    #rs = hp.pixelfunc.pix2vec(self.nside, range(self.npix), nest=True)
     # rs will be an np.array of x,y,z values, each triple a unit vector.
-    # however, it'll be returned in shape [3,npix]
-    d = self.d_vectors(keys, rs) # returns shape [npix,nkeys]
-    dw = d @ w # returns shape [npix,nkeys]
+    # however, it'll be returned in shape (3,npix)
+    d = self.d_vectors(keys, rs) # returns shape (npix,nkeys)
+    dw = d @ w # returns shape (npix,nkeys)
     for i in range(self.npix):
       m[i] = np.dot(dw[i], d[i])
 
