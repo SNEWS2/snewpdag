@@ -1,0 +1,35 @@
+"Control","Pass",,"'line’: 100",,
+,,,,,
+"ser1","ops.NewTimeSeries","Control","'out_field':'timeseries','start_time':(1600000000, 1000)"
+"uniform1","gen.Uniform","ser1","'field':'timeseries', 'rate':500, 'time_span': 1"
+"signal1","gen.Uniform","uniform1","'field':'timeseries', 'rate':5000, 'time_span': 0.5"
+"hist1","ops.TimeSeriesToTimeHist","uniform1","'in_field':'timeseries','out_field':'timeserieshist','start_time':(1600000000,1000),'time_span':1,'nbins':100"
+,,,,,"render1","renderers.Hist1D","hist1","'on':['alert'], 'in_field':'timeserieshist', 'title':'Step 1', 'xlabel':'t [s]', 'ylabel':'entries', 'filename':'output/fft-step-{}-{}-{}.png'"
+,,,,,
+"ser2","ops.NewTimeSeries","Control","'out_field':'timeseries','start_time':(1600000000, 1000)"
+"uniform2","gen.Uniform","ser2","'field':'timeseries', 'rate':1000, 'time_span': 1"
+"signal2","gen.Uniform","uniform2","'field':'timeseries', 'rate':5000, 'time_span': 0.510"
+"hist2","ops.TimeSeriesToTimeHist","uniform2","'in_field':'timeseries','out_field':'timeserieshist','start_time':(1600000000,1000),'time_span':1,'nbins':100"
+,,,,,"render2","renderers.Hist1D","hist2","'on':['alert'], 'in_field':'timeserieshist', 'title':'Step 2', 'xlabel':'t [s]', 'ylabel':'entries', 'filename':'output/fft-step-{}-{}-{}.png'"
+,,,,,
+"debug1","Pass","signal1,signal2","'line':100, 'dump':100"
+"xfft","XFFT","signal1,signal2","'det1':'Det1', 'det2':'Det2', 'duration':1, 'nbins':1000, 'in_field':'timeseries'"
+"debug2","Pass","xfft","'line':100, 'dump':100"
+"xfftavg","XFFTAverage","xfft","'in_field':('dts',('Det1','Det2'),'ftxc'), 'out_avg_field':'avgphase'"
+"xfftavg1","XFFTAverage","xfft","'in_field':('dts',('Det1','Det2'),'ft1'), 'out_avg_field':'avgphase'"
+"xfftavg2","XFFTAverage","xfft","'in_field':('dts',('Det1','Det2'),'ft2'), 'out_avg_field':'avgphase'"
+,,,,,
+,,,,,"only for trial_id=0"
+,,,,,
+"first","FilterValue","xfft","'in_field':'trial_id', 'value':0"
+"ft1","renderers.Complex1D","first","'on':['alert'], 'in_field':('dts',('Det1','Det2'),'ft1'), 'binrange':(0,20), 'title':'FT1', 'filename':'output/fft-trials-{}-{}-{}.png'"
+"ft2","renderers.Complex1D","first","'on':['alert'], 'in_field':('dts',('Det1','Det2'),'ft2'), 'binrange':(0,20), 'title':'FT2', 'filename':'output/fft-trials-{}-{}-{}.png'"
+"ftxc","renderers.Complex1D","first","'on':['alert'], 'in_field':('dts',('Det1','Det2'),'ftxc'), 'binrange':(0,20), 'title':'FTXC', 'filename':'output/fft-trials-{}-{}-{}.png'"
+,,,,,
+,,,,,"report: average phases histogram"
+,,,,,
+"xfftavg-render","renderers.Hist1D","xfftavg","'in_field':'avgphase', 'title':'Average phases', 'xlabel':'freq component', 'ylabel':'phase', 'filename':'output/fft-trials-{}-{}-{}.png'"
+"xfftavg-render-zoom","renderers.Hist1D","xfftavg","'in_field':'avgphase', 'binrange':(0,20), 'title':'Average phases', 'xlabel':'freq component', 'ylabel':'phase', 'filename':'output/fft-trials-{}-{}-{}.png'"
+"debug3","Pass","xfftavg","'line':1, 'dump':1"
+"xfftavg1-render-zoom","renderers.Hist1D","xfftavg1","'in_field':'avgphase', 'binrange':(0,20), 'title':'Average phases', 'xlabel':'freq component', 'ylabel':'phase', 'filename':'output/fft-trials-{}-{}-{}.png'"
+"xfftavg2-render-zoom","renderers.Hist1D","xfftavg2","'in_field':'avgphase', 'binrange':(0,20), 'title':'Average phases', 'xlabel':'freq component', 'ylabel':'phase', 'filename':'output/fft-trials-{}-{}-{}.png'"

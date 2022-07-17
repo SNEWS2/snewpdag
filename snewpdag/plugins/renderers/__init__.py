@@ -12,3 +12,5 @@ from .ScatterPlot import ScatterPlot
 from .Hist1D import Hist1D
 from .PickleOutput import PickleOutput
 
+from .Complex1D import Complex1D
+

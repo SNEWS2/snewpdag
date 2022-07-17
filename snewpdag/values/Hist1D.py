@@ -1,5 +1,6 @@
 """
 Hist1D - a 1D histogram value with evenly-spaced bins
+(Can also hold errors in each bin, but user must explicitly set)
 """
 import logging
 import numpy as np
@@ -16,6 +17,7 @@ class Hist1D:
   def copy(self):
     o = Hist1D(self.nbins, self.xlow, self.xhigh)
     o.bins = self.bins.copy()
+    o.errs = None if self.errs == None else self.errs.copy()
     o.overflow = self.overflow
     o.underflow = self.underflow
     o.sum = self.sum
@@ -25,6 +27,7 @@ class Hist1D:
 
   def clear(self):
     self.bins = np.zeros(self.nbins)
+    self.errs = None
     self.overflow = 0.0
     self.underflow = 0.0
     self.sum = 0.0

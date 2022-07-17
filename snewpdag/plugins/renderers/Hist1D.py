@@ -36,6 +36,7 @@ class Hist1D(Node):
     self.ylabel = ylabel
     self.filename = filename # include pattern to include index
     self.on = kwargs.pop('on', ['report'])
+    self.binrange = kwargs.pop('binrange', ())
     self.count = 0 # number of histograms made
     super().__init__(**kwargs)
 
@@ -43,12 +44,17 @@ class Hist1D(Node):
     logging.debug('Hist1D.plot called')
     step = (hist.xhigh - hist.xlow) / hist.nbins
     x = np.arange(hist.xlow, hist.xhigh, step)
+    b0 = 0 if self.binrange == () else self.binrange[0]
+    b1 = hist.nbins if self.binrange == () else self.binrange[1]
 
     plt.rcParams.update({'font.size': 12})
 
     fig, ax = plt.subplots()
-    ax.bar(x, hist.bins, width=step, align='edge')
-    #ax.plot(x, bins)
+    if np.shape(hist.errs) == (): # None or scalar (which we take to be none)
+      ax.bar(x[b0:b1], hist.bins[b0:b1], width=step, align='edge')
+      #ax.plot(x, bins)
+    else:
+      ax.errorbar(x[b0:b1], hist.bins[b0:b1], yerr=hist.errs[b0:b1])
     ax.set_xlabel(self.xlabel,size=15)
     ax.set_ylabel(self.ylabel,size=15)
     ax.set_title('{0} (burst {1} count {2})'.format(

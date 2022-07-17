@@ -51,3 +51,6 @@ from .DiffPointing import DiffPointing
 
 from .PickleInput import PickleInput
 
+from .XFFT import XFFT
+from .XFFTAverage import XFFTAverage
+
