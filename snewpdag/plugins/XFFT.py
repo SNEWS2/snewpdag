@@ -40,6 +40,7 @@ class XFFT(Node):
     self.in_field = in_field
     self.data1 = None
     self.data2 = None
+    self.report_called = [ False, False ]
     super().__init__(**kwargs)
 
   def ffts(self, dt, data1, data2):
@@ -77,7 +78,7 @@ class XFFT(Node):
 
     # have time data from both sources.
     # Now try a dt hypothesis.
-    dt = 0.01
+    dt = 0.0
     self.ffts(dt, self.data1, self.data2)
 
     logging.debug('{}: components'.format(self.name))
@@ -111,4 +112,14 @@ class XFFT(Node):
     self.data1 = None
     self.data2 = None
     return False
+
+  def report(self, data):
+    index = self.last_watch_index()
+    if index < 2:
+      self.report_called[index] = True
+    if self.report_called[0] and self.report_called[1]:
+      self.report_called = [ False, False ] # reset report record
+      return True
+    else:
+      return False
 

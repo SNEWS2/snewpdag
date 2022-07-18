@@ -27,6 +27,7 @@ import numpy as np
 import matplotlib.mlab as mlab
 
 from snewpdag.dag import Node
+from snewpdag.dag.lib import fetch_field
 
 class Hist1D(Node):
   def __init__(self, in_field, title, xlabel, ylabel, filename, **kwargs):
@@ -63,12 +64,13 @@ class Hist1D(Node):
 
     fname = self.filename.format(self.name, self.count, burst_id)
     plt.savefig(fname)
+    plt.close(fig)
     self.count += 1
 
   def render(self, data):
     logging.debug('Hist1D.render called')
-    if self.in_field in data:
-      hist = data[self.in_field]
+    hist, flag = fetch_field(data, self.in_field)
+    if flag:
       # TODO: foregoing check that hist is a values.Hist1D
       # because I can't figure out how to use isinstance
       # for a class in a module (!)
