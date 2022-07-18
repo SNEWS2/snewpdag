@@ -194,7 +194,8 @@ class TestLib(unittest.TestCase):
     self.assertEqual(v, None)
 
   def test_fetch_array(self):
-    data1 = { 'f10': [1.5, 2.5, 3.5], 'f11': np.array([4.5, 5.5, 6.5]) }
+    data0 = { 'f00': 55, 'f01': [ 7.5, 8.5 ] }
+    data1 = { 'f10': [1.5, 2.5, data0], 'f11': np.array([4.5, 5.5, 6.5]) }
     data2 = { 'f20': data1, 'f21': 21 }
     v, flag = fetch_field(data2, ('f20','f10',1))
     self.assertTrue(flag)
@@ -206,4 +207,10 @@ class TestLib(unittest.TestCase):
     self.assertEqual(v, 6.5)
     v, flag = fetch_field(data2, ('f20','f11',3))
     self.assertFalse(flag)
+    v, flag = fetch_field(data2, ('f20','f10', 2, 'f00'))
+    self.assertTrue(flag)
+    self.assertEqual(v, 55)
+    v, flag = fetch_field(data2, ('f20','f10', 2, 'f01', 0))
+    self.assertTrue(flag)
+    self.assertEqual(v, 7.5)
 
