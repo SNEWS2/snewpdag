@@ -2,6 +2,7 @@
 Unit tests for dag library methods
 """
 import unittest
+import numpy as np
 from snewpdag.dag.lib import *
 
 class TestLib(unittest.TestCase):
@@ -191,4 +192,18 @@ class TestLib(unittest.TestCase):
     v, flag = fetch_field(data4, ('f41','f30','f20',))
     self.assertFalse(flag)
     self.assertEqual(v, None)
+
+  def test_fetch_array(self):
+    data1 = { 'f10': [1.5, 2.5, 3.5], 'f11': np.array([4.5, 5.5, 6.5]) }
+    data2 = { 'f20': data1, 'f21': 21 }
+    v, flag = fetch_field(data2, ('f20','f10',1))
+    self.assertTrue(flag)
+    self.assertEqual(v, 2.5)
+    v, flag = fetch_field(data2, ('f20','f10',5))
+    self.assertFalse(flag)
+    v, flag = fetch_field(data2, ('f20','f11',2))
+    self.assertTrue(flag)
+    self.assertEqual(v, 6.5)
+    v, flag = fetch_field(data2, ('f20','f11',3))
+    self.assertFalse(flag)
 

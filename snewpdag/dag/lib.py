@@ -90,6 +90,8 @@ def fetch_field(data, fields):
     for f in fields:
       if isinstance(d, dict) and f in d:
         d = d[f]
+      elif isinstance(d, (list, np.ndarray)) and f < len(d):
+        d = d[f]
       else:
         return None, False
     return d, True
