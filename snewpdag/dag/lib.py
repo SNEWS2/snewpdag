@@ -10,8 +10,8 @@ def time_tuple_from_float(x):
   """
   Turn floats (seconds) into time tuples of (s,ns).
   """
-  s = np.floor(x)
-  ns = (x - s) * ns_per_second
+  s = np.floor(x).astype(np.int64)
+  ns = ((x - s) * ns_per_second).astype(np.int64)
   return np.stack((s,ns), axis=-1)
 
 def time_tuple_from_offset(ns):

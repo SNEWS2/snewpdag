@@ -1,0 +1,4 @@
+"Control","Pass",,"'line':100"
+"pickle-in","PickleInput","Control","'filename':'output/test-pickle-0-0.pickle'"
+"Dump","Pass","pickle-in","'line':1, 'dump':1"
+"Diff-dt-h","renderers.Histogram1D","pickle-in","'title':'Time difference', 'xlabel':'dt [s]', 'ylabel':'entries/0.1s', 'filename':'output/redo-{}-{}-{}.png'"

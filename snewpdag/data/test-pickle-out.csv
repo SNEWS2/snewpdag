@@ -1,0 +1,23 @@
+"Control","Pass",,"'line':100"
+,,,,,
+"JUNO-ts","gen.TimeSeries","Control","'mean':1000, 'detector':'JUNO', 'sig_filetype':'tn', 'sig_filename':'snewpdag/data/output_scint20kt_27_Shen_1D_solar_mass_progenitor.fits_1msbin.txt'"
+"JUNO","gen.Combine","JUNO-ts"
+"JUNO-out","Pass","JUNO","'line':1, 'dump':1"
+"JUNO-bin","BinnedAccumulator","JUNO","'in_field':'times', 'nbins':2000, 'xlow':-10.0, 'xhigh':10.0, 'out_xfield':'t', 'out_yfield':'bins', 'flags':['overflow']"
+"JUNO-bin-out","Pass","JUNO-bin","'line':1, 'dump':1"
+"JUNO-bin-h","renderers.Histogram1D","JUNO-bin","'title':'JUNO time profile', 'xlabel':'time [s]', 'ylabel':'entries/0.1s', 'filename':'output/test-{}-{}-{}.png'"
+,,,,,
+"SNOP-ts","gen.TimeSeries","Control","'mean':100, 'detector':'SNOP', 'sig_filetype':'tn', 'sig_filename':'snewpdag/data/output_scint20kt_27_Shen_1D_solar_mass_progenitor.fits_1msbin.txt'"
+"SNOP","gen.Combine","SNOP-ts"
+"SNOP-out","Pass","SNOP","'line':1, 'dump':1"
+"SNOP-bin","BinnedAccumulator","SNOP","'in_field':'times', 'nbins':2000, 'xlow':-10.0, 'xhigh':10.0, 'out_xfield':'t', 'out_yfield':'bins', 'flags':['overflow']"
+"SNOP-bin-out","Pass","SNOP-bin","'line':1, 'dump':1"
+"SNOP-bin-h","renderers.Histogram1D","SNOP-bin","'title':'SNOP time profile', 'xlabel':'time [s]', 'ylabel':'entries/0.1s', 'filename':'output/test-{}-{}-{}.png'"
+,,,,,
+"Diff","NthTimeDiff","JUNO,SNOP","'nth':1"
+"Diff-out","Pass","Diff","'line':100, 'dump':1"
+"Diff-dt","Histogram1D","Diff","'in_field':'dt', 'nbins':100, 'xlow':-0.1, 'xhigh':0.1"
+"Diff-dt-out","Pass","Diff-dt","'line':100, 'dump':1"
+"Diff-dt-h","renderers.Histogram1D","Diff-dt","'title':'Time difference', 'xlabel':'dt [s]', 'ylabel':'entries/0.1s', 'filename':'output/test-{}-{}-{}.png'"
+,,,,,
+"pickle","renderers.PickleOutput","Diff-dt","'filename':'output/test-{}-{}-{}.pickle'"
