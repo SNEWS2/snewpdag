@@ -12,14 +12,14 @@ import logging
 import numpy as np
 
 from snewpdag.dag import Node
+from snewpdag.dag.lib import time_tuple_from_field
 from snewpdag.values import TimeHist, TimeSeries
 
 class TimeSeriesToTimeHist(Node):
   def __init__(self, in_field, out_field, start, duration, nbins, **kwargs):
     self.in_field = in_field
     self.out_field = out_field
-    self.start = time_tuple_from_float(start) if np.isscalar(start) \
-                 else np.array(start)
+    self.start = time_tuple_from_field(start)
     self.duration = duration
     self.nbins = nbins
     super().__init__(**kwargs)

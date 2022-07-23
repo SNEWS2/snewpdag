@@ -57,6 +57,14 @@ class Hist1D(Node):
 
     fname = self.filename.format(self.name, self.count, burst_id)
     plt.savefig(fname)
+    logging.info('=====================')
+    logging.info('H Filename:  {}'.format(fname))
+    logging.info('H Title:     {}'.format(self.title))
+    logging.info('H Entries:   {}'.format(hist.count))
+    logging.info('H Sum:       {}'.format(hist.sum))
+    logging.info('H Overflow:  {}'.format(hist.overflow))
+    logging.info('H Underflow: {}'.format(hist.underflow))
+    logging.info('=====================')
     self.count += 1
 
   def render(self, data):
