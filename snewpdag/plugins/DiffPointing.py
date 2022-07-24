@@ -29,7 +29,7 @@ import logging
 import numpy as np
 import healpy as hp
 
-from snewpdag.dag import Node, Detector, DetectorDB
+from snewpdag.dag import Node, Detector, DetectorDB, CelestialPixels
 from snewpdag.dag.lib import normalize_time, ns_per_second
 from astropy import units as u
 from astropy.time import Time
@@ -74,7 +74,9 @@ class DiffPointing(Node):
   def average_time(self):
     """
     Calculate average time over the detectors in the cache.
-    Returns an astropy.Time object.
+    Return unix timestamp.
+    To turn it into an astropy.Time object,
+    Time(average_time(), format='unix')
     """
     dets = set()
     ts = []
@@ -87,7 +89,8 @@ class DiffPointing(Node):
         ts.append(row['t2'])
         dets.add(k[1])
     tu = np.average(ts) / 1000.0
-    return Time(tu, format='unix')
+    #return Time(tu, format='unix')
+    return tu
 
   def d_vectors(self, keys, directions):
     """
@@ -163,21 +166,21 @@ class DiffPointing(Node):
     # so triangulation can be done with Earth locations.
     t0 = self.average_time()
 
-    m = np.zeros(self.npix)
-
-    # get unit vectors to pixel centers.
-    # The pixel centers are for a skymap in ICRS coordinates.
-    # We need the unit vectors in GCRS.
-    c = hp.pixelfunc.pix2ang(self.nside, range(self.npix), \
-                             nest=True, lonlat=True)
-    # c will be an np.array of lon, lat, with shape (2,npix)
-    sc = SkyCoord(ra=c[0], dec=c[1], unit=u.deg, frame='icrs', \
-                  representation_type='unitspherical', obstime=t0)
-    gc = sc.transform_to(GCRS)
-    # gc is now an array of SkyCoord, but in (ra,dec)
-    xyz = gc.represent_as(CartesianRepresentation)
-    # xyz is an array of (x,y,z) unit vectors
-    rs = np.stack( (xyz.x, xyz.y, xyz.z) ) # shape (3,npix)
+    ## get unit vectors to pixel centers.
+    ## The pixel centers are for a skymap in ICRS coordinates.
+    ## We need the unit vectors in GCRS.
+    #c = hp.pixelfunc.pix2ang(self.nside, range(self.npix), \
+    #                         nest=True, lonlat=True)
+    ## c will be an np.array of lon, lat, with shape (2,npix)
+    #sc = SkyCoord(ra=c[0], dec=c[1], unit=u.deg, frame='icrs', \
+    #              representation_type='unitspherical', obstime=t0)
+    #gc = sc.transform_to(GCRS)
+    ## gc is now an array of SkyCoord, but in (ra,dec)
+    #xyz = gc.represent_as(CartesianRepresentation)
+    ## xyz is an array of (x,y,z) unit vectors
+    #rs = np.stack( (xyz.x, xyz.y, xyz.z) ) # shape (3,npix)
+    cp = CelestialPixels()
+    rs = cp.get_map(self.nside, t0)
 
     # the following was used when we assumed skymap was in GCRS
     #rs = hp.pixelfunc.pix2vec(self.nside, range(self.npix), nest=True)
@@ -185,6 +188,7 @@ class DiffPointing(Node):
     # however, it'll be returned in shape (3,npix)
     d = self.d_vectors(keys, rs) # returns shape (npix,nkeys)
     dw = d @ w # returns shape (npix,nkeys)
+    m = np.zeros(self.npix)
     for i in range(self.npix):
       m[i] = np.dot(dw[i], d[i])
 
