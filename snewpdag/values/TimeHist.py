@@ -6,13 +6,15 @@ Data is stored (and can be manipulated) in self.data.
 import logging
 import numpy as np
 from snewpdag.values import Hist1D
-from snewpdag.dag.lib import time_tuple_from_float, normalize_time, subtract_time, ns_per_second
+from snewpdag.dag.lib import time_tuple_from_field, normalize_time, subtract_time, offset_from_time_tuple, ns_per_second
 
 class TimeHist(Hist1D):
-  def __init__(self, start, duration, nbins=100, data=[]):
+  def __init__(self, start, duration, nbins=100, data=[], **kwargs):
     """
-    start_time:  float or (s,ns)
+    start:  float or (s,ns)
     duration:  duration of histogram in seconds
+    reference (optional):  float or (s,ns). Defines t=0.
+      Default is the same as start_time.
     nbins (optional):  number of bins if no data array, default 100
     data (optional):  bin data
 
@@ -20,10 +22,16 @@ class TimeHist(Hist1D):
     length of data array supersedes nbins argument.
     Low edge of histogram is rendered as 0, so x-axis is time offset.
     """
-    self.start = time_tuple_from_float(start) if np.isscalar(start) else np.array(start)
+    self.start = time_tuple_from_field(start)
+    reft = kwargs.pop('reference', start)
+    logging.debug('TimeHist: fields start = {}, reference = {}'.format(start, reft))
+    self.reference = time_tuple_from_field(reft)
+    logging.debug('TimeHist: start = {}, reference = {}'.format(self.start, self.reference))
+    tlow = offset_from_time_tuple(subtract_time( \
+           self.start, self.reference)) / ns_per_second
     self.duration = duration
     nb = nbins if len(data) == 0 else len(data)
-    super().__init__(nb, 0.0, self.duration)
+    super().__init__(nb, tlow, self.duration)
     if len(data) > 0:
       self.bins = np.array(data)
 

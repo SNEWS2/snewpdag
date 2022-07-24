@@ -1,5 +1,6 @@
 """
-TimeSeriesToTimeHist - use a TimeSeries to fill a TimeHist
+TimeSeriesToTimeHist - use a TimeSeries to fill a TimeHist.
+  Reference time (defining t=0) is kept the same.
 
 Arguments:
   in_field:  input field name
@@ -28,7 +29,8 @@ class TimeSeriesToTimeHist(Node):
     if self.in_field in data:
       ts = data[self.in_field]
       if isinstance(ts, TimeSeries):
-        th = TimeHist(self.start, self.duration, self.nbins)
+        th = TimeHist(self.start, self.duration, self.nbins, \
+                      reference=ts.reference)
         th.add_offsets(ts.times)
         data[self.out_field] = th
         return data

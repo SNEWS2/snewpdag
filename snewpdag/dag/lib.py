@@ -46,7 +46,7 @@ def time_tuple_from_field(s):
     return time_tuple_from_float(s)
   elif isinstance(s, str):
     return time_tuple_from_string(s)
-  elif isinstance(s, (list, tuple)):
+  elif isinstance(s, (list, tuple, np.ndarray)):
     if isinstance(s[1], numbers.Number):
       if isinstance(s[0], numbers.Number):
         return np.array(s[:2])

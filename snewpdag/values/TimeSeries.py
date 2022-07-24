@@ -8,37 +8,44 @@ i.e., the s field is seconds after some date.
 """
 import logging
 import numpy as np
-from snewpdag.dag.lib import normalize_time, subtract_time, ns_per_second, time_tuple_from_float
+from snewpdag.dag.lib import normalize_time, subtract_time, ns_per_second, time_tuple_from_float, time_tuple_from_field, offset_from_time_tuple
 
 class TimeSeries:
-  def __init__(self, start, duration=0, offsets=[]):
+  def __init__(self, start, duration=0, offsets=[], **kwargs):
     """
     start:  float or (s,ns)
+    reference (optional):  float or (s,ns). Defines t=0.
+      Default is the same as start_time.
     duration:  duration of span in seconds, or 0 if indeterminate
     offsets (optional):  ns offsets from start
     """
-    if np.isscalar(start):
-      self.start = time_tuple_from_float(start)
-    else:
-      self.start = np.array(start)
-    self.duration = duration
+    self.start = time_tuple_from_field(start)
+    reft = kwargs.pop('reference', start)
+    self.reference = time_tuple_from_field(reft)
+    self.duration_ns = duration * ns_per_second
+    self.start_offset_ns = offset_from_time_tuple( \
+                           subtract_time(self.start, self.reference)) \
+                           * ns_per_second
+    self.stop_offset_ns = self.start_offset_ns + self.duration_ns
     self.times = np.array([], dtype=np.int64)
     if len(offsets) > 0:
-      if duration == 0:
+      if self.duration_ns == 0:
         self.times = np.sort(np.append(self.times, offsets))
       else:
         self.times = np.sort(np.append(self.times, \
-                             offsets[offsets < duration * ns_per_second]))
+                             offsets[(offsets > self.start_offset_ns) & \
+                                     (offsets < self.stop_offset_ns)]))
 
   def add_offsets(self, offsets):
     """
     offsets:  an array of ns offsets from start time
     """
-    if self.duration == 0:
+    if self.duration_ns == 0:
       self.times = np.sort(np.append(self.times, offsets))
     else:
       self.times = np.sort(np.append(self.times, \
-                           offsets[offsets < duration * ns_per_second]))
+                           offsets[(offsets > self.start_offset_ns) & \
+                                   (offsets < self.stop_offset_ns)]))
 
   def add_offsets_s(self, offsets):
     """
@@ -56,7 +63,7 @@ class TimeSeries:
 
   def add_times(self, times):
     """
-    times:  an array of times.  Subtract start time before appending.
+    times:  an array of times.  Subtract reference time before appending.
       s        a single time (float)
       [s1,s2]  two times (floats)
       (s,ns)   a single (s,ns) - specifically needs to be a tuple!
@@ -74,7 +81,7 @@ class TimeSeries:
     else:
       logging.error("input array has wrong shape {}".format(shape))
       return
-    d = subtract_time(tt, self.start)
+    d = subtract_time(tt, self.reference)
     t = np.multiply(d[...,0], ns_per_second, dtype=np.int64)
     t = np.add(t, d[...,1], dtype=np.int64)
     self.add_offsets(t)
@@ -87,10 +94,10 @@ class TimeSeries:
     """
     try:
       if np.isscalar(index):
-        t1 = np.add(self.start, (0, self.times[index]))
+        t1 = np.add(self.reference, (0, self.times[index]))
       else:
         i = np.array(index)
-        t0 = np.full((len(i), 2), self.start)
+        t0 = np.full((len(i), 2), self.reference)
         dt = np.column_stack((np.zeros(len(i)), self.times[i]))
         t1 = t0 + dt
     except IndexError:
