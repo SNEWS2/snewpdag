@@ -80,7 +80,7 @@ class GenTimeDist(TimeDistSource):
                           p=self.mu_norm, replace=True, shuffle=False)
       ta = self.tedges[j]
       dt = self.tedges[j+1] - ta
-      a = ta + Node.rng.random(nev) * dt - offset
+      a = ta + Node.rng.random(nev) * dt + offset
 
       # add offsets in seconds - works for TimeHist or TimeSeries
       v.add_offsets_s(a)
