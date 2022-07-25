@@ -31,7 +31,7 @@ class TimeHist(Hist1D):
            self.start, self.reference)) / ns_per_second
     self.duration = duration
     nb = nbins if len(data) == 0 else len(data)
-    super().__init__(nb, tlow, self.duration)
+    super().__init__(nb, tlow, tlow + self.duration)
     if len(data) > 0:
       self.bins = np.array(data)
 
