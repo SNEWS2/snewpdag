@@ -106,3 +106,40 @@ class TimeSeries:
     else:
       return normalize_time(t1)
 
+  def histogram(self, nbins, duration=0, start=()):
+    """
+    Make a histogram out of the time series.
+    The histogram's low edge will be the start time.
+    The defaults for duration and start are those of the TimeSeries itself.
+    if ref time is 100s, but requested start time is 90s, then
+    all offsets need to add 10s before making the histogram.
+
+    Returns histogram, bin edges
+    """
+    width = self.duration_ns if duration == 0 else duration * ns_per_second
+    t0 = self.start if start == () else time_tuple_from_field(start)
+    offset = offset_from_time_tuple(subtract_time(self.reference, t0))
+    return np.histogram(self.times + offset, bins=nbins, range=(0, width))
+
+  def integral(self, start=(), stop=()):
+    """
+    Count the events between the start and stop times.
+    By default this returns the total number of events.
+    """
+    if start == () and stop == ():
+      return self.times.size
+    else:
+      if start == ():
+        ts0 = self.times
+      else:
+        t0 = time_tuple_from_field(start)
+        off0 = offset_from_time_tuple(subtract_time(t0, self.reference))
+        ts0 = self.times[self.times >= off0]
+      if stop == ():
+        ts1 = ts0
+      else:
+        t1 = time_tuple_from_field(stop)
+        off1 = offset_from_time_tuple(subtract_time(t1, self.reference))
+        ts1 = ts0[ts0 < off1]
+      return ts1.size
+
