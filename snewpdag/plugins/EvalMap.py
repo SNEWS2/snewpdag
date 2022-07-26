@@ -13,6 +13,7 @@ import healpy as hp
 import scipy.special as sc
 
 from snewpdag.dag import Node, CelestialPixels
+from snewpdag.dag import DetectorDB
 
 class EvalMap(Node):
   def __init__(self, detector_location, nside, in_field, in_det_field, in_det_list_field, **kwargs):
@@ -133,6 +134,7 @@ class EvalMap(Node):
     return data
 
   def alert(self, data):
+    logging.debug('{}: alert'.format(self.name))
     if self.in_field in data:
       if self.in_det_field in data:
         self.cache[data[self.in_det_field]] = data[self.in_field]
@@ -143,6 +145,7 @@ class EvalMap(Node):
     return False
 
   def revoke(self, data):
+    logging.debug('{}: revoke'.format(self.name))
     if self.in_det_field in data:
       k = data[self.in_det_field]
       if k in self.cache:

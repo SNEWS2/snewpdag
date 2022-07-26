@@ -89,3 +89,61 @@ class TimeHist(Hist1D):
       logging.error("input array has wrong shape {}".format(shape))
       return
 
+  def histogram(self, nbins, duration=0, start=()):
+    """
+    Rebin histogram.
+    If old bins are divided, use linear approximation to distribute.
+    """
+    # slow plodding method
+    w = self.duration if duration == 0 else duration
+    s = self.start if start == () else self.start
+    t0 = time_tuple_from_field(start)
+    dt = np.array([0, w * ns_per_second / nbins])
+    h = np.zeros(nbins)
+    for i in range(nbins):
+      tlow = t0 + i * dt
+      thigh = tlow + dt
+      h[i] = self.integral(tlow, thigh)
+    return h
+
+  def integral(self, start=(), stop=()):
+    """
+    Count the events between the start and stop times.
+    By default this returns the total number of events within specified range.
+    If start or stop fall between bins, use linear approximation.
+    """
+    if start == () and stop == ():
+      return np.sum(self.bins)
+    else:
+      dw = self.duration * ns_per_second
+      w = dw / self.nbins
+      i0 = 0 # take histogram start by default
+      i1 = self.nbins # take histogram end by default
+      under = 0 # fractional bin contents
+      over = 0
+      if start != ():
+        t0 = time_tuple_from_field(start)
+        dt = offset_from_time_tuple(subtract_time(t0, self.start))
+        if dt > dw:
+          return 0 # start is outside of range
+        elif dt > 0:
+          rem = dt % w
+          if rem == 0:
+            i0 = dt / w
+            under = 0
+          else:
+            f0 = int(dt / w)
+            i0 = f0 + 1
+            under = self.bins[f0] * (w - rem) / w
+      if stop != ():
+        t1 = time_tuple_from_field(stop)
+        dt = offset_from_time_tuple(subtract_time(t1, self.start))
+        if dt <= 0:
+          return 0 # end is outside of range
+        elif dt < dw:
+          i1 = int(dt / w)
+          rem = dt % w
+          if rem > 0:
+            over = self.bins[i1 + 1] * rem / w
+      return np.sum(self.bins[i0:i1]) + under + over
+
