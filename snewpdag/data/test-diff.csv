@@ -1,6 +1,6 @@
 "Control","Pass",,"'line': 100"
 ,,,
-"Gen","gen.GenPoint","Control","'detector_location':'snewpdag/data/detector_location.csv', 'pair_list':[('SNOP','Borexino'),('SNOP','KL'),('SNOP','KM3')], 'ra':0.0, 'dec':-30.0, 'smear': False, 'time':'2021-11-01 05:22:36.328'"
+"Gen","gen.GenPoint","Control","'detector_location':'snewpdag/data/detector_location.csv', 'pair_list':[('SNOP','Borexino'),('SNOP','KL'),('SNOP','KM3')], 'ra':-60.0, 'dec':-30.0, 'smear': False, 'time':'2021-11-01 05:22:36.328'"
 "Gen-out","Pass","Gen","'line':1, 'dump':1"
 ,,,
 "Diff","DiffPointing","Gen","'detector_location':'snewpdag/data/detector_location.csv', 'nside':32, 'min_dts':3"

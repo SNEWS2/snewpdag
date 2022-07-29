@@ -14,6 +14,10 @@ configuration:
              If it's a float, use the number as a timestamp.
              If it's a tuple, interpret as (s,ns) timestamp.
              If it's a field, read the time stamp or (s,ns) from the payload.
+  sig_once:  True if only generate one series of offsets for ll GenTimeDists's,
+             as one might do for a perverse test (default False!).
+             Note that the offsets will be shifted according to sig_t0,
+             and the number of events will match the first module to run.
 
   A "field designator" is either a string or tuple of strings
   which navigate into the payload.
@@ -33,6 +37,8 @@ from . import TimeDistSource
 
 class GenTimeDist(TimeDistSource):
 
+  one_series = () # shared time series, if self.sig_once is True
+
   def __init__(self, sig_mean, field, **kwargs):
     self.sig_mean = sig_mean
     self.field = field
@@ -42,10 +48,19 @@ class GenTimeDist(TimeDistSource):
     elif isinstance(ts, numbers.Number):
       self.sig_t0 = time_tuple_from_float(ts)
     self.sig_smear = kwargs.pop('sig_smear', True)
+    self.sig_once = kwargs.pop('sig_once', False)
     super().__init__(**kwargs)
     self.area = np.sum(self.mu)
     self.mu_norm = self.mu / self.area
     self.tedges = np.append(self.t, self.thi) # append high end to t array
+
+    # pre-generate single series
+    if self.sig_once and np.shape(GenTimeDist.one_series) == (0,):
+      j = Node.rng.choice(len(self.mu_norm), self.sig_mean,
+                          p=self.mu_norm, replace=True, shuffle=False)
+      ta = self.tedges[j]
+      dt = self.tedges[j+1] - ta
+      GenTimeDist.one_series = ta + Node.rng.random(self.sig_mean) * dt
 
   def alert(self, data):
     if self.field in data:
@@ -61,28 +76,32 @@ class GenTimeDist(TimeDistSource):
           return False
       else:
         t0 = self.sig_t0
-      logging.debug('{}: t0 = {}, ref time {}'.format(self.name, t0, v.start))
       offset = (t0[0] - v.start[0]) + (t0[1] - v.start[1]) / ns_per_second
+      logging.debug('{}: t0 = {}, ref time {}, offset {}'.format(self.name, t0, v.start, offset))
 
-      # set mean number of events to generate
-      if isinstance(self.sig_mean, numbers.Number):
-        mean = self.sig_mean
+      if self.sig_once:
+        a = GenTimeDist.one_series.copy()
       else:
-        mean, flag = fetch_field(data, self.sig_mean)
-        if not flag:
-          mean = self.area # area of source histogram
+        # set mean number of events to generate
+        if isinstance(self.sig_mean, numbers.Number):
+          mean = self.sig_mean
+        else:
+          mean, flag = fetch_field(data, self.sig_mean)
+          if not flag:
+            mean = self.area # area of source histogram
 
-      # Poisson fluctuation in mean, if requested
-      nev = Node.rng.poisson(mean) if self.sig_smear else mean
+        # Poisson fluctuation in mean, if requested
+        nev = Node.rng.poisson(mean) if self.sig_smear else mean
 
-      # generate time series of offsets, with t=0 at core bounce
-      j = Node.rng.choice(len(self.mu_norm), nev,
-                          p=self.mu_norm, replace=True, shuffle=False)
-      ta = self.tedges[j]
-      dt = self.tedges[j+1] - ta
-      a = ta + Node.rng.random(nev) * dt + offset
+        # generate time series of offsets, with t=0 at core bounce
+        j = Node.rng.choice(len(self.mu_norm), nev,
+                            p=self.mu_norm, replace=True, shuffle=False)
+        ta = self.tedges[j]
+        dt = self.tedges[j+1] - ta
+        a = ta + Node.rng.random(nev) * dt
 
       # add offsets in seconds - works for TimeHist or TimeSeries
+      a += offset
       v.add_offsets_s(a)
       return data
     else:

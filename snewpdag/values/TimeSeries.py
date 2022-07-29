@@ -36,6 +36,11 @@ class TimeSeries:
                              offsets[(offsets > self.start_offset_ns) & \
                                      (offsets < self.stop_offset_ns)]))
 
+  def copy(self): # deep copy
+    o = TimeSeries(self.start, self.duration_ns / ns_per_second,
+                   self.times.copy(), reference=self.reference)
+    return o
+
   def add_offsets(self, offsets):
     """
     offsets:  an array of ns offsets from start time
@@ -119,7 +124,8 @@ class TimeSeries:
     width = self.duration_ns if duration == 0 else duration * ns_per_second
     t0 = self.start if start == () else time_tuple_from_field(start)
     offset = offset_from_time_tuple(subtract_time(self.reference, t0))
-    return np.histogram(self.times + offset, bins=nbins, range=(0, width))
+    h, edges = np.histogram(self.times + offset, bins=nbins, range=(0, width))
+    return h
 
   def integral(self, start=(), stop=()):
     """

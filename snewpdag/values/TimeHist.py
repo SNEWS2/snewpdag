@@ -35,6 +35,16 @@ class TimeHist(Hist1D):
     if len(data) > 0:
       self.bins = np.array(data)
 
+  def copy(self): # deep copy
+    o = TimeHist(self.start, self.duration, len(o.bins), o.bins.copy(), reference=self.reference)
+    # additional Hist1D instance data
+    o.overflow = self.overflow
+    o.underflow = self.underflow
+    o.sum = self.sum
+    o.sum2 = self.sum2
+    o.count = self.count
+    return o
+
   def bin_start(self, index):
     """
     Return start time of bin number.
@@ -98,7 +108,7 @@ class TimeHist(Hist1D):
     w = self.duration if duration == 0 else duration
     s = self.start if start == () else self.start
     t0 = time_tuple_from_field(start)
-    dt = np.array([0, w * ns_per_second / nbins])
+    dt = np.array([0, w * ns_per_second / nbins], dtype='int64')
     h = np.zeros(nbins)
     for i in range(nbins):
       tlow = t0 + i * dt
@@ -128,13 +138,12 @@ class TimeHist(Hist1D):
           return 0 # start is outside of range
         elif dt > 0:
           rem = dt % w
+          i0 = int(dt / w)
           if rem == 0:
-            i0 = dt / w
             under = 0
           else:
-            f0 = int(dt / w)
-            i0 = f0 + 1
-            under = self.bins[f0] * (w - rem) / w
+            under = self.bins[i0] * (w - rem) / w
+            i0 += 1
       if stop != ():
         t1 = time_tuple_from_field(stop)
         dt = offset_from_time_tuple(subtract_time(t1, self.start))
