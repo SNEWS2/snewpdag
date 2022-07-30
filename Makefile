@@ -66,6 +66,10 @@ diffpointing_bias:
 	python snewpdag/trials/Simple.py Control -n1 | \
           python -m snewpdag --log INFO --jsonlines snewpdag/data/test-bias.csv 
 
+evalmap_weighted:
+	python snewpdag/trials/Simple.py Control -n1000 | \
+	  python -m snewpdag --jsonlines snewpdag/data/test-eq-weighted.csv
+
 distcalc_trial:
 	python snewpdag/trials/Simple.py Control -n 1000 | \
           python -m snewpdag --log INFO --jsonlines snewpdag/data/test-distcalc-single-config.csv

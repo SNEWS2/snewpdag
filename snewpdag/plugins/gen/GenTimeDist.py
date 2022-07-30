@@ -38,6 +38,7 @@ from . import TimeDistSource
 class GenTimeDist(TimeDistSource):
 
   one_series = () # shared time series, if self.sig_once is True
+  one_mean = 0 # intended mean of shared time series
 
   def __init__(self, sig_mean, field, **kwargs):
     self.sig_mean = sig_mean
@@ -61,6 +62,7 @@ class GenTimeDist(TimeDistSource):
       ta = self.tedges[j]
       dt = self.tedges[j+1] - ta
       GenTimeDist.one_series = ta + Node.rng.random(self.sig_mean) * dt
+      GenTimeDist.one_mean = self.sig_mean
 
   def alert(self, data):
     if self.field in data:
@@ -80,7 +82,11 @@ class GenTimeDist(TimeDistSource):
       logging.debug('{}: t0 = {}, ref time {}, offset {}'.format(self.name, t0, v.start, offset))
 
       if self.sig_once:
-        a = GenTimeDist.one_series.copy()
+        n = int(self.sig_mean / GenTimeDist.one_mean)
+        b = np.empty((n, len(GenTimeDist.one_series)))
+        for i in range(n):
+          np.copyto(b[i], GenTimeDist.one_series)
+        a = np.ravel(b) # flatten to 1D
       else:
         # set mean number of events to generate
         if isinstance(self.sig_mean, numbers.Number):
