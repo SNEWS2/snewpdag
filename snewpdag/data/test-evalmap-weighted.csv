@@ -33,3 +33,10 @@
 "Accumulate","AccHistogram","Norm","'in_field':'weights', 'out_field':'hist'"
 "Weight-skymap","renderers.Mollview","Accumulate","'on':['report'], 'in_field':'hist', 'title':'Weighted MC trials', 'units':'Weights', 'range':(0,), 'coord':['C'], 'filename':'output/test-evalmap-weighted-{}-{}-{}.png'"
 ,,,,,
+,,,,,"Check Chi2 and CL of target pixel"
+,,,,,
+"targetChi2","ops.FillHist1D","makemap","'in_field':('map',749),'out_field':'hist','nbins':100,'xlow':0.0,'xhigh':100.0"
+"targetChi2-render","renderers.Hist1D","targetChi2","'on':['report'],'in_field':'hist','title':'Pixel 749','xlabel':'chi2','ylabel':'entries','filename':'output/test-evalmap-weighted-{}-{}-{}.png'"
+"targetCL","ops.FillHist1D","conf","'in_field':('clmap',749),'out_field':'hist','nbins':100,'xlow':0.0,'xhigh':1.0"
+"targetCL-render","renderers.Hist1D","targetCL","'on':['report'],'in_field':'hist','title':'Pixel 749','xlabel':'CL','ylabel':'entries','filename':'output/test-evalmap-weighted-{}-{}-{}.png'"
+,,,,,
