@@ -16,28 +16,26 @@ from snewpdag.dag.lib import ns_per_second
 from snewpdag.values import TimeSeries, TimeHist
 
 class Uniform (Node):
-  def __init__(self, field, rate, start = 0,**kwargs):
+  def __init__(self, field, rate, tmin = 0, tmax = 10, **kwargs):
     self.field = field
     self.rate = rate
-    self.start = start
+    self.tmin = tmin
+    self.tmax = tmax
     self.duration = kwargs.pop('duration', 10.0)
     super().__init__(**kwargs)
 
   def alert(self, data):
     if self.field in data:
       v = data[self.field]
-      dt = self.duration
-      if isinstance(v, TimeHist):
-        if dt <= 0.0 or dt > self.duration+self.start:
-          if self.start != 0:
-            dt = self.duration - self.start
-          else:
-            dt = self.duration
-      elif not isinstance(v, TimeSeries):
+      if self.tmax > self.duration:
+        self.tmax = self.duration
+      if self.tmin < 0:
+        self.tmin = 0
+      if not isinstance(v, TimeHist) and not isinstance(v, TimeSeries):
         return False # v is neither TimeHist nor TimeSeries
-      mean = dt * self.rate # mean number of events in the time span
+      mean = (self.tmax - self.tmin) * self.rate # mean number of events in the time span
       nev = Node.rng.poisson(mean) # Poisson fluctuations around mean
-      u = Node.rng.integers(self.start * ns_per_second, dt * ns_per_second, size=nev, dtype=np.int64)
+      u = Node.rng.integers(self.tmin * ns_per_second, self.tmax * ns_per_second, size=nev, dtype=np.int64)
       v.add_offsets(u)
       return True
     else:
