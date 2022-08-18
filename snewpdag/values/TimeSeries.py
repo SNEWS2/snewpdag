@@ -41,6 +41,13 @@ class TimeSeries:
                    self.times.copy(), reference=self.reference)
     return o
 
+  def to_dict(self):
+    return { 'start': [ int(self.start[0]), int(self.start[1]) ],
+             'reference': [ int(self.reference[0]), int(self.reference[1]) ],
+             'duration': self.duration_ns / ns_per_second,
+             'times': [ t for t in self.times ],
+           }
+
   def add_offsets(self, offsets):
     """
     offsets:  an array of ns offsets from start time
