@@ -1,17 +1,21 @@
 """
-GenPoint - generate time differences for a given SN direction
+GenPoint - generate times and time differences for a given SN direction
 
 Arguments:
   detector_location: filename of detector database for DetectorDB
-  detectors: list of detectors for which to generate burst times
+  pair_list: list of detector pairs for which to generate dts
+    (optional, default empty, in which case only generate core bounce times)
   ra: right ascension (degrees)
   dec: declination (degrees)
   time: time string, e.g., '2021-11-01 05:22:36.328'
   smear: (optional, default True) whether to smear output times
 
+ra,dec in ICRS coordinate system.
+
 Output:
-  truth/sn_ra: right ascension (radians)
-  truth/sn_dec: declination (radians)
+  truth/sn_ra: right ascension (radians), ICRS
+  truth/sn_dec: declination (radians), ICRS
+  truth/dets/<det>/true_t: arrival time of core bounce for det (s, ns), no bias
   dts/(<det1>,<det2>)/dt: time difference between detectors (s, ns)
   dts/(<det1>,<det2>)/t1: arrival time for det1 (s, ns)
   dts/(<det1>,<det2>)/t2: arrival time for det2 (s, ns)
@@ -26,14 +30,15 @@ import healpy as hp
 from astropy.time import Time
 from astropy import constants as const
 from astropy import units as u
+from astropy.coordinates import GCRS, SkyCoord, CartesianRepresentation
 
 from snewpdag.dag import Node, Detector, DetectorDB
-from snewpdag.dag.lib import normalize_time, subtract_time
+from snewpdag.dag.lib import normalize_time, subtract_time, ns_per_second
 
 class GenPoint(Node):
-  def __init__(self, detector_location, pair_list, ra, dec, time, **kwargs):
+  def __init__(self, detector_location, ra, dec, time, **kwargs):
     self.db = DetectorDB(detector_location)
-    self.pairs = pair_list
+    self.pairs = kwargs.pop('pair_list', ())
     self.ra = np.radians(ra)
     self.dec = np.radians(dec)
     self.time = Time(time)
@@ -41,40 +46,46 @@ class GenPoint(Node):
     t = self.time.to_value('unix', 'long')
     ti = int(t)
     tf = t - ti
-    g = 1000000000
-    self.ttuple = (ti, int(tf * g))
-    self.snr = np.array([ np.cos(self.dec)*np.cos(self.ra),
-                          np.cos(self.dec)*np.sin(self.ra),
-                          np.sin(self.dec) ])
+    self.ttuple = (ti, int(tf * ns_per_second))
+
+    sc = SkyCoord(ra=ra, dec=dec, unit=u.deg, frame='icrs', \
+                  representation_type='unitspherical', obstime=self.time)
+    gc = sc.transform_to(GCRS)
+    d = gc.represent_as(CartesianRepresentation)
+    self.snr = np.array( [ d.x, d.y, d.z ] ) # should be unit length!
     logging.info('ra(lon) = {}, dec(lat) = {}'.format(self.ra, self.dec))
     logging.info('SN location = {}'.format(self.snr))
-    self.dets = set()
-    for p in self.pairs:
-      self.dets.add(p[0])
-      self.dets.add(p[1])
+    self.dets = DetectorDB.dets.keys()
     super().__init__(**kwargs)
 
   def alert(self, data):
     # record truth information
     if 'truth' not in data:
       data['truth'] = {}
+    if 'dets' not in data['truth']:
+      data['truth']['dets'] = {}
     data['truth']['sn_ra'] = self.ra # radians
     data['truth']['sn_dec'] = self.dec # radians
 
     # generate times for each detector, including bias.
     # given time is when wavefront arrives at Earth origin.
-    g = 1000000000 / u.second
+    g = ns_per_second / u.second
     ts = {}
     bias = {}
     sigma = {}
     for dname in self.dets:
       #c = 3.0e8 # m/s
       det = self.db.get(dname)
-      pos = det.get_xyz(self.time)
+      pos = det.get_xyz(self.time) # detector in GCRS at given time
       logging.info('pos[{}] = {}'.format(dname, pos))
       logging.info('  sn pos = {}'.format(self.snr))
       dt = - np.dot(det.get_xyz(self.time), self.snr) / const.c # intersect
       logging.info('  dt before bias = {}'.format(dt))
+      # store unbiased time in data['truth']
+      tcb = (self.ttuple[0], self.ttuple[1] + dt * g)
+      data['truth']['dets'][dname] = { 'true_t': normalize_time(tcb) }
+
+      # apply bias and smear
       dt += det.bias * u.second
       if self.smear:
         dt += det.sigma * Node.rng.normal() * u.second # smear (s)
@@ -86,20 +97,21 @@ class GenPoint(Node):
       logging.info('  time[{}] = {}'.format(dname, ts[dname]))
 
     # generate pair times
-    dts = {}
-    g = 1000000000
-    for p in self.pairs:
-      dt = subtract_time(ts[p[0]], ts[p[1]])
-      logging.info('dt[{}] = {}'.format(p, dt))
-      dts[p] = {
-                 'dt': dt, # (s, ns)
-                 't1': ts[p[0]], # (s, ns)
-                 't2': ts[p[1]], # (s, ns)
-                 'bias': bias[p[0]] - bias[p[1]], # sec
-                 'var': sigma[p[0]]**2 + sigma[p[1]]**2, # sec**2
-                 'dsig1': sigma[p[0]], # sec
-                 'dsig2': - sigma[p[1]], # sec
-               }
-    data['dts'] = dts
+    if len(self.pairs) > 0:
+      dts = {}
+      for p in self.pairs:
+        dt = subtract_time(ts[p[0]], ts[p[1]])
+        logging.info('dt[{}] = {}'.format(p, dt))
+        dts[p] = {
+                   'dt': dt, # (s, ns)
+                   't1': ts[p[0]], # (s, ns)
+                   't2': ts[p[1]], # (s, ns)
+                   'bias': bias[p[0]] - bias[p[1]], # sec
+                   'var': sigma[p[0]]**2 + sigma[p[1]]**2, # sec**2
+                   'dsig1': sigma[p[0]], # sec
+                   'dsig2': - sigma[p[1]], # sec
+                 }
+      data['dts'] = dts
+
     return data
 

@@ -2,7 +2,9 @@
 DAG library routines
 """
 import logging
+import numbers
 import numpy as np
+from astropy.time import Time
 
 ns_per_second = 1000000000
 
@@ -23,6 +25,36 @@ def time_tuple_from_offset(ns):
   else:
     s = np.zeros(len(ns))
     return normalize_time(np.stack((s, ns), axis=-1))
+
+def time_tuple_from_string(s):
+  t = Time(s)
+  ts = t.to_value('unix', 'long')
+  ti = int(ts)
+  tf = ts - ti
+  return (ti, int(tf * ns_per_second))
+
+def time_tuple_from_field(s):
+  """
+  float - time in seconds in Unix epoch
+  (n, ns) - Unix epoch
+  string - UTC time string
+  (string, ns) - UTC time string for seconds, nanoseconds field
+    unfortunately the last one doesn't seem to be supported with
+    csv configuration files. Something to do with the parser?
+  """
+  if isinstance(s, numbers.Number):
+    return time_tuple_from_float(s)
+  elif isinstance(s, str):
+    return time_tuple_from_string(s)
+  elif isinstance(s, (list, tuple, np.ndarray)):
+    if isinstance(s[1], numbers.Number):
+      if isinstance(s[0], numbers.Number):
+        return np.array(s[:2])
+      elif isinstance(s[0], str):
+        t0 = time_tuple_from_string(s[0])
+        t0[1] += s[1]
+        return normalize_time(t0)
+  return None
 
 def offset_from_time_tuple(tt):
   d = np.array(tt)
@@ -89,6 +121,8 @@ def fetch_field(data, fields):
     d = data
     for f in fields:
       if isinstance(d, dict) and f in d:
+        d = d[f]
+      elif isinstance(d, (list, tuple, np.ndarray)) and f < len(d):
         d = d[f]
       else:
         return None, False

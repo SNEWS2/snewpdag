@@ -48,6 +48,7 @@ from .Chi2Prob import Chi2Prob
 
 from .DtsCalculator import DtsCalculator
 from .DiffPointing import DiffPointing
+from .EvalMap import EvalMap
 
 from .PickleInput import PickleInput
 

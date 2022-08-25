@@ -164,6 +164,7 @@ class TestLib(unittest.TestCase):
     data2 = { 'f20': data1, 'f21': 21 }
     data3 = { 'f30': 30, 'f31': data2 }
     data4 = { 'f40': 40, 'f41': data3 }
+    data5 = { 'f50': 50, 'f51': [ 510, 511, 512 ], 'f52': [ data4, data1 ] }
     v, flag = fetch_field(data4, 'f40')
     self.assertTrue(flag)
     self.assertEqual(v, 40)
@@ -191,4 +192,10 @@ class TestLib(unittest.TestCase):
     v, flag = fetch_field(data4, ('f41','f30','f20',))
     self.assertFalse(flag)
     self.assertEqual(v, None)
+    v, flag = fetch_field(data5, ('f51',1))
+    self.assertTrue(flag)
+    self.assertEqual(v, 511)
+    v, flag = fetch_field(data5, ('f52',1,'f11'))
+    self.assertTrue(flag)
+    self.assertEqual(v, 11)
 

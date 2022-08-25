@@ -1,0 +1,39 @@
+"Control","Pass",,"'line': 100"
+,,,,,
+"SN-times","gen.TrueTimes","Control","'detector_location':'snewpdag/data/detector_location.csv', 'detectors': ['SNOP','SK','IC'], 'ra':-60.0, 'dec':-30.0, 'time':'2021-11-01 05:22:36.328'"
+"SN","Write","SN-times","'on':['alert'],'write':(('coincident_detectors',['SNOP','SK','IC']),)"
+"SN-out","Pass","SN","'line':1, 'dump':1"
+,,,,,
+"M27-SNOP-new","ops.NewTimeSeries","SN","'out_field':'timeseries','start':'2021-11-01 05:22:34'"
+"M27-SNOP-signal","gen.GenTimeDist","M27-SNOP-new","'field':'timeseries','smear':False,'sig_mean':5000,'sig_t0':('truth','dets','SNOP','true_t'),'sig_filetype':'tng','sig_filename':'/home/tseng/dev/snews/numodels/ls220-s27.0co/neutrino_signal_nubar_e-LS220-s27.0co.data'"
+"M27-SNOP-hist","ops.TimeSeriesToTimeHist","M27-SNOP-signal","'in_field':'timeseries','out_field':'timeserieshist','start':'2021-11-01 05:22:34','duration':10,'nbins':100"
+"M27-SNOP-render","renderers.Hist1D","M27-SNOP-hist","'on':['alert'],'in_field':'timeserieshist','title':'M27 SNO+','xlabel':'t [s]','ylabel':'entries/10ms','filename':'output/eq-{}-{}-{}.png'"
+"SNOP-data","Write","M27-SNOP-signal","'on':['alert'],'write':(('detector','SNOP'),)"
+,,,,,
+"M27-SK-new","ops.NewTimeSeries","SN","'out_field':'timeseries','start':'2021-11-01 05:22:34'"
+"M27-SK-signal","gen.GenTimeDist","M27-SK-new","'field':'timeseries','smear':False,'sig_mean':5000,'sig_t0':('truth','dets','SK','true_t'),'sig_filetype':'tng','sig_filename':'/home/tseng/dev/snews/numodels/ls220-s27.0co/neutrino_signal_nubar_e-LS220-s27.0co.data'"
+"M27-SK-hist","ops.TimeSeriesToTimeHist","M27-SK-signal","'in_field':'timeseries','out_field':'timeserieshist','start':'2021-11-01 05:22:34','duration':10,'nbins':100"
+"M27-SK-render","renderers.Hist1D","M27-SK-hist","'on':['alert'],'in_field':'timeserieshist','title':'M27 SK','xlabel':'t [s]','ylabel':'entries/10ms','filename':'output/eq-{}-{}-{}.png'"
+"SK-data","Write","M27-SK-signal","'on':['alert'],'write':(('detector','SK'),)"
+,,,,,
+"M27-IC-new","ops.NewTimeSeries","SN","'out_field':'timeseries','start':'2021-11-01 05:22:34'"
+"M27-IC-signal","gen.GenTimeDist","M27-IC-new","'field':'timeseries','smear':False,'sig_mean':5000,'sig_t0':('truth','dets','IC','true_t'),'sig_filetype':'tng','sig_filename':'/home/tseng/dev/snews/numodels/ls220-s27.0co/neutrino_signal_nubar_e-LS220-s27.0co.data'"
+"M27-IC-hist","ops.TimeSeriesToTimeHist","M27-IC-signal","'in_field':'timeseries','out_field':'timeserieshist','start':'2021-11-01 05:22:34','duration':10,'nbins':100"
+"M27-IC-render","renderers.Hist1D","M27-IC-hist","'on':['alert'],'in_field':'timeserieshist','title':'M27 IC','xlabel':'t [s]','ylabel':'entries/10ms','filename':'output/eq-{}-{}-{}.png'"
+"IC-data","Write","M27-IC-signal","'on':['alert'],'write':(('detector','IC'),)"
+,,,,,
+"test","Pass","SNOP-data,SK-data,IC-data","'line':1,'dump':1"
+,,,,,
+"makemap","EvalMap","SNOP-data,SK-data,IC-data","'detector_location':'snewpdag/data/detector_location.csv','nside':8,'in_field':'timeseries','in_det_field':'detector','in_det_list_field':'coincident_detectors'"
+"makemap-out","Pass","makemap","'line':1,'dump':1"
+,,,,,
+"prob","Chi2Prob","makemap","'in_field':'map', 'out_field':'probmap'"
+"prob-out","Pass","prob","'line':1, 'dump':1"
+"probmap","renderers.Mollview","prob","'in_field':'probmap', 'title':'Map evaluation', 'units':'probability', 'coord':['C'], 'filename':'output/eq-{}-{}-{}.png'"
+"probfits","renderers.FitsSkymap","prob","'in_field':'probmap', 'filename':'output/eq-{}-{}-{}.fits'"
+,,,,,
+"conf","Chi2CL","makemap","'in_field':'map', 'out_field':'clmap'"
+"conf-out","Pass","conf","'line':1, 'dump':1"
+"confmap","renderers.Mollview","conf","'in_field':'clmap', 'title':'Map evaluation', 'units':'CL', 'range':(0,1), 'coord':['C'], 'filename':'output/eq-{}-{}-{}.png'"
+"conffits","renderers.FitsSkymap","conf","'in_field':'clmap', 'filename':'output/eq-{}-{}-{}.fits'"
+,,,,,

@@ -1,0 +1,27 @@
+"Control","Pass",,"'line': 100"
+,,,,,
+"SN-times","gen.TrueTimes","Control","'detector_location':'snewpdag/data/detector_location.csv', 'detectors': ['SNOP','SK','IC'], 'ra':-60.0, 'dec':-30.0, 'time':'2021-11-01 05:22:36.328'"
+"SN","Write","SN-times","'on':['alert'],'write':(('coincident_detectors',['SNOP','SK','IC']),)"
+"SN-out","Pass","SN","'line':1, 'dump':1"
+,,,,,
+"M27-SNOP-new","ops.NewTimeSeries","SN","'out_field':'timeseries','start':'2021-11-01 05:22:34'"
+"M27-SNOP-signal","gen.GenTimeDist","M27-SNOP-new","'field':'timeseries','smear':False,'sig_mean':5000,'sig_t0':('truth','dets','SNOP','true_t'),'sig_filetype':'tng','sig_filename':'/home/tseng/dev/snews/numodels/ls220-s27.0co/neutrino_signal_nubar_e-LS220-s27.0co.data'"
+"SNOP-data","Write","M27-SNOP-signal","'on':['alert'],'write':(('detector','SNOP'),)"
+,,,,,
+"M27-SK-new","ops.NewTimeSeries","SN","'out_field':'timeseries','start':'2021-11-01 05:22:34'"
+"M27-SK-signal","gen.GenTimeDist","M27-SK-new","'field':'timeseries','smear':False,'sig_mean':5000,'sig_t0':('truth','dets','SK','true_t'),'sig_filetype':'tng','sig_filename':'/home/tseng/dev/snews/numodels/ls220-s27.0co/neutrino_signal_nubar_e-LS220-s27.0co.data'"
+"SK-data","Write","M27-SK-signal","'on':['alert'],'write':(('detector','SK'),)"
+,,,,,
+"M27-IC-new","ops.NewTimeSeries","SN","'out_field':'timeseries','start':'2021-11-01 05:22:34'"
+"M27-IC-signal","gen.GenTimeDist","M27-IC-new","'field':'timeseries','smear':False,'sig_mean':5000,'sig_t0':('truth','dets','IC','true_t'),'sig_filetype':'tng','sig_filename':'/home/tseng/dev/snews/numodels/ls220-s27.0co/neutrino_signal_nubar_e-LS220-s27.0co.data'"
+"IC-data","Write","M27-IC-signal","'on':['alert'],'write':(('detector','IC'),)"
+,,,,,
+"makemap","EvalMap","SNOP-data,SK-data,IC-data","'detector_location':'snewpdag/data/detector_location.csv','nside':8,'in_field':'timeseries','in_det_field':'detector','in_det_list_field':'coincident_detectors'"
+"makemap-out","Pass","makemap","'line':1,'dump':1"
+,,,,,
+"conf","Chi2CL","makemap","'in_field':'map', 'out_field':'clmap'"
+"conf-out","Pass","conf","'line':1, 'dump':1"
+"Norm","NormHistogram","conf","'in_field':'clmap', 'out_field':'weights'"
+"Accumulate","AccHistogram","Norm","'in_field':'weights', 'out_field':'hist'"
+"Weight-skymap","renderers.Mollview","Accumulate","'on':['report'], 'in_field':'hist', 'title':'Weighted MC trials', 'units':'Weights', 'range':(0,), 'coord':['C'], 'filename':'output/test-eq-weighted-{}-{}-{}.png'"
+,,,,,

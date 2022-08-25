@@ -22,6 +22,7 @@ class PickleOutput(Node):
     fname = self.filename.format(self.name, self.count, burst_id)
     with open(fname, 'wb') as f:
       pickle.dump(data, f, pickle.HIGHEST_PROTOCOL)
+    self.count += 1
     return True
 
   def alert(self, data):

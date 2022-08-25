@@ -35,9 +35,10 @@ import csv
 from astropy.time import Time
 from astropy import constants as const
 from astropy import units as u
+from astropy.coordinates import GCRS, SkyCoord, CartesianRepresentation
 
 from snewpdag.dag import Node, Detector, DetectorDB
-from snewpdag.dag.lib import normalize_time, subtract_time
+from snewpdag.dag.lib import normalize_time, subtract_time, ns_per_second
 
 class GenPointDts(Node):
   def __init__(self, detector_location, pairs, ra, dec, time, **kwargs):
@@ -49,11 +50,13 @@ class GenPointDts(Node):
     t = self.time.to_value('unix', 'long')
     ti = int(t)
     tf = t - ti
-    g = 1000000000
+    g = ns_per_second
     self.ttuple = (ti, int(tf * g))
-    self.snr = np.array([ np.cos(self.dec)*np.cos(self.ra),
-                          np.cos(self.dec)*np.sin(self.ra),
-                          np.sin(self.dec) ])
+    sc = SkyCoord(ra=ra, dec=dec, unit=u.deg, frame='icrs', \
+                  representation_type='unitspherical', obstime=self.time)
+    gc = sc.transform_to(GCRS)
+    d = gc.represent_as(CartesianRepresentation)
+    self.snr = np.array( [ d.x, d.y, d.z ] ) # should be unit length!
     logging.info('ra(lon) = {}, dec(lat) = {}'.format(self.ra, self.dec))
     logging.info('SN location = {}'.format(self.snr))
     # read pair database
@@ -79,17 +82,17 @@ class GenPointDts(Node):
 
     # generate dt for each detector, including bias
     dts = {}
-    g = 1000000000 / u.second
+    g = ns_per_second / u.second
     for p in self.pairs:
       # detector 1 time
       det1 = self.db.get(p['det1'])
-      pos1 = det1.get_xyz(self.time)
+      pos1 = det1.get_xyz(self.time) # detector in GCRS at given time
       t1 = - np.dot(pos1, self.snr) / const.c # intersect
       tt1 = (self.ttuple[0], int(self.ttuple[1] + t1 * g))
 
       # detector 2 nominal time, with bias
       det2 = self.db.get(p['det2'])
-      pos2 = det2.get_xyz(self.time)
+      pos2 = det2.get_xyz(self.time) # detector in GCRS at given time
       t2 = - np.dot(pos2, self.snr) / const.c # intersect
       # bias is det1-det2, so subtract nominal bias from det2
       t2 -= p['dtbias'] * u.second

@@ -1,0 +1,34 @@
+"Control","Pass",,"'line': 100"
+,,,
+"Gen","gen.GenPoint","Control","'detector_location':'snewpdag/data/detector_location.csv', 'pair_list':[('SNOP','Borexino'),('SNOP','KL'),('SNOP','KM3')], 'ra':-60.0, 'dec':-30.0, 'smear': False, 'time':'2021-11-01 05:22:36.328'"
+"Gen-out","Pass","Gen","'line':1, 'dump':1"
+,,,
+"Diff","DiffPointing","Gen","'detector_location':'snewpdag/data/detector_location.csv', 'nside':32, 'min_dts':3"
+"conf","Chi2CL","Diff","'in_field':'map', 'out_field':'clmap'"
+"sky0","renderers.Mollview","conf","'in_field':'clmap', 'title':'SNO+ Borexino KL', 'units':'CL', 'range':(0,1), 'coord':['C'], 'filename':'output/test-bias-b0-{}-{}-{}.png'"
+,,,
+"bias1","ops.WriteField","Gen","'on':['alert'],'write':((('dts',('SNOP','KL'),'bias'),0.001),)"
+"test1","Pass","bias1","'line':1,'dump':1"
+"diff1","DiffPointing","bias1","'detector_location':'snewpdag/data/detector_location.csv', 'nside':32, 'min_dts':3"
+"conf1","Chi2CL","diff1","'in_field':'map', 'out_field':'clmap'"
+"sky1","renderers.Mollview","conf1","'in_field':'clmap', 'title':'SNO+ Borexino KL (KL bias 1ms)', 'units':'CL', 'range':(0,1), 'coord':['C'], 'filename':'output/test-bias-b1-{}-{}-{}.png'"
+,,,
+"bias2","ops.WriteField","Gen","'on':['alert'],'write':((('dts',('SNOP','KL'),'bias'),0.002),)"
+"diff2","DiffPointing","bias2","'detector_location':'snewpdag/data/detector_location.csv', 'nside':32, 'min_dts':3"
+"conf2","Chi2CL","diff2","'in_field':'map', 'out_field':'clmap'"
+"sky2","renderers.Mollview","conf2","'in_field':'clmap', 'title':'SNO+ Borexino KL (KL bias 2ms)', 'units':'CL', 'range':(0,1), 'coord':['C'], 'filename':'output/test-bias-b2-{}-{}-{}.png'"
+,,,
+"bias3","ops.WriteField","Gen","'on':['alert'],'write':((('dts',('SNOP','KL'),'bias'),0.003),)"
+"diff3","DiffPointing","bias3","'detector_location':'snewpdag/data/detector_location.csv', 'nside':32, 'min_dts':3"
+"conf3","Chi2CL","diff3","'in_field':'map', 'out_field':'clmap'"
+"sky3","renderers.Mollview","conf3","'in_field':'clmap', 'title':'SNO+ Borexino KL (KL bias 3ms)', 'units':'CL', 'range':(0,1), 'coord':['C'], 'filename':'output/test-bias-b3-{}-{}-{}.png'"
+,,,
+"bias4","ops.WriteField","Gen","'on':['alert'],'write':((('dts',('SNOP','KL'),'bias'),0.004),)"
+"diff4","DiffPointing","bias4","'detector_location':'snewpdag/data/detector_location.csv', 'nside':32, 'min_dts':3"
+"conf4","Chi2CL","diff4","'in_field':'map', 'out_field':'clmap'"
+"sky4","renderers.Mollview","conf4","'in_field':'clmap', 'title':'SNO+ Borexino KL (KL bias 4ms)', 'units':'CL', 'range':(0,1), 'coord':['C'], 'filename':'output/test-bias-b4-{}-{}-{}.png'"
+,,,
+"bias5","ops.WriteField","Gen","'on':['alert'],'write':((('dts',('SNOP','KL'),'bias'),0.005),)"
+"diff5","DiffPointing","bias5","'detector_location':'snewpdag/data/detector_location.csv', 'nside':32, 'min_dts':3"
+"conf5","Chi2CL","diff5","'in_field':'map', 'out_field':'clmap'"
+"sky5","renderers.Mollview","conf5","'in_field':'clmap', 'title':'SNO+ Borexino KL (KL bias 5ms)', 'units':'CL', 'range':(0,1), 'coord':['C'], 'filename':'output/test-bias-b5-{}-{}-{}.png'"

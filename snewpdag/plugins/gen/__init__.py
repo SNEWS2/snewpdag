@@ -27,6 +27,7 @@ from .DetectorTime import DetectorTime
 
 from .GenPoint import GenPoint
 from .GenPointDts import GenPointDts
+from .GenTimeDist import GenTimeDist
 
 from .TrueTimes import TrueTimes
 from .SmearTimes import SmearTimes

@@ -1,0 +1,44 @@
+"Control","Pass",,"'line': 100"
+,,,,,
+"SN","gen.TrueTimes","Control","'detector_location':'snewpdag/data/detector_location.csv', 'detectors': ['SNOP','IC'], 'ra':-60.0, 'dec':-30.0, 'time':'2021-11-01 05:22:36.328'"
+"SN-out","Pass","SN","'line':1, 'dump':1"
+,,,,,
+"M11-SNOP-new","ops.NewTimeSeries","SN","'out_field':'timeseries','start':'2021-11-01 05:22:34'"
+"M11-SNOP-signal","gen.GenTimeDist","M11-SNOP-new","'field':'timeseries','sig_mean':130,'sig_t0':('truth','dets','SNOP','true_t'),'sig_filetype':'tng','sig_filename':'/home/tseng/dev/snews/numodels/ls220-s11.2c/neutrino_signal_nubar_e-LS220-s11.2c.data'"
+"M11-SNOP-hist","ops.TimeSeriesToTimeHist","M11-SNOP-signal","'in_field':'timeseries','out_field':'timeserieshist','start':'2021-11-01 05:22:34','duration':10,'nbins':100"
+"M11-SNOP-render","renderers.Hist1D","M11-SNOP-hist","'on':['alert'],'in_field':'timeserieshist','title':'M11 SNO+','xlabel':'t [s]','ylabel':'entries/10ms','filename':'output/gen-dets-{}-{}-{}.png'"
+,,,,,
+"M27-SNOP-new","ops.NewTimeSeries","SN","'out_field':'timeseries','start':'2021-11-01 05:22:34'"
+"M27-SNOP-signal","gen.GenTimeDist","M27-SNOP-new","'field':'timeseries','sig_mean':250,'sig_t0':('truth','dets','SNOP','true_t'),'sig_filetype':'tng','sig_filename':'/home/tseng/dev/snews/numodels/ls220-s27.0co/neutrino_signal_nubar_e-LS220-s27.0co.data'"
+"M27-SNOP-hist","ops.TimeSeriesToTimeHist","M27-SNOP-signal","'in_field':'timeseries','out_field':'timeserieshist','start':'2021-11-01 05:22:34','duration':10,'nbins':100"
+"M27-SNOP-render","renderers.Hist1D","M27-SNOP-hist","'on':['alert'],'in_field':'timeserieshist','title':'M27 SNO+','xlabel':'t [s]','ylabel':'entries/10ms','filename':'output/gen-dets-{}-{}-{}.png'"
+,,,,,
+"M40-SNOP-new","ops.NewTimeSeries","SN","'out_field':'timeseries','start':'2021-11-01 05:22:34'"
+"M40-SNOP-signal","gen.GenTimeDist","M40-SNOP-new","'field':'timeseries','sig_mean':240,'sig_t0':('truth','dets','SNOP','true_t'),'sig_filetype':'tng','sig_filename':'/home/tseng/dev/snews/numodels/ls220-s40s7b2c-bh/neutrino_signal_nubar_e'"
+"M40-SNOP-hist","ops.TimeSeriesToTimeHist","M40-SNOP-signal","'in_field':'timeseries','out_field':'timeserieshist','start':'2021-11-01 05:22:34','duration':10,'nbins':100"
+"M40-SNOP-render","renderers.Hist1D","M40-SNOP-hist","'on':['alert'],'in_field':'timeserieshist','title':'M40 SNO+','xlabel':'t [s]','ylabel':'entries/10ms','filename':'output/gen-dets-{}-{}-{}.png'"
+,,,,,
+"M11-IC-new","ops.NewTimeSeries","SN","'out_field':'timeseries','start':'2021-11-01 05:22:34'"
+"M11-IC-signal","gen.GenTimeDist","M11-IC-new","'field':'timeseries','sig_mean':320000,'sig_t0':('truth','dets','IC','true_t'),'sig_filetype':'tng','sig_filename':'/home/tseng/dev/snews/numodels/ls220-s11.2c/neutrino_signal_nubar_e-LS220-s11.2c.data'"
+"M11-IC-hist","ops.TimeSeriesToTimeHist","M11-IC-signal","'in_field':'timeseries','out_field':'timeserieshist','start':'2021-11-01 05:22:34','duration':10,'nbins':100"
+"M11-IC-render","renderers.Hist1D","M11-IC-hist","'on':['alert'],'in_field':'timeserieshist','title':'M11 IceCube','xlabel':'t [s]','ylabel':'entries/10ms','filename':'output/gen-dets-{}-{}-{}.png'"
+,,,,,
+"M11-IC-bg","gen.Uniform","M11-IC-hist","'field':'timeserieshist','rate':3840"
+"M11-IC-bg-render","renderers.Hist1D","M11-IC-bg","'on':['alert'],'in_field':'timeserieshist','title':'M11 IceCube + background','xlabel':'t [s]','ylabel':'entries/10ms','filename':'output/gen-dets-{}-{}-{}.png'"
+,,,,,
+"M27-IC-new","ops.NewTimeSeries","SN","'out_field':'timeseries','start':'2021-11-01 05:22:34'"
+"M27-IC-signal","gen.GenTimeDist","M27-IC-new","'field':'timeseries','sig_mean':660000,'sig_t0':('truth','dets','IC','true_t'),'sig_filetype':'tng','sig_filename':'/home/tseng/dev/snews/numodels/ls220-s27.0co/neutrino_signal_nubar_e-LS220-s27.0co.data'"
+"M27-IC-hist","ops.TimeSeriesToTimeHist","M27-IC-signal","'in_field':'timeseries','out_field':'timeserieshist','start':'2021-11-01 05:22:34','duration':10,'nbins':100"
+"M27-IC-render","renderers.Hist1D","M27-IC-hist","'on':['alert'],'in_field':'timeserieshist','title':'M27 IceCube','xlabel':'t [s]','ylabel':'entries/10ms','filename':'output/gen-dets-{}-{}-{}.png'"
+,,,,,
+"M27-IC-bg","gen.Uniform","M27-IC-hist","'field':'timeserieshist','rate':3840"
+"M27-IC-bg-render","renderers.Hist1D","M27-IC-bg","'on':['alert'],'in_field':'timeserieshist','title':'M27 IceCube + background','xlabel':'t [s]','ylabel':'entries/10ms','filename':'output/gen-dets-{}-{}-{}.png'"
+,,,,,
+"M40-IC-new","ops.NewTimeSeries","SN","'out_field':'timeseries','start':'2021-11-01 05:22:34'"
+"M40-IC-signal","gen.GenTimeDist","M40-IC-new","'field':'timeseries','sig_mean':820000,'sig_t0':('truth','dets','IC','true_t'),'sig_filetype':'tng','sig_filename':'/home/tseng/dev/snews/numodels/ls220-s40s7b2c-bh/neutrino_signal_nubar_e'"
+"M40-IC-hist","ops.TimeSeriesToTimeHist","M40-IC-signal","'in_field':'timeseries','out_field':'timeserieshist','start':'2021-11-01 05:22:34','duration':10,'nbins':100"
+"M40-IC-render","renderers.Hist1D","M40-IC-hist","'on':['alert'],'in_field':'timeserieshist','title':'M40 IceCube','xlabel':'t [s]','ylabel':'entries/10ms','filename':'output/gen-dets-{}-{}-{}.png'"
+,,,,,
+"M40-IC-bg","gen.Uniform","M40-IC-hist","'field':'timeserieshist','rate':3840"
+"M40-IC-bg-render","renderers.Hist1D","M40-IC-bg","'on':['alert'],'in_field':'timeserieshist','title':'M40 IceCube + background','xlabel':'t [s]','ylabel':'entries/10ms','filename':'output/gen-dets-{}-{}-{}.png'"
+,,,,,

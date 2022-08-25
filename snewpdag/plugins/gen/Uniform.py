@@ -27,6 +27,18 @@ class Uniform (Node):
   def alert(self, data):
     if self.field in data:
       v = data[self.field]
+      # TODO: need to fix this when TimeHist/TimeSeries have common base
+      #dt = self.duration
+      #if isinstance(v, TimeHist):
+      #  if dt <= 0.0 or dt > v.duration:
+      #    #dt = v.duration # use full duration
+      #    # actually, we have a simpler way of generating in this case
+      #    # (TimeHist, over whole range), adding Poisson fluctuations
+      #    # to each bin
+      #    mu = self.rate * v.duration / v.nbins
+      #    v.bins += Node.rng.poisson(mu, v.nbins)
+      #    return True
+      #elif not isinstance(v, TimeSeries):
       if self.tmax > self.duration:
         self.tmax = self.duration
       if self.tmin < 0:

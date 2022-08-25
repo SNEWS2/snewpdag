@@ -19,9 +19,10 @@ import healpy as hp
 from astropy.time import Time
 from astropy import constants as const
 from astropy import units as u
+from astropy.coordinates import GCRS, SkyCoord, CartesianRepresentation
 
 from snewpdag.dag import Node, Detector, DetectorDB
-from snewpdag.dag.lib import normalize_time
+from snewpdag.dag.lib import normalize_time, ns_per_second
 
 class TrueTimes(Node):
   def __init__(self, detector_location, detectors, ra, dec, time, **kwargs):
@@ -32,14 +33,16 @@ class TrueTimes(Node):
     t = self.time.to_value('unix', 'long')
     ti = int(t)
     tf = t - ti
-    g = 1000000000
-    self.ttuple = (ti, int(tf * g))
-    self.snr = np.array([ np.cos(self.dec)*np.cos(self.ra),
-                          np.cos(self.dec)*np.sin(self.ra),
-                          np.sin(self.dec) ])
+    self.ttuple = (ti, int(tf * ns_per_second))
+
+    sc = SkyCoord(ra=ra, dec=dec, unit=u.deg, frame='icrs', \
+                  representation_type='unitspherical', obstime=self.time)
+    gc = sc.transform_to(GCRS)
+    d = gc.represent_as(CartesianRepresentation)
+    self.snr = np.array( [ d.x, d.y, d.z ] ) # should be unit length!
     logging.info('ra(lon) = {}, dec(lat) = {}'.format(self.ra, self.dec))
     logging.info('SN location = {}'.format(self.snr))
-    self.dets = set(detectors)
+    self.dets = set(detectors) # detector names
     super().__init__(**kwargs)
 
   def alert(self, data):
@@ -51,12 +54,12 @@ class TrueTimes(Node):
 
     # generate true times for each detector.
     # given time is when wavefront arrives at Earth origin.
-    g = 1000000000 / u.second
+    g = ns_per_second / u.second
     ts = {}
     for dname in self.dets:
       #c = 3.0e8 # m/s
       det = self.db.get(dname)
-      pos = det.get_xyz(self.time)
+      pos = det.get_xyz(self.time) # detector in GCRS at given time
       logging.info('pos[{}] = {}'.format(dname, pos))
       logging.info('  sn pos = {}'.format(self.snr))
       dt = - np.dot(det.get_xyz(self.time), self.snr) / const.c # intersect
