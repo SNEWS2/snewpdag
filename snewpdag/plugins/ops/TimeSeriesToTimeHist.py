@@ -1,5 +1,5 @@
 """
-TimeSeriesToTimeHist - use a TimeSeries to fill a TimeHist.
+TimeSeriesToTimeHist - use a TSeries to fill a THist.
   Reference time (defining t=0) is kept the same.
 
 Arguments:
@@ -11,16 +11,17 @@ Arguments:
 """
 import logging
 import numpy as np
+from astropy import units as u
 
 from snewpdag.dag import Node
-from snewpdag.dag.lib import time_tuple_from_field
-from snewpdag.values import TimeHist, TimeSeries
+from snewpdag.dag.lib import field2ns
+from snewpdag.values import THist, TSeries
 
 class TimeSeriesToTimeHist(Node):
   def __init__(self, in_field, out_field, start, duration, nbins, **kwargs):
     self.in_field = in_field
     self.out_field = out_field
-    self.start = time_tuple_from_field(start)
+    self.start = field2ns(start)
     self.duration = duration
     self.nbins = nbins
     super().__init__(**kwargs)
@@ -29,9 +30,9 @@ class TimeSeriesToTimeHist(Node):
     if self.in_field in data:
       ts = data[self.in_field]
       if isinstance(ts, TimeSeries):
-        th = TimeHist(self.start, self.duration, self.nbins, \
-                      reference=ts.reference)
-        th.add_offsets(ts.times)
+        th = THist(ts.reference, self.nbins, self.start,
+                   self.start + self.duration * ns_per_second)
+        th.add_offsets(ts.offsets, unit=u.ns)
         data[self.out_field] = th
         return data
     return False

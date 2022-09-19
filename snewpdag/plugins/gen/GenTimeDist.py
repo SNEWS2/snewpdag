@@ -2,7 +2,7 @@
 GenTimeDist:  generates a time distribution on each alert, based on a histogram
 
 configuration:
-  field:     field name. Must be TimeSeries or TimeHist. Modified in place.
+  field:     field name. Must be TSeries or THist. Modified in place.
   sig_mean:  mean number of events to generate.
              If it's a number, use the number itself.  Default is the
                area of the histogram read from the input spectrum.
@@ -31,8 +31,8 @@ import numpy as np
 import numbers
 
 from snewpdag.dag import Node
-from snewpdag.dag.lib import fetch_field, ns_per_second
-from snewpdag.values import TimeHist, TimeSeries
+from snewpdag.dag.lib import fetch_field, ns_per_second, field2ns
+from snewpdag.values import THist, TSeries
 from . import TimeDistSource
 
 class GenTimeDist(TimeDistSource):
@@ -47,7 +47,7 @@ class GenTimeDist(TimeDistSource):
     if isinstance(ts, (list, tuple, str)):
       self.sig_t0 = ts
     elif isinstance(ts, numbers.Number):
-      self.sig_t0 = time_tuple_from_float(ts)
+      self.sig_t0 = field2ns(ts) # assumes seconds
     self.sig_smear = kwargs.pop('sig_smear', True)
     self.sig_once = kwargs.pop('sig_once', False)
     super().__init__(**kwargs)
@@ -68,18 +68,20 @@ class GenTimeDist(TimeDistSource):
     if self.field in data:
       v = data[self.field]
 
-      # adjust offsets for t0 and TimeSeries reference timestamps.
+      # adjust offsets for t0 and TSeries reference timestamps.
       # For instance, if core bounce is at 100s, but ref time is 90s,
       # then an event at t=0 should have an offset of 10s.
       if isinstance(self.sig_t0, (str, tuple, list)): # interpret as field
-        t0, flag = fetch_field(data, self.sig_t0)
+        t0, flag = fetch_field(data, self.sig_t0) # ns
         if not flag:
           logging.error('{}: {} not found in payload'.format(self.name, self.sig_t0))
           return False
       else:
         t0 = self.sig_t0
-      offset = (t0[0] - v.start[0]) + (t0[1] - v.start[1]) / ns_per_second
-      logging.debug('{}: t0 = {}, ref time {}, offset {}'.format(self.name, t0, v.start, offset))
+      #offset =  (t0[0] - v.start[0]) + (t0[1] - v.start[1]) / ns_per_second
+      logging.debug('{}: t0 = {}, ref time {}'.format(self.name, t0, v.reference))
+      offset = (t0 - v.reference) / ns_per_second # s
+      logging.debug('{}: t0 = {}, ref time {}, offset {}'.format(self.name, t0, v.reference, offset))
 
       if self.sig_once:
         n = int(self.sig_mean / GenTimeDist.one_mean)
@@ -106,9 +108,9 @@ class GenTimeDist(TimeDistSource):
         dt = self.tedges[j+1] - ta
         a = ta + Node.rng.random(nev) * dt
 
-      # add offsets in seconds - works for TimeHist or TimeSeries
+      # add offsets in seconds - works for THist or TSeries
       a += offset
-      v.add_offsets_s(a)
+      v.add_offsets(a) # seconds assumed by add_offsets(), without other units
       return data
     else:
       return False

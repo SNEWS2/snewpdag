@@ -21,13 +21,13 @@ import json
 import numpy as np
 
 from snewpdag.dag import Node
-from snewpdag.values import TimeSeries
+from snewpdag.values import TSeries
 from snewpdag.dag.lib import fetch_field
 
 def json_output_default(obj):
   if isinstance(obj, np.ndarray):
     return [ x for x in obj ]
-  elif isinstance(obj, TimeSeries):
+  elif isinstance(obj, TSeries):
     return obj.to_dict()
   else:
     raise TypeError("unjsonable type {}".format(obj))
@@ -45,7 +45,7 @@ class JsonOutput(Node):
     for f in self.fields:
       v, flag = fetch_field(data, f)
       if flag:
-        #if isinstance(v, TimeSeries):
+        #if isinstance(v, TSeries):
         #  d[f] = v.to_dict()
         #elif isinstance(v, np.ndarray):
         #  d[f] = [ x for x in v ]

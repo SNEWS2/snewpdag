@@ -1,5 +1,5 @@
 """
-NewTimeSeries - initialize an empty TimeSeries object
+NewTimeSeries - initialize an empty TSeries object
 
 Arguments:
   out_field:  output field name
@@ -21,20 +21,20 @@ import numpy as np
 import numbers
 
 from snewpdag.dag import Node
-from snewpdag.dag.lib import time_tuple_from_field
-from snewpdag.values import TimeSeries
+from snewpdag.dag.lib import field2ns, ns_per_second
+from snewpdag.values import TSeries
 
 class NewTimeSeries(Node):
   def __init__(self, out_field, start, **kwargs):
     self.out_field = out_field
-    self.start = time_tuple_from_field(start)
+    self.start = field2ns(start)
     reft = kwargs.pop('reference', start)
-    self.reference = time_tuple_from_field(reft)
+    self.reference = field2ns(reft)
     self.duration = kwargs.pop('duration', 0)
     super().__init__(**kwargs)
 
   def alert(self, data):
-    data[self.out_field] = TimeSeries(self.start, self.duration,
-                                      reference=self.reference)
+    data[self.out_field] = TSeries(self.reference, start=self.start,
+                                   stop=self.start+self.duration*ns_per_second)
     return data
 

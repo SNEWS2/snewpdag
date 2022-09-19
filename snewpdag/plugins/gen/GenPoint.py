@@ -15,10 +15,10 @@ ra,dec in ICRS coordinate system.
 Output:
   truth/sn_ra: right ascension (radians), ICRS
   truth/sn_dec: declination (radians), ICRS
-  truth/dets/<det>/true_t: arrival time of core bounce for det (s, ns), no bias
-  dts/(<det1>,<det2>)/dt: time difference between detectors (s, ns)
-  dts/(<det1>,<det2>)/t1: arrival time for det1 (s, ns)
-  dts/(<det1>,<det2>)/t2: arrival time for det2 (s, ns)
+  truth/dets/<det>/true_t: arrival time of core bounce for det (ns), no bias
+  dts/(<det1>,<det2>)/dt: time difference between detectors (ns)
+  dts/(<det1>,<det2>)/t1: arrival time for det1 (ns)
+  dts/(<det1>,<det2>)/t2: arrival time for det2 (ns)
   dts/(<det1>,<det2>)/bias: bias1 - bias2 (sec)
   dts/(<det1>,<det2>)/var: combined variance (sec^2)
   dts/(<det1>,<det2>)/dsig1: sigma1 (sec)
@@ -33,7 +33,7 @@ from astropy import units as u
 from astropy.coordinates import GCRS, SkyCoord, CartesianRepresentation
 
 from snewpdag.dag import Node, Detector, DetectorDB
-from snewpdag.dag.lib import normalize_time, subtract_time, ns_per_second
+from snewpdag.dag.lib import t2ns, ns_per_second
 
 class GenPoint(Node):
   def __init__(self, detector_location, ra, dec, time, **kwargs):
@@ -42,11 +42,8 @@ class GenPoint(Node):
     self.ra = np.radians(ra)
     self.dec = np.radians(dec)
     self.time = Time(time)
+    self.time_ns = t2ns(self.time.to_value('unix', 'long'))
     self.smear = kwargs.pop('smear', True)
-    t = self.time.to_value('unix', 'long')
-    ti = int(t)
-    tf = t - ti
-    self.ttuple = (ti, int(tf * ns_per_second))
 
     sc = SkyCoord(ra=ra, dec=dec, unit=u.deg, frame='icrs', \
                   representation_type='unitspherical', obstime=self.time)
@@ -69,7 +66,7 @@ class GenPoint(Node):
 
     # generate times for each detector, including bias.
     # given time is when wavefront arrives at Earth origin.
-    g = ns_per_second / u.second
+    g = ns_per_second
     ts = {}
     bias = {}
     sigma = {}
@@ -82,16 +79,16 @@ class GenPoint(Node):
       dt = - np.dot(det.get_xyz(self.time), self.snr) / const.c # intersect
       logging.info('  dt before bias = {}'.format(dt))
       # store unbiased time in data['truth']
-      tcb = (self.ttuple[0], self.ttuple[1] + dt * g)
-      data['truth']['dets'][dname] = { 'true_t': normalize_time(tcb) }
+      tcb = self.time_ns + dt.to(u.s).value * g
+      data['truth']['dets'][dname] = { 'true_t': tcb }
 
       # apply bias and smear
-      dt += det.bias * u.second
+      dt += det.bias * u.s
       if self.smear:
-        dt += det.sigma * Node.rng.normal() * u.second # smear (s)
+        dt += det.sigma * Node.rng.normal() * u.s # smear (s)
       logging.info('  dt = {}'.format(dt))
-      dtt = (self.ttuple[0], self.ttuple[1] + dt * g)
-      ts[dname] = normalize_time(dtt)
+      dtt = self.time_ns + dt.to(u.s).value * g
+      ts[dname] = dtt
       bias[dname] = det.bias
       sigma[dname] = det.sigma
       logging.info('  time[{}] = {}'.format(dname, ts[dname]))
@@ -100,12 +97,12 @@ class GenPoint(Node):
     if len(self.pairs) > 0:
       dts = {}
       for p in self.pairs:
-        dt = subtract_time(ts[p[0]], ts[p[1]])
+        dt = ts[p[0]] - ts[p[1]] # ns
         logging.info('dt[{}] = {}'.format(p, dt))
         dts[p] = {
-                   'dt': dt, # (s, ns)
-                   't1': ts[p[0]], # (s, ns)
-                   't2': ts[p[1]], # (s, ns)
+                   'dt': dt, # ns
+                   't1': ts[p[0]], # ns
+                   't2': ts[p[1]], # ns
                    'bias': bias[p[0]] - bias[p[1]], # sec
                    'var': sigma[p[0]]**2 + sigma[p[1]]**2, # sec**2
                    'dsig1': sigma[p[0]], # sec

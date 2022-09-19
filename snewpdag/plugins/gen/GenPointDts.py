@@ -38,7 +38,7 @@ from astropy import units as u
 from astropy.coordinates import GCRS, SkyCoord, CartesianRepresentation
 
 from snewpdag.dag import Node, Detector, DetectorDB
-from snewpdag.dag.lib import normalize_time, subtract_time, ns_per_second
+from snewpdag.dag.lib import subtract_time, ns_per_second
 
 class GenPointDts(Node):
   def __init__(self, detector_location, pairs, ra, dec, time, **kwargs):
@@ -47,11 +47,7 @@ class GenPointDts(Node):
     self.dec = np.radians(dec)
     self.time = Time(time)
     self.smear = kwargs.pop('smear', True)
-    t = self.time.to_value('unix', 'long')
-    ti = int(t)
-    tf = t - ti
-    g = ns_per_second
-    self.ttuple = (ti, int(tf * g))
+    self.time_ns = t2ns(self.time.to_value('unix', 'long'))
     sc = SkyCoord(ra=ra, dec=dec, unit=u.deg, frame='icrs', \
                   representation_type='unitspherical', obstime=self.time)
     gc = sc.transform_to(GCRS)
@@ -82,13 +78,13 @@ class GenPointDts(Node):
 
     # generate dt for each detector, including bias
     dts = {}
-    g = ns_per_second / u.second
+    g = ns_per_second
     for p in self.pairs:
       # detector 1 time
       det1 = self.db.get(p['det1'])
       pos1 = det1.get_xyz(self.time) # detector in GCRS at given time
       t1 = - np.dot(pos1, self.snr) / const.c # intersect
-      tt1 = (self.ttuple[0], int(self.ttuple[1] + t1 * g))
+      tt1 = self.time_ns + t1.to(u.s).value * g
 
       # detector 2 nominal time, with bias
       det2 = self.db.get(p['det2'])
@@ -99,12 +95,12 @@ class GenPointDts(Node):
       # smear detector 2 if requested
       if self.smear:
         t2 += p['dtsig'] * Node.rng.normal() * u.second
-      tt2 = (self.ttuple[0], int(self.ttuple[1] + t2 * g))
+      tt2 = self.time_ns + t2.to(u.s).value * g
 
       dts[(p['det1'],p['det2'])] = {
-                 'dt': subtract_time(tt1, tt2), # (s, ns)
-                 't1': tt1, # (s, ns)
-                 't2': tt2, # (s, ns)
+                 'dt': tt1 - tt2, # (ns)
+                 't1': tt1, # (ns)
+                 't2': tt2, # (ns)
                  'bias': p['dtbias'], # sec
                  'var': (p['dtsig'])**2, # sec**2
                  'dsig1': 0.0, # sec

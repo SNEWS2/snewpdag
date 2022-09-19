@@ -31,6 +31,16 @@ class Hist1D:
     self.sum2 = 0.0
     self.count = 0
 
+  def to_dict(self):
+    d = { 'count': self.count,
+          'sum': self.sum,
+          'sum2': self.sum2,
+          'underflow': self.underflow,
+          'overflow': self.overflow,
+          'bins': self.bins.copy()
+        }
+    return d
+
   def is_compatible(self, other):
     if isinstance(other, Hist1D):
       return self.nbins == other.nbins and \
@@ -39,22 +49,32 @@ class Hist1D:
     else:
       return False
 
+  def bin(self, x):
+    try:
+      return self.nbins * (x - self.xlow) / self.xwidth
+    except:
+      logging.info('Hist1D.bin: index calc error {}'.format(sys.exc_info()))
+      return None
+
   def fill(self, x, weight=1.0):
     """
     fill histogram.  x can be a scalar or an array of fill values.
     """
     v = np.array(x)
-    try:
-      ix = self.nbins * (v - self.xlow) / self.xwidth
-    except:
-      logging.info('Hist1D: index calculation error {}'.format(sys.exc_info()))
-      return
-    h, bin_edges = np.histogram(ix, bins=self.nbins, range=(0, self.nbins))
-    self.bins += h
-    self.underflow += weight * np.sum(ix < 0)
-    self.overflow += weight * np.sum(ix >= self.nbins)
-    self.sum += np.sum(v)
-    self.sum2 += np.sum(v*v)
+    #try:
+    #  ix = self.nbins * (v - self.xlow) / self.xwidth
+    #except:
+    #  logging.info('Hist1D: index calculation error {}'.format(sys.exc_info()))
+    #  return
+    #h, bin_edges = np.histogram(ix, bins=self.nbins, range=(0, self.nbins))
+    h, edges = np.histogram(x, bins=self.nbins, range=(self.xlow, self.xhigh))
+    self.bins = self.bins + h * weight
+    self.underflow += weight * np.sum(v < self.xlow)
+    self.overflow += weight * np.sum(v >= self.xhigh)
+    #self.underflow += weight * np.sum(ix < 0)
+    #self.overflow += weight * np.sum(ix >= self.nbins)
+    self.sum += np.sum(v) * weight
+    self.sum2 += np.sum(v*v) * weight
     self.count += weight * v.size
 
   def mean(self):

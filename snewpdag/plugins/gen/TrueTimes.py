@@ -11,7 +11,7 @@ Arguments:
 Output:
   truth/true_sn_ra: right ascension (radians)
   truth/true_sn_dec: declination (radians)
-  truth/dets/<det_id>/true_t: arrival time (s, ns), s in unix time
+  truth/dets/<det_id>/true_t: arrival time ns in unix time (int64)
 """
 import logging
 import numpy as np
@@ -22,7 +22,7 @@ from astropy import units as u
 from astropy.coordinates import GCRS, SkyCoord, CartesianRepresentation
 
 from snewpdag.dag import Node, Detector, DetectorDB
-from snewpdag.dag.lib import normalize_time, ns_per_second
+from snewpdag.dag.lib import t2ns, ns_per_second
 
 class TrueTimes(Node):
   def __init__(self, detector_location, detectors, ra, dec, time, **kwargs):
@@ -30,10 +30,7 @@ class TrueTimes(Node):
     self.ra = np.radians(ra)
     self.dec = np.radians(dec)
     self.time = Time(time)
-    t = self.time.to_value('unix', 'long')
-    ti = int(t)
-    tf = t - ti
-    self.ttuple = (ti, int(tf * ns_per_second))
+    self.time_ns = t2ns(self.time.to_value('unix', 'long'))
 
     sc = SkyCoord(ra=ra, dec=dec, unit=u.deg, frame='icrs', \
                   representation_type='unitspherical', obstime=self.time)
@@ -54,7 +51,7 @@ class TrueTimes(Node):
 
     # generate true times for each detector.
     # given time is when wavefront arrives at Earth origin.
-    g = ns_per_second / u.second
+    g = np.int64(ns_per_second)
     ts = {}
     for dname in self.dets:
       #c = 3.0e8 # m/s
@@ -63,9 +60,10 @@ class TrueTimes(Node):
       logging.info('pos[{}] = {}'.format(dname, pos))
       logging.info('  sn pos = {}'.format(self.snr))
       dt = - np.dot(det.get_xyz(self.time), self.snr) / const.c # intersect
-      dtt = (self.ttuple[0], self.ttuple[1] + dt * g)
+      dts = np.int64(dt.to(u.s).value)
+      dtt = self.time_ns + dts * g
       ts[dname] = {
-                    'true_t': normalize_time(dtt), # (s, ns)
+                    'true_t': dtt, # ns (need int64)
                   }
 
     data['truth']['dets'] = ts

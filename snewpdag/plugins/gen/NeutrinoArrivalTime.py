@@ -14,10 +14,9 @@ Output added to data: dictionary with key "detector_name" and corresponding arri
 import logging
 import csv
 import numpy as np
-import random as rm
 from datetime import datetime
 from snewpdag.dag import Node
-from snewpdag.dag import lib
+from snewpdag.dag.lib import field2ns, ns_per_second
 
 class NeutrinoArrivalTime(Node):
     #Define detector location
@@ -57,9 +56,9 @@ class NeutrinoArrivalTime(Node):
     #costheta gives the polar angle distribution, and delta = pi/2 - polar
     def generate_n(self):
       if self.fixed_n == None:
-        alpha_deg = rm.uniform(-180,180)
+        alpha_deg = 360.0 * (Node.rng.random() - 0.5)
         alpha = np.radians(alpha_deg)
-        costheta = rm.uniform(-1,1)  #cos(theta) = sin(delta)
+        costheta = 2.0 * (Node.rng.random() - 0.5)  #cos(theta) = sin(delta)
 
         nx = -np.cos(alpha)*np.sqrt(1-costheta*costheta)
         ny = -np.sin(alpha)*np.sqrt(1-costheta*costheta)
@@ -76,12 +75,12 @@ class NeutrinoArrivalTime(Node):
     def generate_time(self):
       if self.fixed_t == None:
         start_unix = 946713600
-        random_time = rm.randrange(0, 31536000) #number of second in a year
+        random_time = Node.rng.integers(0, 31536000) #number of second in a year
         s = start_unix + random_time 
-        ns = rm.randrange(0,1e9)
-        return (s, ns)
+        ns = Node.rng.integers(0,ns_per_second)
+        return field2ns((s, ns))
       else:
-        return (self.fixed_t[0], self.fixed_t[1])
+        return field2ns((self.fixed_t[0], self.fixed_t[1]))
 
 
     #calculate the distance between the detector and the center of the Earth
@@ -134,9 +133,9 @@ class NeutrinoArrivalTime(Node):
             posdiff = self.detector_diff(detector, t)
             time_delay = self.time_delay(posdiff, nvec) 
             s = t[0]
-            ns = t[1]+ round(time_delay*1e9)
+            ns = t[1]+ round(time_delay*ns_per_second)
             a = (s, ns)
-            arrival_time = tuple(lib.normalize_time(a))
+            arrival_time = field2ns(a)
             d['sn_times'][name] = arrival_time
 
         if 'gen' in data:

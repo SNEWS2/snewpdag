@@ -1,5 +1,5 @@
 """
-NewTimeHist - initialize an empty TimeHist object
+NewTimeHist - initialize an empty THist object
 
 Arguments:
   out_field:  output field name
@@ -13,21 +13,21 @@ import logging
 import numpy as np
 
 from snewpdag.dag import Node
-from snewpdag.dag.lib import time_tuple_from_field
-from snewpdag.values import TimeHist
+from snewpdag.dag.lib import field2ns, ns_per_second
+from snewpdag.values import THist
 
 class NewTimeHist(Node):
   def __init__(self, out_field, start, duration, nbins, **kwargs):
     self.out_field = out_field
-    self.start = time_tuple_from_field(start)
+    self.start = field2ns(start)
     reft = kwargs.pop('reference', start)
-    self.reference = time_tuple_from_field(reft)
+    self.reference = field2ns(reft)
     self.duration = duration
     self.nbins = nbins
     super().__init__(**kwargs)
 
   def alert(self, data):
-    data[self.out_field] = TimeHist(self.start, self.duration, self.nbins,
-                                    reference=self.reference)
+    data[self.out_field] = THist(self.reference, self.nbins, self.start,
+                                 self.start + self.duration * ns_per_second)
     return data
 
