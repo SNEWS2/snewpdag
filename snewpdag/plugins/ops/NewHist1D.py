@@ -1,33 +1,27 @@
 """
-NewTimeHist - initialize an empty TimeHist object
+NewHist1D - initialize an empty Hist1D object
 
 Arguments:
   out_field:  output field name
-  start:  float or (s,ns) to indicate start time
-  reference (optional):  float or (s,ns) to indicate what t=0 refers to
-  duration:  duration of histogram in seconds
   nbins:  number of bins
-  reference
+  start:  float to indicate start time (if this was a time histogram)
+  stop:  float to indicate stop time
 """
 import logging
 import numpy as np
 
 from snewpdag.dag import Node
-from snewpdag.dag.lib import time_tuple_from_field
-from snewpdag.values import TimeHist
+from snewpdag.values import Hist1D
 
-class NewTimeHist(Node):
-  def __init__(self, out_field, start, duration, nbins, **kwargs):
+class NewHist1D(Node):
+  def __init__(self, out_field, nbins, start, stop, **kwargs):
     self.out_field = out_field
-    self.start = time_tuple_from_field(start)
-    reft = kwargs.pop('reference', start)
-    self.reference = time_tuple_from_field(reft)
-    self.duration = duration
     self.nbins = nbins
+    self.start = start
+    self.stop = stop
     super().__init__(**kwargs)
 
   def alert(self, data):
-    data[self.out_field] = TimeHist(self.start, self.duration, self.nbins,
-                                    reference=self.reference)
+    data[self.out_field] = Hist1D(self.nbins, self.start, self.stop)
     return data
 
