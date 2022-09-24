@@ -53,8 +53,8 @@ class GenTimeDist(TimeDistSource):
     self.sig_once = kwargs.pop('sig_once', False)
     self.epoch_base = kwargs.pop('epoch_base', 0.0)
 
-    if not isinstance(epoch_base, [numbers.Number, str, list, tuple]):
-      logging.error('GenTimeDist.__init__: unrecognized epoch_base {}. Set to 0.'.format(epoch_base))
+    if not isinstance(self.epoch_base, (numbers.Number, str, list, tuple)):
+      logging.error('GenTimeDist.__init__: unrecognized epoch_base {}. Set to 0.'.format(self.epoch_base))
       self.epoch_base = 0.0
 
     super().__init__(**kwargs)
@@ -78,7 +78,7 @@ class GenTimeDist(TimeDistSource):
       # epoch base
       if isinstance(self.epoch_base, numbers.Number):
         te = self.epoch_base
-      elif isinstance(self.epoch_base, [str, list, tuple]):
+      elif isinstance(self.epoch_base, (str, list, tuple)):
         te = fetch_field(data, self.epoch_base)
 
       # adjust offsets for t0 and TimeSeries reference timestamps.

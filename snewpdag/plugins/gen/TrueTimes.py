@@ -39,8 +39,8 @@ class TrueTimes(Node):
     self.time_unix = self.time.to_value('unix', 'long') # float, unix epoch
     self.epoch_base = kwargs.pop('epoch_base', 0.0)
 
-    if not isinstance(epoch_base, [numbers.Number, str, list, tuple]):
-      logging.error('TrueTimes.__init__: unrecognized epoch_base {}. Set to 0.'.format(epoch_base))
+    if not isinstance(self.epoch_base, (numbers.Number, str, list, tuple)):
+      logging.error('TrueTimes.__init__: unrecognized epoch_base {}. Set to 0.'.format(self.epoch_base))
       self.epoch_base = 0.0
 
     sc = SkyCoord(ra=ra, dec=dec, unit=u.deg, frame='icrs', \
@@ -63,7 +63,7 @@ class TrueTimes(Node):
     # epoch base
     if isinstance(self.epoch_base, numbers.Number):
       t0 = self.epoch_base
-    elif isinstance(self.epoch_base, [str, list, tuple]):
+    elif isinstance(self.epoch_base, (str, list, tuple)):
       t0 = fetch_field(data, self.epoch_base)
     time_base = self.time_unix - t0
 

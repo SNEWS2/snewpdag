@@ -57,7 +57,7 @@ class NeutrinoArrivalTime(Node):
       if self.fixed_n == None:
         alpha_deg = 360.0 * (Node.rng.random() - 0.5)
         alpha = np.radians(alpha_deg)
-        costheta = 2.0 * (Node.rng(uniform() - 0.5)  #cos(theta) = sin(delta)
+        costheta = 2.0 * (Node.rng.uniform() - 0.5)  #cos(theta) = sin(delta)
 
         nx = -np.cos(alpha)*np.sqrt(1-costheta*costheta)
         ny = -np.sin(alpha)*np.sqrt(1-costheta*costheta)
