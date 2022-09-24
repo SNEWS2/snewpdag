@@ -10,6 +10,11 @@ Arguments:
   dec: declination (degrees)
   time: time string, e.g., '2021-11-01 05:22:36.328'
   smear: (optional, default True) whether to smear output dts
+  epoch_base: starting time for epoch, float value or field specifier
+    (string or tuple)
+
+Input:
+  [epoch_base]: float value of starting time for epoch, in unix epoch
 
 Output:
   truth/sn_ra: right ascension (radians)
@@ -38,7 +43,7 @@ from astropy import units as u
 from astropy.coordinates import GCRS, SkyCoord, CartesianRepresentation
 
 from snewpdag.dag import Node, Detector, DetectorDB
-from snewpdag.dag.lib import normalize_time, subtract_time, ns_per_second
+from snewpdag.dag.lib import fetch_field
 
 class GenPointDts(Node):
   def __init__(self, detector_location, pairs, ra, dec, time, **kwargs):
@@ -46,12 +51,15 @@ class GenPointDts(Node):
     self.ra = np.radians(ra)
     self.dec = np.radians(dec)
     self.time = Time(time)
+    self.time_unix = self.time.to_value('unix', 'long') # float, unix epoch
+    self.epoch_base = kwargs.popp('epoch_base', 0.0)
+
+    if not isinstance(epoch_base, [numbers.Number, str, list, tuple]):
+      logging.error('GenPointDts.__init__: unrecognized epoch_base {}. Set to 0.'.format(epoch_base))
+      self.epoch_base = 0.0
+
     self.smear = kwargs.pop('smear', True)
-    t = self.time.to_value('unix', 'long')
-    ti = int(t)
-    tf = t - ti
-    g = ns_per_second
-    self.ttuple = (ti, int(tf * g))
+
     sc = SkyCoord(ra=ra, dec=dec, unit=u.deg, frame='icrs', \
                   representation_type='unitspherical', obstime=self.time)
     gc = sc.transform_to(GCRS)
@@ -80,6 +88,13 @@ class GenPointDts(Node):
     data['truth']['sn_ra'] = self.ra # radians
     data['truth']['sn_dec'] = self.dec # radians
 
+    # epoch base
+    if isinstance(self.epoch_base, numbers.Number):
+      t0 = self.epoch_base
+    elif isinstance(self.epoch_base, [str, list, tuple]):
+      t0 = fetch_field(data, self.epoch_base)
+    time_base = self.time_unix - t0
+
     # generate dt for each detector, including bias
     dts = {}
     g = ns_per_second / u.second
@@ -88,7 +103,7 @@ class GenPointDts(Node):
       det1 = self.db.get(p['det1'])
       pos1 = det1.get_xyz(self.time) # detector in GCRS at given time
       t1 = - np.dot(pos1, self.snr) / const.c # intersect
-      tt1 = (self.ttuple[0], int(self.ttuple[1] + t1 * g))
+      tt1 = time_base + t1.to(u.s).value # s
 
       # detector 2 nominal time, with bias
       det2 = self.db.get(p['det2'])
@@ -99,12 +114,12 @@ class GenPointDts(Node):
       # smear detector 2 if requested
       if self.smear:
         t2 += p['dtsig'] * Node.rng.normal() * u.second
-      tt2 = (self.ttuple[0], int(self.ttuple[1] + t2 * g))
+      tt2 = time_base + t2.to(u.s).value
 
       dts[(p['det1'],p['det2'])] = {
-                 'dt': subtract_time(tt1, tt2), # (s, ns)
-                 't1': tt1, # (s, ns)
-                 't2': tt2, # (s, ns)
+                 'dt': tt1 - tt2, # s
+                 't1': tt1, # s
+                 't2': tt2, # s
                  'bias': p['dtbias'], # sec
                  'var': (p['dtsig'])**2, # sec**2
                  'dsig1': 0.0, # sec

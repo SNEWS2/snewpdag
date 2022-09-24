@@ -14,10 +14,8 @@ Output added to data: dictionary with key "detector_name" and corresponding arri
 import logging
 import csv
 import numpy as np
-import random as rm
 from datetime import datetime
 from snewpdag.dag import Node
-from snewpdag.dag import lib
 
 class NeutrinoArrivalTime(Node):
     #Define detector location
@@ -57,9 +55,9 @@ class NeutrinoArrivalTime(Node):
     #costheta gives the polar angle distribution, and delta = pi/2 - polar
     def generate_n(self):
       if self.fixed_n == None:
-        alpha_deg = rm.uniform(-180,180)
+        alpha_deg = 360.0 * (Node.rng.random() - 0.5)
         alpha = np.radians(alpha_deg)
-        costheta = rm.uniform(-1,1)  #cos(theta) = sin(delta)
+        costheta = 2.0 * (Node.rng(uniform() - 0.5)  #cos(theta) = sin(delta)
 
         nx = -np.cos(alpha)*np.sqrt(1-costheta*costheta)
         ny = -np.sin(alpha)*np.sqrt(1-costheta*costheta)
@@ -76,28 +74,28 @@ class NeutrinoArrivalTime(Node):
     def generate_time(self):
       if self.fixed_t == None:
         start_unix = 946713600
-        random_time = rm.randrange(0, 31536000) #number of second in a year
+        random_time = Node.rng.integers(0, 31536000) #number of second in a year
         s = start_unix + random_time 
-        ns = rm.randrange(0,1e9)
-        return (s, ns)
+        ns = Node.rng.integers(0, 1000000000)
+        return s + ns / 1.0e9
       else:
-        return (self.fixed_t[0], self.fixed_t[1])
+        return self.fixed_t[0] + self.fixed_t[1] / 1.0e9
 
 
     #calculate the distance between the detector and the center of the Earth
     #Input: first_det/second_det are arrays of the form [lon, lat, height], 
     #Default arrival time: (vernal equinox): 2000-03-20, 12:00 PM UTC; its unix time is 953582400.0
-    def detector_diff(self, detector, arrival=(953582400, 0)):
+    def detector_diff(self, detector, arrival=953582400.0):
         earth = 6.37e6 #m
         ang_rot = 7.29e-5 #radians/s
         ang_sun = 2e-7 #radians/s   2pi/365days
 
         #take into account the time dependence of longitude  
         #reference: arXiv:1304.5006
-        arrival_date = datetime.fromtimestamp(arrival[0])
-        decimal = arrival[1]*1e-9
+        arrival_date = datetime.fromtimestamp(int(arrival))
+        decimal = arrival - int(arrival)
         t_rot = arrival_date.hour*60*60 + arrival_date.minute*60 + arrival_date.second + decimal  #(0 <= t <= 24h)
-        t_sun = arrival[0] - 953582400 + decimal #time elapsed after the vernal point when the detector received the SN neutrinos
+        t_sun = int(arrival) - 953582400 + decimal #time elapsed after the vernal point when the detector received the SN neutrinos
 
         lon = detector[0] + ang_rot*t_rot - ang_sun*t_sun - np.pi
         lat = detector[1]
@@ -132,11 +130,8 @@ class NeutrinoArrivalTime(Node):
         for name in self.detector_info:
             detector = self.detector_info[name]
             posdiff = self.detector_diff(detector, t)
-            time_delay = self.time_delay(posdiff, nvec) 
-            s = t[0]
-            ns = t[1]+ round(time_delay*1e9)
-            a = (s, ns)
-            arrival_time = tuple(lib.normalize_time(a))
+            time_delay = self.time_delay(posdiff, nvec) # seconds
+            arrival_time = t + time_delay
             d['sn_times'][name] = arrival_time
 
         if 'gen' in data:

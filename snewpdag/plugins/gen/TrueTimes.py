@@ -7,7 +7,7 @@ Arguments:
   ra: right ascension (degrees)
   dec: declination (degrees)
   time: time string, e.g., '2021-11-01 05:22:36.328'
-  epoch_base: starting time for epoch, float value or field specifier
+  epoch_base (optional): starting time for epoch, float value or field specifier
     (string or tuple)
 
 Input:
@@ -31,17 +31,16 @@ from snewpdag.dag import Node, Detector, DetectorDB
 from snewpdag.dag.lib import fetch_field
 
 class TrueTimes(Node):
-  def __init__(self, detector_location, detectors, ra, dec,
-               time, epoch_base, **kwargs):
+  def __init__(self, detector_location, detectors, ra, dec, time, **kwargs):
     self.db = DetectorDB(detector_location)
     self.ra = np.radians(ra)
     self.dec = np.radians(dec)
     self.time = Time(time)
     self.time_unix = self.time.to_value('unix', 'long') # float, unix epoch
-    self.epoch_base = epoch_base
+    self.epoch_base = kwargs.pop('epoch_base', 0.0)
 
     if not isinstance(epoch_base, [numbers.Number, str, list, tuple]):
-      logging.error('TrueTimes:__init__: unrecognized epoch_base {}. Set to 0.'.format(epoch_base))
+      logging.error('TrueTimes.__init__: unrecognized epoch_base {}. Set to 0.'.format(epoch_base))
       self.epoch_base = 0.0
 
     sc = SkyCoord(ra=ra, dec=dec, unit=u.deg, frame='icrs', \
@@ -66,6 +65,7 @@ class TrueTimes(Node):
       t0 = self.epoch_base
     elif isinstance(self.epoch_base, [str, list, tuple]):
       t0 = fetch_field(data, self.epoch_base)
+    time_base = self.time_unix - t0
 
     # generate true times for each detector.
     # given time is when wavefront arrives at Earth origin.
@@ -77,8 +77,7 @@ class TrueTimes(Node):
       logging.info('pos[{}] = {}'.format(dname, pos))
       logging.info('  sn pos = {}'.format(self.snr))
       dt = - np.dot(det.get_xyz(self.time), self.snr) / const.c # intersect
-      dtt = dt.to(u.s).value
-      t1 = self.time_unix - t0 + dt
+      t1 = time_base + dt.to(u.s).value
       ts[dname] = {
                     'true_t': t1, # s in snewpdag time
                   }

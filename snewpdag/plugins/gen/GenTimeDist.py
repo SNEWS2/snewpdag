@@ -12,14 +12,15 @@ configuration:
              of the input distribution.  Optional, default 1658580450.0,
                which happens to be sometime on 23 July 2022 in the UK.
              If it's a float, use the number as a timestamp.
-             If it's a tuple, interpret as (s,ns) timestamp.
-             If it's a field, read the time stamp or (s,ns) from the payload.
+             If it's a field, read the time stamp from the payload.
   sig_once:  True if only generate one series of offsets for ll GenTimeDists's,
              as one might do for a perverse test (default False!).
              Note that the offsets will be shifted according to sig_t0,
              and the number of events will match the first module to run.
+  epoch_base (optional): starting time for epoch, float value or field specifier
+    (string or tuple)
 
-  A "field designator" is either a string or tuple of strings
+  A "field specifier" is either a string or tuple of strings
   which navigate into the payload.
 
 Originally based on Vladimir's TimeDistFileInput, via TimeDist
@@ -31,8 +32,8 @@ import numpy as np
 import numbers
 
 from snewpdag.dag import Node
-from snewpdag.dag.lib import fetch_field, ns_per_second
-from snewpdag.values import TimeHist, TimeSeries
+from snewpdag.dag.lib import fetch_field
+from snewpdag.values import Hist1D, TimeSeries
 from . import TimeDistSource
 
 class GenTimeDist(TimeDistSource):
@@ -44,12 +45,18 @@ class GenTimeDist(TimeDistSource):
     self.sig_mean = sig_mean
     self.field = field
     ts = kwargs.pop('sig_t0', 0.0)
-    if isinstance(ts, (list, tuple, str)):
+    if isinstance(ts, (list, tuple, str)): # field specifier
       self.sig_t0 = ts
-    elif isinstance(ts, numbers.Number):
-      self.sig_t0 = time_tuple_from_float(ts)
+    elif isinstance(ts, numbers.Number): # literal
+      self.sig_t0 = ts
     self.sig_smear = kwargs.pop('sig_smear', True)
     self.sig_once = kwargs.pop('sig_once', False)
+    self.epoch_base = kwargs.pop('epoch_base', 0.0)
+
+    if not isinstance(epoch_base, [numbers.Number, str, list, tuple]):
+      logging.error('GenTimeDist.__init__: unrecognized epoch_base {}. Set to 0.'.format(epoch_base))
+      self.epoch_base = 0.0
+
     super().__init__(**kwargs)
     self.area = np.sum(self.mu)
     self.mu_norm = self.mu / self.area
@@ -65,21 +72,28 @@ class GenTimeDist(TimeDistSource):
       GenTimeDist.one_mean = self.sig_mean
 
   def alert(self, data):
-    if self.field in data:
-      v = data[self.field]
+    v, flag = fetch_field(self.field)
+    if flag:
+
+      # epoch base
+      if isinstance(self.epoch_base, numbers.Number):
+        te = self.epoch_base
+      elif isinstance(self.epoch_base, [str, list, tuple]):
+        te = fetch_field(data, self.epoch_base)
 
       # adjust offsets for t0 and TimeSeries reference timestamps.
       # For instance, if core bounce is at 100s, but ref time is 90s,
       # then an event at t=0 should have an offset of 10s.
       if isinstance(self.sig_t0, (str, tuple, list)): # interpret as field
-        t0, flag = fetch_field(data, self.sig_t0)
+        t0, flag = fetch_field(data, self.sig_t0) # s in unix epoch
         if not flag:
           logging.error('{}: {} not found in payload'.format(self.name, self.sig_t0))
           return False
       else:
         t0 = self.sig_t0
-      offset = (t0[0] - v.start[0]) + (t0[1] - v.start[1]) / ns_per_second
-      logging.debug('{}: t0 = {}, ref time {}, offset {}'.format(self.name, t0, v.start, offset))
+
+      offset = t0 - te
+      logging.debug('{}: t0 = {}, ref time {}, offset {}'.format(self.name, t0, te, offset))
 
       if self.sig_once:
         n = int(self.sig_mean / GenTimeDist.one_mean)
@@ -106,9 +120,9 @@ class GenTimeDist(TimeDistSource):
         dt = self.tedges[j+1] - ta
         a = ta + Node.rng.random(nev) * dt
 
-      # add offsets in seconds - works for TimeHist or TimeSeries
+      # add offsets in seconds - works for Hist1D or TimeSeries
       a += offset
-      v.add_offsets_s(a)
+      v.add(a)
       return data
     else:
       return False
