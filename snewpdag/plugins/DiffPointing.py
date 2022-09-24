@@ -24,16 +24,15 @@ Input payload:
 Output payload:
   map: healpix map with specified nside, nested ordering.
   ndof: 2
+  map_zeroes: indices of bins with 0 value (min chi2)
 """
 import logging
 import numpy as np
 import healpy as hp
 
 from snewpdag.dag import Node, Detector, DetectorDB, CelestialPixels
-from snewpdag.dag.lib import normalize_time, ns_per_second
 from astropy import units as u
 from astropy.time import Time
-from astropy.coordinates import GCRS, SkyCoord, CartesianRepresentation
 
 class DiffPointing(Node):
   def __init__(self, detector_location, nside, min_dts, **kwargs):
@@ -48,9 +47,9 @@ class DiffPointing(Node):
     d1 = self.db.get(k1)
     d2 = self.db.get(k2)
     if 'dt' in dts and 't1' in dts and 't2' in dts:
-      dt = dts['dt'] # (s, ns)
-      t1 = dts['t1'] # (s, ns)
-      t2 = dts['t2'] # (s, ns)
+      dt = dts['dt'] # s
+      t1 = dts['t1'] # s
+      t2 = dts['t2'] # s
     else:
       return None
     bias = dts['bias'] if 'bias' in dts else d1.bias - d2.bias # sec
@@ -58,15 +57,15 @@ class DiffPointing(Node):
     dsig1 = dts['dsig1'] if 'dsig1' in dts else d1.sigma # sec
     dsig2 = dts['dsig2'] if 'dsig2' in dts else - d2.sigma # sec
     # we actually want a time basis in ms for all times
-    g = 1000.0 / ns_per_second
+    g = 1000.0
     nrow = {
-             'dt': dt[0]*1000 + dt[1]*g,
-             't1': t1[0]*1000 + t1[1]*g,
-             't2': t2[0]*1000 + t2[1]*g,
-             'bias': bias * 1000,
-             'var': var * 1000 * 1000,
-             'dsig1': dsig1 * 1000,
-             'dsig2': dsig2 * 1000,
+             'dt': dt * g,
+             't1': t1 * g,
+             't2': t2 * g,
+             'bias': bias * g,
+             'var': var * g * g,
+             'dsig1': dsig1 * g,
+             'dsig2': dsig2 * g,
            }
     logging.info('cache ({}, {}): {}'.format(k1, k2, nrow))
     return nrow
@@ -196,6 +195,7 @@ class DiffPointing(Node):
     m -= chi2_min
     data['map'] = m
     data['ndof'] = 2
+    data['map_zeroes'] = np.flatnonzero(m == 0.0)
     return data
 
   def alert(self, data):
