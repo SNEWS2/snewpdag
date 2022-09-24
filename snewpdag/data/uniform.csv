@@ -1,8 +1,8 @@
 "Control","Pass",,"'line’: 100",,
 "Series-new","ops.NewTimeSeries","Control","'out_field':'timeseries','start':(186,321)"
 "Hist-new","ops.NewTimeHist","Control","'out_field':'timehist','start':(184,321),'duration':5,'nbins':100"
-"Uniform-series","gen.Uniform","Series-new","'field':'timeseries','rate':50,'duration':10"
-"Uniform-hist","gen.Uniform","Hist-new","'field':'timehist','rate':100,'duration':5"
+"Uniform-series","gen.Uniform","Series-new","'field':'timeseries','rate':50,'tmin':0,'tmax':10"
+"Uniform-hist","gen.Uniform","Hist-new","'field':'timehist','rate':100,'tmin':0,'tmax':5"
 
 ,"Convert series to histogram",,,,
 "Series-hist","ops.TimeSeriesToTimeHist","Uniform-series","'in_field':'timeseries','out_field':'timeserieshist','start':(184,321),'duration':5,'nbins':100"
