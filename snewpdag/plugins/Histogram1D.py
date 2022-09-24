@@ -32,6 +32,7 @@ Output json:
 """
 import sys
 import logging
+import math
 import numpy as np
 
 from snewpdag.dag import Node
@@ -146,25 +147,34 @@ class Histogram1D(Node):
             }
 
   def summary_err(self):
-    return {
+    d =    {
             'error_sum': self.error_sum,
             'error_sum2': self.error_sum2,
-            'error_std': np.sqrt( self.error_sum2 / self.count),
             'stats_sum': self.stats_sum,
             'stats_sum2': self.stats_sum2,
-            'stats_std': np.sqrt( self.stats_sum2 / self.count),
             'sys_sum': self.sys_sum,
             'sys_sum2': self.sys_sum2,
-            'sys_std': np.sqrt( self.sys_sum2 / self.count),
             }
+    if self.count == 0:
+      d['error_std'] = math.nan
+      d['stats_std'] = math.nan
+      d['sys_std'] = math.nan
+    else:
+      d['error_std'] = np.sqrt(self.error_sum2 / self.count)
+      d['stats_std'] = np.sqrt(self.stats_sum2 / self.count)
+      d['sys_std'] = np.sqrt(self.sys_sum2 / self.count)
+    return d
 
   def mean(self):
-    return self.sum / self.count
+    return math.nan if self.count == 0 else self.sum / self.count
 
   def variance(self):
-    x = self.sum / self.count
-    xx = self.sum2 / self.count
-    return xx - x*x
+    if self.count == 0:
+      return math.nan
+    else:
+      x = self.sum / self.count
+      xx = self.sum2 / self.count
+      return xx - x*x
 
   def alert(self, data):
     self.fill(data)
