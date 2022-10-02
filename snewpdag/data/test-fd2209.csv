@@ -1,0 +1,11 @@
+"Control","Pass",,"'line': 100"
+,,,
+"Gen","gen.GenPoint","Control","'detector_location':'snewpdag/data/detectors-fd2209.csv', 'pair_list':[], 'ra':97.03125, 'dec':12.0247, 'smear': False, 'time':'2022-06-14T20:00:00.145'"
+"Gen-out","Pass","Gen","'line':1, 'dump':1"
+,,,
+"Diff","DiffPointing","Gen","'detector_location':'snewpdag/data/detectors-fd2209.csv', 'nside':32, 'min_dts':3"
+"Diff-out","Pass","Diff","'line':1, 'dump':1"
+,,,
+"conf","Chi2CL","Diff","'in_field':'map', 'out_field':'clmap'"
+"skymap","renderers.Mollview","conf","'in_field':'clmap', 'title':'DiffPointing', 'units':'CL', 'range':(0,1), 'coord':['C'], 'filename':'output/test-fd2209-{}-{}-{}.png'"
+"fits","renderers.FitsSkymap","conf","'in_field':'clmap', 'filename':'output/test-fd2209-{}-{}-{}.fits'"
