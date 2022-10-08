@@ -11,6 +11,7 @@ import numpy as np
 
 from snewpdag.dag import Node
 from snewpdag.values import TimeSeries, Hist1D
+from snewpdag.dag.lib import fetch_field
 
 class Uniform (Node):
   def __init__(self, field, rate, tmin, tmax, **kwargs):
@@ -38,7 +39,7 @@ class Uniform (Node):
       #   to within those limits, rather than over the whole (tmin,tmax) 
 
       nev = Node.rng.poisson(self.mean_total) # Poisson fluctuations around mean
-      u = Node.rng.integers(self.tmin, self.tmax, size=nev, dtype=np.float64)
+      u = (self.tmax - self.tmin) * Node.rng.random(size=nev, dtype=np.float64) + self.tmin
       v.add(u)
       return True
     else:

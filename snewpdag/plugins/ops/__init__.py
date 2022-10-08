@@ -1,5 +1,5 @@
 
-from .NewTimeHist import NewTimeHist
+from .NewHist1D import NewHist1D
 from .NewTimeSeries import NewTimeSeries
 
 from .TimeSeriesToHist1D import TimeSeriesToHist1D
