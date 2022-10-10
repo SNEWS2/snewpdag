@@ -7,7 +7,8 @@ Arguments:
     (optional, default empty, in which case only generate core bounce times)
   ra: right ascension (degrees)
   dec: declination (degrees)
-  time: time string, e.g., '2021-11-01 05:22:36.328'
+  time: time string, e.g., '2021-11-01 05:22:36.328',
+        indicating time neutrino wavefront arrives at center of Earth
   smear: (optional, default True) whether to smear output times
   epoch_base (optional): starting time for epoch, float value or field specifier
     (string or tuple)
@@ -47,8 +48,8 @@ class GenPoint(Node):
     self.pairs = kwargs.pop('pair_list', ())
     self.ra = np.radians(ra)
     self.dec = np.radians(dec)
-    self.time = Time(time)
-    self.time_unix = self.time.to_value('unix', 'long') # float, unix epoch
+    self.tc = Time(time)
+    self.tc_unix = self.tc.to_value('unix', 'long') # float, unix epoch
     self.epoch_base = kwargs.pop('epoch_base', 0.0)
 
     if not isinstance(self.epoch_base, (numbers.Number, str, list, tuple)):
@@ -58,7 +59,7 @@ class GenPoint(Node):
     self.smear = kwargs.pop('smear', True)
 
     sc = SkyCoord(ra=ra, dec=dec, unit=u.deg, frame='icrs', \
-                  representation_type='unitspherical', obstime=self.time)
+                  representation_type='unitspherical', obstime=self.tc)
     gc = sc.transform_to(GCRS)
     d = gc.represent_as(CartesianRepresentation)
     self.snr = np.array( [ d.x, d.y, d.z ] ) # should be unit length!
@@ -76,12 +77,19 @@ class GenPoint(Node):
     data['truth']['sn_ra'] = self.ra # radians
     data['truth']['sn_dec'] = self.dec # radians
 
-    # epoch base
+    # calculate arrival of SN time at Earth center in local epoch
+    # i.e. subtracting epoch_base
     if isinstance(self.epoch_base, numbers.Number):
-      t0 = self.epoch_base
+      t_epoch = self.epoch_base
     elif isinstance(self.epoch_base, (str, list, tuple)):
-      t0 = fetch_field(data, self.epoch_base)
-    time_base = self.time_unix - t0
+      t_epoch, valid = fetch_field(data, self.epoch_base)
+      if not valid:
+        logging.error('{}: epoch_base field {} not found in payload'.format(self.name, self.epoch_base))
+        return False
+    else:
+      logging.error('{}: unrecognized epoch_base field {}'.format(self.name, self.epoch_base))
+      return False
+    tc_local = self.tc_unix - t_epoch
 
     # generate times for each detector, including bias.
     # given time is when wavefront arrives at Earth origin.
@@ -91,13 +99,13 @@ class GenPoint(Node):
     for dname in self.dets:
       #c = 3.0e8 # m/s
       det = self.db.get(dname)
-      pos = det.get_xyz(self.time) # detector in GCRS at given time
+      pos = det.get_xyz(self.tc) # detector in GCRS at given time
       logging.info('pos[{}] = {}'.format(dname, pos))
       logging.info('  sn pos = {}'.format(self.snr))
-      dt = - np.dot(det.get_xyz(self.time), self.snr) / const.c # intersect
+      dt = - np.dot(det.get_xyz(self.tc), self.snr) / const.c # intersect
       logging.info('  dt before bias = {}'.format(dt))
       # store unbiased time in data['truth']
-      tcb = time_base + dt.to(u.s).value
+      tcb = tc_local + dt.to(u.s).value
       data['truth']['dets'][dname] = { 'true_t': tcb }
 
       # apply bias and smear
@@ -105,7 +113,7 @@ class GenPoint(Node):
       if self.smear:
         dt += det.sigma * Node.rng.normal() * u.s # smear (s)
       logging.info('  biased/smeared dt = {}'.format(dt))
-      ts[dname] = time_base + dt.to(u.s).value
+      ts[dname] = tc_local + dt.to(u.s).value
       bias[dname] = det.bias
       sigma[dname] = det.sigma
       logging.info('  time[{}] = {}'.format(dname, ts[dname]))

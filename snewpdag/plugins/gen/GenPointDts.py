@@ -8,7 +8,8 @@ Arguments:
     dtsig and dtbias are in seconds.
   ra: right ascension (degrees)
   dec: declination (degrees)
-  time: time string, e.g., '2021-11-01 05:22:36.328'
+  time: time string, e.g., '2021-11-01 05:22:36.328',
+        indicating time neutrino wavefront arrives at center of Earth
   smear: (optional, default True) whether to smear output dts
   epoch_base: starting time for epoch, float value or field specifier
     (string or tuple)
@@ -50,8 +51,8 @@ class GenPointDts(Node):
     self.db = DetectorDB(detector_location)
     self.ra = np.radians(ra)
     self.dec = np.radians(dec)
-    self.time = Time(time)
-    self.time_unix = self.time.to_value('unix', 'long') # float, unix epoch
+    self.tc = Time(time)
+    self.tc_unix = self.tc.to_value('unix', 'long') # float, unix epoch
     self.epoch_base = kwargs.popp('epoch_base', 0.0)
 
     if not isinstance(self.epoch_base, (numbers.Number, str, list, tuple)):
@@ -61,7 +62,7 @@ class GenPointDts(Node):
     self.smear = kwargs.pop('smear', True)
 
     sc = SkyCoord(ra=ra, dec=dec, unit=u.deg, frame='icrs', \
-                  representation_type='unitspherical', obstime=self.time)
+                  representation_type='unitspherical', obstime=self.tc)
     gc = sc.transform_to(GCRS)
     d = gc.represent_as(CartesianRepresentation)
     self.snr = np.array( [ d.x, d.y, d.z ] ) # should be unit length!
@@ -88,12 +89,19 @@ class GenPointDts(Node):
     data['truth']['sn_ra'] = self.ra # radians
     data['truth']['sn_dec'] = self.dec # radians
 
-    # epoch base
+    # calculate arrival of SN time at Earth center in local epoch
+    # i.e. subtracting epoch_base
     if isinstance(self.epoch_base, numbers.Number):
-      t0 = self.epoch_base
+      t_epoch = self.epoch_base
     elif isinstance(self.epoch_base, (str, list, tuple)):
-      t0 = fetch_field(data, self.epoch_base)
-    time_base = self.time_unix - t0
+      t_epoch, valid = fetch_field(data, self.epoch_base)
+      if not valid:
+        logging.error('{}: epoch_base field {} not found in payload'.format(self.name, self.epoch_base))
+        return False
+    else:
+      logging.error('{}: unrecognized epoch_base field {}'.format(self.name, self.epoch_base))
+      return False
+    tc_local = self.tc_unix - t0
 
     # generate dt for each detector, including bias
     dts = {}
@@ -101,20 +109,20 @@ class GenPointDts(Node):
     for p in self.pairs:
       # detector 1 time
       det1 = self.db.get(p['det1'])
-      pos1 = det1.get_xyz(self.time) # detector in GCRS at given time
+      pos1 = det1.get_xyz(self.tc) # detector in GCRS at given time
       t1 = - np.dot(pos1, self.snr) / const.c # intersect
-      tt1 = time_base + t1.to(u.s).value # s
+      tt1 = tc_local + t1.to(u.s).value # s
 
       # detector 2 nominal time, with bias
       det2 = self.db.get(p['det2'])
-      pos2 = det2.get_xyz(self.time) # detector in GCRS at given time
+      pos2 = det2.get_xyz(self.tc) # detector in GCRS at given time
       t2 = - np.dot(pos2, self.snr) / const.c # intersect
       # bias is det1-det2, so subtract nominal bias from det2
       t2 -= p['dtbias'] * u.second
       # smear detector 2 if requested
       if self.smear:
         t2 += p['dtsig'] * Node.rng.normal() * u.second
-      tt2 = time_base + t2.to(u.s).value
+      tt2 = tc_local + t2.to(u.s).value
 
       dts[(p['det1'],p['det2'])] = {
                  'dt': tt1 - tt2, # s
