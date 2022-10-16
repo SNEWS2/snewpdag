@@ -52,4 +52,5 @@ from .DiffPointing import DiffPointing
 from .EvalMap import EvalMap
 
 from .PickleInput import PickleInput
+from .JsonAlertInput import JsonAlertInput
 
