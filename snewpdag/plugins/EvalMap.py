@@ -15,8 +15,7 @@ from astropy.time import Time
 
 from snewpdag.dag import Node, CelestialPixels
 from snewpdag.dag import DetectorDB
-from snewpdag.values import TimeHist, TimeSeries
-from snewpdag.dag.lib import subtract_time, ns_per_second
+from snewpdag.values import Hist1D, TimeSeries
 
 class EvalMap(Node):
   def __init__(self, detector_location, nside, in_field, in_det_field, in_det_list_field, **kwargs):
@@ -26,14 +25,16 @@ class EvalMap(Node):
     self.in_field = in_field
     self.in_det_field = in_det_field
     self.in_det_list_field = in_det_list_field
-    self.cache = {} # { <det> : <TimeSeries or TimeHist> }
+    self.cache = {} # { <det> : <TimeSeries or Hist1D> }
     super().__init__(**kwargs)
 
   def reference_time(self):
     """
+    TODO: fix. No reference time anymore in Hist1D or TimeSeries
+
     Calculate earliest reference time over the detectors in the cache.
     Assume neutrino burst time for each detector is reflected in
-    the TimeHist or TimeSeries reference time.
+    the Hist1D or TimeSeries reference time.
     Return unix timestamp.
     """
     ts = [ self.cache[k].reference[0] for k in self.cache.keys() ]
@@ -46,17 +47,17 @@ class EvalMap(Node):
     tdelay = time offsets in s, shape (nkeys,)
     Return chi2-like measure.
     """
-    # Choose TimeHist with coarsest binning to set t=0
+    # Choose Hist1D with coarsest binning to set t=0
     # so we don't have to rebin it.
-    # if there were no TimeHists, then we'll just use first.
+    # if there were no Hist1D, then we'll just use first.
     kc = None
     max_width = 0.0
     for k in keys:
       if kc == None:
         kc = k
       v = self.cache[k]
-      if isinstance(v, TimeHist):
-        bin_width = v.duration / v.nbins # seconds
+      if isinstance(v, Hist1D):
+        bin_width = v.xwidth / v.nbins # seconds
         if bin_width > max_width:
           max_width = bin_width
           kc = k
@@ -65,14 +66,14 @@ class EvalMap(Node):
     v = self.cache[kc]
     if max_width > 0.0:
       ref_nbins = v.nbins
-      ref_duration = v.duration
-      ref_start = v.start
+      ref_duration = v.xwidth
+      ref_start = v.xlow # TODO: not all TimeSeries have something like this.
       ref_reference = v.reference
     else:
       ref_nbins = 100
       ref_duration = 10.0 # should really choose shortest duration TimeSeries
       ref_start = v.start
-      ref_reference = v.reference
+      ref_reference = v.reference # TODO: no such field anymore
 
     # rebin all the time profiles, subtracting signals.
     # Estimate signals with 1s data before reference time.
@@ -83,11 +84,13 @@ class EvalMap(Node):
     areas = []
     for k in keys:
       v = self.cache[k]
+      # TODO: no reference field anymore.
+      # also should use everything before burst time.
       t0 = subtract_time(v.reference, (1,0))
       bg = v.integral(t0, v.reference) * ref_duration / ref_nbins
-      dt = int(tdelay[i] * ns_per_second)
-      tstart = subtract_time(ref_start, (0,dt))
-      h = v.histogram(ref_nbins, ref_duration, tstart)
+      dt = tdelay[i]
+      tstart = ref_start - dt
+      h = v.histogram(ref_nbins, tstart, tstart + ref_duration)
       sig = h - bg
       hs.append(h) # total counts, shape (nkeys,nbins)
       sigs.append(sig) # shape (nkeys,nbins)

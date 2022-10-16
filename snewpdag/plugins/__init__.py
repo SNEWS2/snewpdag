@@ -46,7 +46,7 @@ from .Chi2Calculator import Chi2Calculator
 from .Chi2CL import Chi2CL
 from .Chi2Prob import Chi2Prob
 
-from .DtsCalculator import DtsCalculator
+#from .DtsCalculator import DtsCalculator # needs to be updated
 from .DiffPointing import DiffPointing
 from .EvalMap import EvalMap
 

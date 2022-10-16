@@ -33,8 +33,10 @@ class HistogramSkymap(Node):
     super().__init__(**kwargs)
 
   def alert(self, data):
-    weight = 1.0 / len(data[self.in_field])
-    self.m[data[self.in_field]] += weight
+    js = data.get(self.in_field, [])
+    if len(js) > 0:
+      weight = 1.0 / len(js)
+      self.m[js] += weight
     return False
 
   def reset(self, data):

@@ -24,16 +24,15 @@ Input payload:
 Output payload:
   map: healpix map with specified nside, nested ordering.
   ndof: 2
+  map_zeroes: indices of bins with 0 value (min chi2)
 """
 import logging
 import numpy as np
 import healpy as hp
 
 from snewpdag.dag import Node, Detector, DetectorDB, CelestialPixels
-from snewpdag.dag.lib import normalize_time, ns_per_second
 from astropy import units as u
 from astropy.time import Time
-from astropy.coordinates import GCRS, SkyCoord, CartesianRepresentation
 
 class DiffPointing(Node):
   def __init__(self, detector_location, nside, min_dts, **kwargs):
@@ -48,25 +47,23 @@ class DiffPointing(Node):
     d1 = self.db.get(k1)
     d2 = self.db.get(k2)
     if 'dt' in dts and 't1' in dts and 't2' in dts:
-      dt = dts['dt'] # (s, ns)
-      t1 = dts['t1'] # (s, ns)
-      t2 = dts['t2'] # (s, ns)
+      dt = dts['dt'] # s
+      t1 = dts['t1'] # s
+      t2 = dts['t2'] # s
     else:
       return None
     bias = dts['bias'] if 'bias' in dts else d1.bias - d2.bias # sec
     var = dts['var'] if 'var' in dts else d1.sigma**2 + d2.sigma**2 # sec**2
     dsig1 = dts['dsig1'] if 'dsig1' in dts else d1.sigma # sec
     dsig2 = dts['dsig2'] if 'dsig2' in dts else - d2.sigma # sec
-    # we actually want a time basis in ms for all times
-    g = 1000.0 / ns_per_second
     nrow = {
-             'dt': dt[0]*1000 + dt[1]*g,
-             't1': t1[0]*1000 + t1[1]*g,
-             't2': t2[0]*1000 + t2[1]*g,
-             'bias': bias * 1000,
-             'var': var * 1000 * 1000,
-             'dsig1': dsig1 * 1000,
-             'dsig2': dsig2 * 1000,
+             'dt': dt,
+             't1': t1,
+             't2': t2,
+             'bias': bias,
+             'var': var,
+             'dsig1': dsig1,
+             'dsig2': dsig2,
            }
     logging.info('cache ({}, {}): {}'.format(k1, k2, nrow))
     return nrow
@@ -88,7 +85,7 @@ class DiffPointing(Node):
       if k[1] not in dets:
         ts.append(row['t2'])
         dets.add(k[1])
-    tu = np.average(ts) / 1000.0
+    tu = np.average(ts)
     #return Time(tu, format='unix')
     return tu
 
@@ -100,7 +97,7 @@ class DiffPointing(Node):
       directions = direction hypotheses, Cartesian unit vector, shape [3,nv]
     Returns vector as np.array with shape [nv,nkeys]
     """
-    rc = 1.0 / 3.0e5 # 1/(m/ms)
+    rc = 1.0 / 3.0e8 # 1/(m/s)
     nkeys = len(keys) # number of detector pairs
     ddt = np.zeros(nkeys)
     p1 = np.zeros([nkeys,3])
@@ -111,11 +108,10 @@ class DiffPointing(Node):
       det2 = self.db.get(k[1])
       dts = self.cache[k]
       ddt[i] = dts['dt'] - dts['bias']
-      # remember that t1 and t2 are in ms, not s!
-      p1[i] = det1.get_xyz(Time(dts['t1']*0.001, format='unix')) # m
-      p2[i] = det2.get_xyz(Time(dts['t2']*0.001, format='unix'))
+      p1[i] = det1.get_xyz(Time(dts['t1'], format='unix')) # m
+      p2[i] = det2.get_xyz(Time(dts['t2'], format='unix'))
       i += 1
-    dp = (p1 - p2) * rc # ms, shape [nkeys,3]
+    dp = (p1 - p2) * rc # s, shape [nkeys,3]
     d = np.transpose(dp @ directions) # [nv,nkeys]
     d = d + ddt # broadcast adding ddt to each column
     logging.info('ddt = {}'.format(ddt))
@@ -196,6 +192,7 @@ class DiffPointing(Node):
     m -= chi2_min
     data['map'] = m
     data['ndof'] = 2
+    data['map_zeroes'] = np.flatnonzero(m == 0.0)
     return data
 
   def alert(self, data):
