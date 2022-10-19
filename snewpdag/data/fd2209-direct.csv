@@ -2,10 +2,10 @@
 ,,,
 "AlertInput","JsonAlertInput","Control","'filename':'snewpdag/data/fd_sep_alert.json'"
 ,,,
-"Dts","DiffTimes","AlertInput","'detector_location':'snewpdag/data/detectors-fd2209.csv'"
+"Dts","DiffTimes","AlertInput","'detector_location':'snewpdag/data/detector_location_zerobias.csv'"
 "Dts-out","Pass","Dts","'line':1, 'dump':1"
 ,,,
-"Diff","DiffPointing","Dts","'detector_location':'snewpdag/data/detectors-fd2209.csv', 'nside':32, 'min_dts':3"
+"Diff","DiffPointing","Dts","'detector_location':'snewpdag/data/detector_location_zerobias.csv', 'nside':32, 'min_dts':3"
 "Diff-out","Pass","Diff","'line':1, 'dump':1"
 ,,,
 "prob","Chi2Prob","Diff","'in_field':'map', 'out_field':'probmap'"
