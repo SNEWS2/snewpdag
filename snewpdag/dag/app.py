@@ -16,6 +16,10 @@ parser.add_argument('--jsonlines', action='store_true', help='each input line co
 parser.add_argument('--log', help='logging level')
 parser.add_argument('--seed', help='random number seed')
 parser.add_argument('--stream', help="read from the hop alert stream server")
+parser.add_argument('--action', help='default action (alert by default)',
+                    default='alert')
+parser.add_argument('--inject', help='name of default injection module',
+                    default='Control')
 args = parser.parse_args()
 if args.stream:
   try:
@@ -43,8 +47,8 @@ def save_message(message):
 
   # Adding fields to the alert message (which are needed to run the dags)
   if message['_id'].split("_")[1].split("-")[1] == 'ALERT':
-    message['action'] = 'alert'
-  message['name'] = 'Control'
+    message['action'] = args.action
+  message['name'] = args.inject
   message['number_of_coinc_dets'] = len(message['detector_names'])
   message['coinc_id'] = 'coinc' + str(message['sub list number'])
   data['coinc' + str(message['sub list number'])] = message
@@ -103,6 +107,10 @@ def run():
           inject(dags, data, nodespecs)
       else:
         data = ast.literal_eval(f.read())
+        if 'action' not in data:
+          data['action'] = args.action
+        if 'name' not in data:
+          data['name'] = args.inject
         inject(dags, data, nodespecs)
 
   elif args.stream:
@@ -228,6 +236,9 @@ def inject(dags, data, nodespecs):
     sys.exit(2)
 
 def inject_one(dags, data, nodespecs):
+  # add an action if none already exists (default 'alert')
+  if 'action' not in data:
+    data['action'] = 'alert'
   try:
     index_coincidence = str(data['sub list number'])
     if 'dag_coinc' + index_coincidence not in dags: # e.g. dag_coinc1, dag_coinc2
@@ -245,3 +256,4 @@ def inject_one(dags, data, nodespecs):
         sys.exit(2)
     dag = dags[burst_id]
     dag[data['name']].update(data)
+
