@@ -45,4 +45,10 @@ class TestLib(unittest.TestCase):
     v, flag = fetch_field(data5, ('f52',1,'f11'))
     self.assertTrue(flag)
     self.assertEqual(v, 11)
+    v, flag = fetch_field(data4, 'f41/f30/f20')
+    self.assertFalse(flag)
+    self.assertEqual(v, None)
+    v, flag = fetch_field(data4, 'f41/f31/f20/f11')
+    self.assertTrue(flag)
+    self.assertEqual(v, 11)
 
