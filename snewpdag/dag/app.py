@@ -94,7 +94,11 @@ def run():
       nodespecs = csv_eval(f)
   else: # try python/json parsing if not csv
     with open(args.config, 'r') as f:
-      nodespecs = ast.literal_eval(f.read())
+      try:
+        nodespecs = ast.literal_eval(f.read())
+      except:
+        logging.error('While parsing configuration: {}'.format(sys.exc_info()))
+        sys.exit(2)
     #nodes = configure(nodespecs)
 
   dags = {}
@@ -103,32 +107,52 @@ def run():
     with open(args.input) as f:
       if args.jsonlines:
         for jsonline in f:
-          data = ast.literal_eval(jsonline)
-          inject(dags, data, nodespecs)
+          try:
+            data = ast.literal_eval(jsonline)
+          except:
+            logging.error('While parsing json line: {}'.format(sys.exc_info()))
+          else:
+            inject(dags, data, nodespecs)
       else:
-        data = ast.literal_eval(f.read())
-        if 'action' not in data:
-          data['action'] = args.action
-        if 'name' not in data:
-          data['name'] = args.inject
-        inject(dags, data, nodespecs)
+        try:
+          data = ast.literal_eval(f.read())
+        except:
+          logging.error('While parsing input: {}'.format(sys.exc_info()))
+        else:
+          if 'action' not in data:
+            data['action'] = args.action
+          if 'name' not in data:
+            data['name'] = args.inject
+          inject(dags, data, nodespecs)
 
   elif args.stream:
       s = stream.open(alert_topic, "r")
       for message in s:
         save_message(message)
         with open('SNEWS_MSGs/subscribed_messages.json') as f:
-          data = ast.literal_eval(f.read())
-          # Injecting this data into a dag:
-          inject(dags, data['coinc' + str(message['sub list number'])], nodespecs)
+          try:
+            data = ast.literal_eval(f.read())
+          except:
+            logging.error('While parsing stream: {}'.format(sys.exc_info()))
+          else:
+            # Injecting this data into a dag:
+            inject(dags, data['coinc' + str(message['sub list number'])], nodespecs)
   else:
     if args.jsonlines:
       for jsonline in sys.stdin:
-        data = ast.literal_eval(jsonline)
-        inject(dags, data, nodespecs)
+        try:
+          data = ast.literal_eval(jsonline)
+        except:
+          logging.error('While parsing stdin json line: {}'.format(sys.exc_info()))
+        else:
+          inject(dags, data, nodespecs)
     else:
-      data = ast.literal_eval(sys.stdin.read())
-      inject(dags, data, nodespecs)
+      try:
+        data = ast.literal_eval(sys.stdin.read())
+      except:
+        logging.error('While parsing stdin: {}'.format(sys.exc_info()))
+      else:
+        inject(dags, data, nodespecs)
 
 def csv_eval(infile):
   # name, class, observe
@@ -159,7 +183,11 @@ def csv_eval(infile):
           # replace special marks which might stand in for single quotes
           r = row[i].replace("’","'").replace("‘","'").replace("`","'")
           s.append(r)
-      node['kwargs'] = ast.literal_eval('{' + ','.join(s) + '}')
+      try:
+        node['kwargs'] = ast.literal_eval('{' + ','.join(s) + '}')
+      except:
+        logging.error('While parsing csv arguments field for {} (class {}): {}'.format(node['name'], node['class'], sys.exc_info()))
+        sys.exit(2)
     nodespecs.append(node)
   return nodespecs
 
@@ -182,12 +210,6 @@ def configure(nodespecs):
   nodes = {}
 
   for spec in nodespecs:
-    if 'class' in spec:
-      c = find_class(spec['class'])
-    else:
-      logging.error('No class field in node specification')
-      return None
-
     if 'name' in spec:
       name = spec['name']
     else:
@@ -196,6 +218,12 @@ def configure(nodespecs):
 
     if name in nodes:
       logging.error('Duplicate node name {}'.format(name))
+      return None
+
+    if 'class' in spec:
+      c = find_class(spec['class'])
+    else:
+      logging.error('No class field for node {}'.format(name))
       return None
 
     kwargs = spec['kwargs'] if 'kwargs' in spec else {}
@@ -230,7 +258,6 @@ def inject(dags, data, nodespecs):
   elif type(data) is list:
     for d in data:
       inject_one(dags, d, nodespecs)
-
   else:
     logging.error('What is this input data?')
     sys.exit(2)
@@ -238,7 +265,7 @@ def inject(dags, data, nodespecs):
 def inject_one(dags, data, nodespecs):
   # add an action if none already exists (default 'alert')
   if 'action' not in data:
-    data['action'] = 'alert'
+    data['action'] = args.action
   try:
     index_coincidence = str(data['sub list number'])
     if 'dag_coinc' + index_coincidence not in dags: # e.g. dag_coinc1, dag_coinc2
