@@ -78,9 +78,8 @@ distcalc_err_trial:
 	python snewpdag/trials/Simple.py Control -n 5000 | \
           python -m snewpdag --log INFO --jsonlines snewpdag/data/test-distcalc-err-config.csv
 
-fd2209:
-	python snewpdag/trials/Simple.py Control -n 1 | \
-	  python -m snewpdag --log INFO --jsonlines snewpdag/data/fd2209-direct.csv
+fd2210:
+	python -m snewpdag --log INFO snewpdag/data/fd2210.csv --input snewpdag/data/fd_sep_alert.json
 	# alternative (need to format the json lines for input):
 	# python -m snewpdag --log INFO --jsonlines snewpdag/data/fd2209.csv < snewpdag/data/fd2209b-data.json
 

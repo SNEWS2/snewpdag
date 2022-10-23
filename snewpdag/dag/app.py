@@ -108,14 +108,16 @@ def run():
       if args.jsonlines:
         for jsonline in f:
           try:
-            data = ast.literal_eval(jsonline)
+            #data = ast.literal_eval(jsonline)
+            data = json.loads(jsonline)
           except:
             logging.error('While parsing json line: {}'.format(sys.exc_info()))
           else:
             inject(dags, data, nodespecs)
       else:
         try:
-          data = ast.literal_eval(f.read())
+          #data = ast.literal_eval(f.read())
+          data = json.load(f) # JSON (rather than python) for data!
         except:
           logging.error('While parsing input: {}'.format(sys.exc_info()))
         else:
@@ -131,7 +133,8 @@ def run():
         save_message(message)
         with open('SNEWS_MSGs/subscribed_messages.json') as f:
           try:
-            data = ast.literal_eval(f.read())
+            #data = ast.literal_eval(f.read())
+            data = json.load(f)
           except:
             logging.error('While parsing stream: {}'.format(sys.exc_info()))
           else:
@@ -141,14 +144,16 @@ def run():
     if args.jsonlines:
       for jsonline in sys.stdin:
         try:
-          data = ast.literal_eval(jsonline)
+          #data = ast.literal_eval(jsonline)
+          data = json.loads(jsonline)
         except:
           logging.error('While parsing stdin json line: {}'.format(sys.exc_info()))
         else:
           inject(dags, data, nodespecs)
     else:
       try:
-        data = ast.literal_eval(sys.stdin.read())
+        #data = ast.literal_eval(sys.stdin.read())
+        data = json.loads(sys.stdin.read())
       except:
         logging.error('While parsing stdin: {}'.format(sys.exc_info()))
       else:
