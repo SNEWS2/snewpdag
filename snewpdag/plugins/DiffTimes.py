@@ -37,6 +37,7 @@ class DiffTimes(Node):
     if 'detector_names' in data and 'neutrino_times' in data:
 
       # get timestamps
+      detns = []
       ts = []
       bias = []
       sigma = []
@@ -44,6 +45,10 @@ class DiffTimes(Node):
       for index in range(ndet):
         dn = data['detector_names'][index]
         det = self.db.get(dn)
+        if det == None:
+          logging.error('{}: detector {} not found in DB'.format(self.name, dn))
+          continue 
+        detns.append(dn)
         bias.append(det.bias)
         sigma.append(det.sigma)
         ts.append(Time(data['neutrino_times'][index]).to_value('unix', 'long'))
@@ -53,11 +58,11 @@ class DiffTimes(Node):
 
       # form time differences with first detector listed (for now)
       dts = {}
-      dn0 = data['detector_names'][ibest]
-      for index in range(ndet):
+      dn0 = detns[ibest]
+      for index in range(len(detns)):
         if index == ibest:
           continue
-        dn1 = data['detector_names'][index]
+        dn1 = detns[index]
         dts[(dn0,dn1)] = {
                            'dt': ts[ibest] - ts[index],
                            't1': ts[ibest],
