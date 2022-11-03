@@ -19,14 +19,16 @@ from astropy.time import Time
 def fetch_field(data, fields):
   """
   Fetch a field from the payload (data).
-  If the field is not list-like, then just get it directly.
+  If the field is a string, attempt to split by /'s.
+    (Note: don't leave a trailing slash! It looks like an empty field name)
   If the field is list-like, interpret each element as the field name
     in each inner dictionary.
   Return value (or None), and True/False depending on field(s) existing.
   """
-  if isinstance(fields, (list, tuple)):
+  fs = fields.split('/') if isinstance(fields, str) else fields
+  if isinstance(fs, (list, tuple)):
     d = data
-    for f in fields:
+    for f in fs:
       if isinstance(d, dict) and f in d:
         d = d[f]
       elif isinstance(d, (list, tuple, np.ndarray)) and f < len(d):
@@ -35,8 +37,8 @@ def fetch_field(data, fields):
         return None, False
     return d, True
   else:
-    if fields in data:
-      return data[fields], True
+    if fs in data:
+      return data[fs], True
     else:
       return None, False
 
