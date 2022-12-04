@@ -4,7 +4,6 @@ DAG library routines
 import logging
 import numbers
 import numpy as np
-from astropy.time import Time
 
 # deprecated: ns_per_second
 # deprecated: time_tuple_from_float(x)
@@ -41,4 +40,23 @@ def fetch_field(data, fields):
       return data[fs], True
     else:
       return None, False
+
+def fill_filename(pattern, module_name, count, data):
+  """
+  Get filename, and fill out the details.
+  pattern = '[field specifier]' - fetch pattern from payload using fetch_field.
+    'filename' - use this literal string as the pattern.
+  The pattern is filled as follows:
+    {0} - module_name
+    {1} - count
+    {2} - data['burst_id']
+  """
+  ps = pattern.strip()
+  if ps[0] == '[' and ps[-1] == ']':
+    s, valid = fetch_field(data, ps[1:-1])
+    if not valid:
+      return None
+    ps = s.strip()
+  fn = ps.format(module_name, count, data.get('burst_id', 0))
+  return fn
 
