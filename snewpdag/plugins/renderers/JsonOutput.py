@@ -22,7 +22,7 @@ import numpy as np
 
 from snewpdag.dag import Node
 from snewpdag.values import TimeSeries
-from snewpdag.dag.lib import fetch_field
+from snewpdag.dag.lib import fetch_field, fill_filename
 
 def json_output_default(obj):
   if isinstance(obj, np.ndarray):
@@ -53,12 +53,14 @@ class JsonOutput(Node):
         d[f] = v
     #logging.info('{}: dict = {}'.format(self.name, d))
 
-    burst_id = data.get('burst_id', 0)
-    fname = self.filename.format(self.name, self.count, burst_id)
-    with open(fname, "w") as outfile:
-      json.dump(d, outfile, default=json_output_default)
+    fname = fill_filename(self.filename, self.name, self.count, data)
+    if fname == None:
+      logging.error('{}: error interpreting {}', self.name, self.filename)
+    else:
+      with open(fname, "w") as outfile:
+        json.dump(d, outfile, default=json_output_default)
 
-    self.count += 1
+      self.count += 1
     return True
 
   def alert(self, data):

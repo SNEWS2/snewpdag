@@ -8,6 +8,7 @@ import logging
 import pickle
 
 from snewpdag.dag import Node
+from snewpdag.dag.lib import fill_filename
 
 class PickleInput(Node):
   def __init__(self, filename, **kwargs):
@@ -19,7 +20,11 @@ class PickleInput(Node):
     """
     load pickle, but keep the following payload fields:  action, name, history
     """
-    with open(self.filename, 'rb') as f:
+    fname = fill_filename(self.filename, self.name, 0, data)
+    if fname == None:
+      logging.error('{}: error interpreting {}', self.name, self.filename)
+      return False
+    with open(fname, 'rb') as f:
       d = pickle.load(f)
     for k, v in d.items():
       if k not in ('action', 'name', 'history'):
