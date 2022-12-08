@@ -6,6 +6,7 @@ represented as floats which can be negative as well as positive.
 """
 import logging
 import numpy as np
+from astropy import units as u
 
 class TimeSeries:
   def __init__(self, start=None, stop=None):
@@ -34,7 +35,7 @@ class TimeSeries:
     times:  an array of timestamps, assumed to be seconds unless
             it's an array of Quantity, in which case convert to seconds.
     """
-    ts = times.to(u.s) if hasattr(times, 'unit') else times
+    ts = times.to(u.s).value if hasattr(times, 'unit') else times
     if self.start == self.stop: # also includes both being None
       self.times = np.append(self.times, ts)
     else:
@@ -49,6 +50,7 @@ class TimeSeries:
     """
     t0 = self.start if start == None else start
     t1 = self.stop if stop == None else stop
+    #logging.debug('histogram: nbins = {}, t0 = {}, t1 = {}, times = {}'.format(nbins, t0, t1, self.times))
     if t0 == None:
       if t1 == None: # no limits, so let np.histogram optimize
         h, edges = np.histogram(self.times, bins=nbins)
@@ -58,6 +60,7 @@ class TimeSeries:
       if t1 == None: # only lower limit
         h, edges = np.histogram(self.times[self.times >= t0], bins=nbins)
       else: # both limits
+        #logging.debug('  hasattr unit self.times = {}, nbins = {}, t0 = {}, t1 = {}'.format(hasattr(self.times, 'unit'), hasattr(nbins, 'unit'), hasattr(t0, 'unit'), hasattr(t1, 'unit')))
         h, edges = np.histogram(self.times, bins=nbins, range=(t0, t1))
     return h, edges
 

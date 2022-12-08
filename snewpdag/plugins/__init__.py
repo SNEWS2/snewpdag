@@ -49,7 +49,8 @@ from .Chi2Prob import Chi2Prob
 #from .DtsCalculator import DtsCalculator # needs to be updated
 from .DiffTimes import DiffTimes
 from .DiffPointing import DiffPointing
-from .EvalMap import EvalMap
+#from .EvalMap import EvalMap
+from .TopDownSeries import TopDownSeries
 
 from .PickleInput import PickleInput
 from .JsonAlertInput import JsonAlertInput

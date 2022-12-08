@@ -72,7 +72,7 @@ class GenTimeDist(TimeDistSource):
       GenTimeDist.one_mean = self.sig_mean
 
   def alert(self, data):
-    v, flag = fetch_field(self.field)
+    v, flag = fetch_field(data, self.field)
     if flag:
 
       # epoch base

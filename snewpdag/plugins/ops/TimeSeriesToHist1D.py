@@ -10,7 +10,7 @@ Arguments:
 """
 import logging
 import numpy as np
-
+from astropy.time import Time
 from snewpdag.dag import Node
 from snewpdag.values import Hist1D, TimeSeries
 
@@ -20,7 +20,11 @@ class TimeSeriesToHist1D(Node):
     self.out_field = out_field
     self.nbins = nbins
     self.start = start
+    if isinstance(self.start, str):
+      self.start = Time(self.start).to_value('unix', 'long')
     self.stop = stop
+    if isinstance(self.stop, str):
+      self.stop = Time(self.stop).to_value('unix', 'long')
     super().__init__(**kwargs)
 
   def alert(self, data):
