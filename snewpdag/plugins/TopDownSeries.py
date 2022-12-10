@@ -109,10 +109,11 @@ class TopDownSeries(Node):
     #logging.debug('m = {}'.format(m))
     chi2_min = m.min()
     logging.debug('min = {}, max = {}'.format(chi2_min, m.max()))
-    m -= chi2_min
-    data['map'] = m
+    data['chi2'] = m
+    mm = m - chi2_min
+    data['map'] = mm
     data['ndof'] = 2 # need to confirm this
-    data['map_zeroes'] = np.flatnonzero(m == 0.0)
+    data['map_zeroes'] = np.flatnonzero(mm == 0.0)
     return data
 
   def alert(self, data):

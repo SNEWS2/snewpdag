@@ -44,3 +44,13 @@
 "Norm","NormHistogram","Conf","'in_field':'clmap', 'out_field':'weights'"
 "Accumulate","AccHistogram","Norm","'in_field':'weights', 'out_field':'hist'"
 "Weight-skymap","renderers.Mollview","Accumulate","'on':['report'], 'in_field':'hist', 'title':'Weighted MC trials', 'units':'Weights', 'range':(0,), 'coord':['C'], 'filename':'output/tt-{}-{}-{}.png'"
+,,,,,
+"targetChi2","ops.FillHist1D","makemap","'in_field':('chi2',749),'out_field':'histchi2','nbins':100,'xlow':1800.0,'xhigh':2300.0"
+"targetChi2-render","renderers.Hist1D","targetChi2","'on':['report'],'in_field':'histchi2','title':'Pixel 749 raw chi2','xlabel':'chi2','ylabel':'entries','filename':'output/tt-{}-{}-{}.png'"
+"targetChi2Sub","ops.FillHist1D","makemap","'in_field':('map',749),'out_field':'histsub','nbins':100,'xlow':0.0,'xhigh':10000.0"
+"targetChi2Sub-render","renderers.Hist1D","targetChi2Sub","'on':['report'],'in_field':'histsub','title':'Pixel 749 chi2 - chi2min','xlabel':'chi2','ylabel':'entries','filename':'output/tt-{}-{}-{}.png'"
+"targetChi2SubZoom1","ops.FillHist1D","makemap","'in_field':('map',749),'out_field':'histsub1','nbins':100,'xlow':0.0,'xhigh':1000.0"
+"targetChi2SubZoom1-render","renderers.Hist1D","targetChi2SubZoom1","'on':['report'],'in_field':'histsub1','title':'Pixel 749 chi2 - chi2min','xlabel':'chi2','ylabel':'entries','filename':'output/tt-{}-{}-{}.png'"
+"targetChi2SubZoom2","ops.FillHist1D","makemap","'in_field':('map',749),'out_field':'histsub2','nbins':100,'xlow':0.0,'xhigh':100.0"
+"targetChi2SubZoom2-render","renderers.Hist1D","targetChi2SubZoom2","'on':['report'],'in_field':'histsub2','title':'Pixel 749 chi2 - chi2min','xlabel':'chi2','ylabel':'entries','filename':'output/tt-{}-{}-{}.png'"
+,,,,,

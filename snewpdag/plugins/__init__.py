@@ -45,6 +45,8 @@ from .TrueVsFit import TrueVsFit
 from .Chi2Calculator import Chi2Calculator
 from .Chi2CL import Chi2CL
 from .Chi2Prob import Chi2Prob
+from .LogLProb import LogLProb
+from .ProbCL import ProbCL
 
 #from .DtsCalculator import DtsCalculator # needs to be updated
 from .DiffTimes import DiffTimes
