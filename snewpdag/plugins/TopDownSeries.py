@@ -73,8 +73,11 @@ class TopDownSeries(Node):
       for j in range(len(ref)): # loop over time bins
         if aa[i] > 0:
           pp = aa[i]*ref[j] # predicted area
+          ppi = np.floor(pp)
           if pp > 0:
-            x = nn[i,j] * np.log(pp) - pp - sc.gammaln(nn[i,j] + 1)
+            #x = nn[i,j] * np.log(pp) - pp - sc.gammaln(nn[i,j] + 1)
+            x = (nn[i,j] - ppi) * np.log(pp) + \
+                sc.gammaln(ppi + 1) - sc.gammaln(nn[i,j] + 1)
             chi2 += x
     chi2 *= -2.0
     return chi2

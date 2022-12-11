@@ -24,7 +24,7 @@
 ,,,,,
 "Test","Pass","SNOP-data,SK-data,IC-data","'line':1, 'dump':1"
 ,,,,,
-"makemap","TopDownSeries","SNOP-data,SK-data,IC-data","'detector_location':'snewpdag/data/detector_location.csv','nside':8,'tnbins':10,'twidth':1.0,'in_field':'timeseries','in_det_field':'detector','in_det_list_field':'coincident_detectors'"
+"makemap","TopDownSeries","SNOP-data,SK-data,IC-data","'detector_location':'snewpdag/data/detector_location.csv','nside':8,'tnbins':100,'twidth':10.0,'in_field':'timeseries','in_det_field':'detector','in_det_list_field':'coincident_detectors'"
 "makemap-out","Pass","makemap","'line':1,'dump':1"
 ,,,,,
 "prob","LogLProb","makemap","'in_field':'map', 'out_field':'probmap'"

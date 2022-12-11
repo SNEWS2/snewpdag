@@ -27,13 +27,13 @@
 "makemap","TopDownSeries","SNOP-data,SK-data,IC-data","'detector_location':'snewpdag/data/detector_location.csv','nside':8,'tnbins':100,'twidth':10.0,'in_field':'timeseries','in_det_field':'detector','in_det_list_field':'coincident_detectors'"
 "makemap-out","Pass","makemap","'line':1,'dump':1"
 ,,,,,
-"prob","Chi2Prob","makemap","'in_field':'map', 'out_field':'probmap'"
+"prob","LogLProb","makemap","'in_field':'map', 'out_field':'probmap'"
 "prob-out","Pass","prob","'line':1, 'dump':1"
-"probmap","renderers.Mollview","prob","'in_field':'probmap', 'title':'Map evaluation', 'units':'probability', 'coord':['C'], 'filename':'output/topdown-{}-{}-{}.png'"
+"probmap","renderers.Mollview","prob","'in_field':'probmap', 'title':'Probability from LogL', 'units':'probability', 'coord':['C'], 'filename':'output/topdown-{}-{}-{}.png'"
 "probfits","renderers.FitsSkymap","prob","'in_field':'probmap', 'filename':'output/topdown-{}-{}-{}.fits'"
 ,,,,,
-"conf","Chi2CL","makemap","'in_field':'map', 'out_field':'clmap'"
+"conf","ProbCL","prob","'in_field':'probmap', 'out_field':'clmap'"
 "conf-out","Pass","conf","'line':1, 'dump':1"
-"confmap","renderers.Mollview","conf","'in_field':'clmap', 'title':'Map evaluation', 'units':'CL', 'range':(0,1), 'coord':['C'], 'filename':'output/topdown-{}-{}-{}.png'"
+"confmap","renderers.Mollview","conf","'in_field':'clmap', 'title':'CL from LogL', 'units':'CL', 'range':(0,1), 'coord':['C'], 'filename':'output/topdown-{}-{}-{}.png'"
 "conffits","renderers.FitsSkymap","conf","'in_field':'clmap', 'filename':'output/topdown-{}-{}-{}.fits'"
 ,,,,,
