@@ -40,6 +40,8 @@
 "Count","HistogramSkymap","makemap","'nside':8, 'in_field':'map_zeroes', 'out_field':'hist', 'out_err_field':'histerr'"
 "Count-out","Pass","Count","'line':1, 'dump':1"
 "Count-skymap","renderers.Mollview","Count","'on':['report'], 'in_field':'hist', 'title':'MC trials', 'units':'Counts', 'range':(0,), 'coord':['C'], 'filename':'output/tt-{}-{}-{}.png'"
+"confCount","ProbCL","Count","'on':['report'],'in_field':'hist','out_field':'cclmap'"
+"confCountMap","renderers.Mollview","confCount","'on':['report'],'in_field':'cclmap', 'title':'CL from counts', 'units':'CL', 'range':(0,1), 'coord':['C'], 'filename':'output/tt-{}-{}-{}.png'"
 ,,,,,
 "Norm","NormHistogram","conf","'in_field':'clmap', 'out_field':'weights'"
 "Accumulate","AccHistogram","Norm","'in_field':'weights', 'out_field':'hist'"
