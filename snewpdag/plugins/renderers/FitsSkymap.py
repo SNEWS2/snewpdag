@@ -126,8 +126,13 @@ class FitsSkymap(Node):
     # gather information from payload for extra header
     burst_id = data.get('burst_id', 0)
     instruments = data.get(self.in_det_list_field, 'na')
-    date_obs = data.get(self.in_date_obs_field, 'na')
     date_field = datetime.utcnow().isoformat()
+    date_obs = data.get(self.in_date_obs_field, 'na')
+    if date_obs != 'na':
+      t_obs = Time(date_obs)
+      mjd_obs = t_obs.mjd
+    else:
+      mjd_obs = 0
 
     extra_header = [
       ('PIXTYPE', 'HEALPIX', 'HEALPIX pixelisation'),
@@ -139,7 +144,7 @@ class FitsSkymap(Node):
       ('REFERENC', 'na', 'URL of this event'),
       ('INSTRUME', ','.join(instruments), 'Coincident detectors'),
       ('DATE-OBS', date_obs, 'UTC date of the observation'),
-      ('MJD-OBS', 'na', 'modified Julian date of the observation'),
+      ('MJD-OBS', mjd_obs, 'modified Julian date of the observation'),
       ('DATE', date_field, 'UTC date of file creation'),
       ('CREATOR', 'snewpdag', 'Program that created this file'),
       ('ORIGIN', 'SNEWS', 'Organization responsible for this FITS file'),
