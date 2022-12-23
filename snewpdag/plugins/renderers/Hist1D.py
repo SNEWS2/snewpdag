@@ -27,6 +27,7 @@ import numpy as np
 import matplotlib.mlab as mlab
 
 from snewpdag.dag import Node
+from snewpdag.dag.lib import fill_filename
 
 class Hist1D(Node):
   def __init__(self, in_field, title, xlabel, ylabel, filename, **kwargs):
@@ -39,7 +40,7 @@ class Hist1D(Node):
     self.count = 0 # number of histograms made
     super().__init__(**kwargs)
 
-  def plot(self, burst_id, hist):
+  def plot(self, fname, burst_id, hist):
     logging.debug('Hist1D.plot called')
     step = (hist.xhigh - hist.xlow) / hist.nbins
     x = np.arange(hist.xlow, hist.xhigh, step)
@@ -55,7 +56,6 @@ class Hist1D(Node):
                  self.title, burst_id, self.count))
     fig.tight_layout()
 
-    fname = self.filename.format(self.name, self.count, burst_id)
     plt.savefig(fname)
     logging.info('=====================')
     logging.info('H Filename:  {}'.format(fname))
@@ -75,7 +75,11 @@ class Hist1D(Node):
       # because I can't figure out how to use isinstance
       # for a class in a module (!)
       burst_id = data.get('burst_id', 0)
-      self.plot(burst_id, hist)
+      fname = fill_filename(self.filename, self.name, self.count, data)
+      if fname == None:
+        logging.error('{}: error interpreting {}', self.name, self.filename)
+        return False
+      self.plot(fname, burst_id, hist)
     return True # always return True
 
   def alert(self, data):

@@ -25,6 +25,7 @@ from scipy.stats import norm
 import matplotlib.mlab as mlab
 
 from snewpdag.dag import Node
+from snewpdag.dag.lib import fill_filename
 
 class Histogram1D(Node):
   def __init__(self, title, xlabel, ylabel, filename, **kwargs):
@@ -37,7 +38,7 @@ class Histogram1D(Node):
     self.count = 0 # number of histograms made
     super().__init__(**kwargs)
 
-  def render(self, burst_id, xlo, xhi, bins):
+  def render(self, fname, burst_id, xlo, xhi, bins):
     n = len(bins)
     step = (xhi - xlo) / n
     x = np.arange(xlo, xhi, step)
@@ -53,11 +54,11 @@ class Histogram1D(Node):
                  self.title, burst_id, self.count))
     fig.tight_layout()
 
-    fname = self.filename.format(self.name, self.count, burst_id)
+    #fname = self.filename.format(self.name, self.count, burst_id)
     plt.savefig(fname)
     self.count += 1
 
-  def render_Gaussian(self, burst_id, xlo, xhi, bins, mean, std, exp_mean, exp_std):
+  def render_Gaussian(self, fname, burst_id, xlo, xhi, bins, mean, std, exp_mean, exp_std):
     n = len(bins)
     step = (xhi - xlo) / n
     x = np.arange(xlo, xhi, step)
@@ -77,12 +78,16 @@ class Histogram1D(Node):
     plt.plot(x_exp_Gauss, norm.pdf(x_exp_Gauss, exp_mean, exp_std) * scale, linewidth=2, color='g', label='Expected Distrib')
     plt.legend()
 
-    fname = self.filename.format(self.name, self.count, burst_id, exp_mean)
+    #fname = self.filename.format(self.name, self.count, burst_id, exp_mean)
     plt.savefig(fname)
     self.count += 1
     plt.clf()
 
   def report(self, data):
+    fname = fill_filename(self.filename, self.name, self.count, data)
+    if fname == None:
+      logging.error('{}: error interpreting {}', self.name, self.filename)
+      return False
     burst_id = data.get('burst_id', 0)
     d = data[self.in_field] if self.in_field else data
 
@@ -92,8 +97,8 @@ class Histogram1D(Node):
         std = d['std']
         exp_mean = data['sn_distance']
         exp_std = d['stats_std']
-        self.render_Gaussian(burst_id, d['xlow'], d['xhigh'], d['bins'], mean, std, exp_mean, exp_std)
+        self.render_Gaussian(fname, burst_id, d['xlow'], d['xhigh'], d['bins'], mean, std, exp_mean, exp_std)
     else:
-      self.render(burst_id, d['xlow'], d['xhigh'], d['bins'])
+      self.render(fname, burst_id, d['xlow'], d['xhigh'], d['bins'])
 
     return True

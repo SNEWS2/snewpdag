@@ -18,6 +18,7 @@ import numpy as np
 import healpy as hp
 
 from snewpdag.dag import Node
+from snewpdag.dag.lib import fill_filename
 from snewpdag.values import LMap
 
 class Mollview(Node):
@@ -35,7 +36,10 @@ class Mollview(Node):
     super().__init__(**kwargs)
 
   def plot(self, data):
-    burst_id = data.get('burst_id', 0)
+    fname = fill_filename(self.filename, self.name, self.count, data)
+    if fname == None:
+      logging.error('{}: error interpreting {}', self.name, self.filename)
+      return False
     if self.in_field in data:
       m = data[self.in_field]
       # replace a lot of these options later
@@ -55,7 +59,6 @@ class Mollview(Node):
                   **kwargs,
                  )
       hp.graticule()
-      fname = self.filename.format(self.name, self.count, burst_id)
       plt.savefig(fname)
       self.count += 1
     return True

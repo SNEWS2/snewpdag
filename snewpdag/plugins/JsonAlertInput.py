@@ -10,9 +10,9 @@ Note that the action field cannot be overwritten.
 import logging
 import json
 import sys
-import ast
 
 from snewpdag.dag import Node
+from snewpdag.dag.lib import fill_filename
 
 class JsonAlertInput(Node):
   def __init__(self, filename, **kwargs):
@@ -21,9 +21,14 @@ class JsonAlertInput(Node):
     super().__init__(**kwargs)
 
   def alert(self, data):
+    fname = fill_filename(self.filename, self.name, self.count, data)
+    if fname == None:
+      logging.error('{}: error interpreting {}', self.name, self.filename)
+      return False
     try:
-      with open(self.filename.format(self.count), 'r') as f:
-        d = ast.literal_eval(f.read())
+      with open(fname, 'r') as f:
+        #d = ast.literal_eval(f.read())
+        d = json.load(f)
     except:
       logging.error('{}: exception while reading file {}: {}'.format( \
           self.name, self.filename.format(self.count), sys.exc_info()))

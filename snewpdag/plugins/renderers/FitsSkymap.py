@@ -107,6 +107,7 @@ from astropy.time import Time
 from astropy.table import Table
 
 from snewpdag.dag import Node
+from snewpdag.dag.lib import fill_filename
 
 class FitsSkymap(Node):
 
@@ -173,8 +174,12 @@ class FitsSkymap(Node):
     #                      #column_units='pix-1',
     #                      #extra_header=headers,
     #                      dtype=np.float32, overwrite=True)
-    fname = self.filename.format(self.name, self.count, burst_id)
-    self.write_file(data, m, fname)
-    self.count += 1
+    #fname = self.filename.format(self.name, self.count, burst_id)
+    fname = fill_filename(self.filename, self.name, self.count, data)
+    if fname == None:
+      logging.error('{}: error interpreting {}', self.name, self.filename)
+    else:
+      self.write_file(m, burst_id, fname)
+      self.count += 1
     return True
 

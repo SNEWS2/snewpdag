@@ -2,7 +2,7 @@
 Unit tests for dag library methods
 """
 import unittest
-from snewpdag.dag.lib import fetch_field
+from snewpdag.dag.lib import fetch_field, fill_filename
 
 class TestLib(unittest.TestCase):
 
@@ -51,4 +51,12 @@ class TestLib(unittest.TestCase):
     v, flag = fetch_field(data4, 'f41/f31/f20/f11')
     self.assertTrue(flag)
     self.assertEqual(v, 11)
+
+  def test_fill_filename(self):
+    dd = { 'f21': 'payload_{0}_{1}_{2}.png' }
+    data = { 'burst_id': 18, 'dd': dd }
+    s = fill_filename('test_{0}_{1}_{2}.png', 'mname', 23, data)
+    self.assertEqual(s, 'test_mname_23_18.png')
+    s = fill_filename(' [dd/f21]  ', 'dname', 24, data)
+    self.assertEqual(s, 'payload_dname_24_18.png')
 

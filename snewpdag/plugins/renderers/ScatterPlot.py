@@ -21,7 +21,9 @@ Constructor arguments:
 import logging
 import matplotlib.pyplot as plt
 import numpy as np
+
 from snewpdag.dag import Node
+from snewpdag.values import TimeSeries
 
 class ScatterPlot(Node):
     def __init__(self, title, xlabel, ylabel, filename, **kwargs):
@@ -39,7 +41,7 @@ class ScatterPlot(Node):
         self.logy = "logy" in f
         super().__init__(**kwargs)
 
-    def render(self, x, y):
+    def render(self, fname, x, y):
         fig, ax = plt.subplots()
         ax.plot(x, y, 'x')
         if self.line != None:
@@ -53,13 +55,17 @@ class ScatterPlot(Node):
         if self.logy: ax.set_yscale('log')
         if self.line != None: plt.legend()
         fig.tight_layout()
-        fname = self.filename.format(self.name)
         plt.savefig(fname)        
 
     def report(self, data):
         x = data[self.x_in_field][self.x_in_field2] if self.x_in_field2 != None else data[self.x_in_field]
         y = data[self.y_in_field][self.y_in_field2] if self.y_in_field2 != None else data[self.y_in_field]
-        self.render(x, y)
+        fname = fill_filename(self.filename, self.name, 0, data)
+        if fname == None:
+          logging.error('{}: error interpreting {}', self.name, self.filename)
+        else:
+          self.render(fname, x, y)
         #logging.info('{0}:{1}'.format(self.x_in_field, x))
         #logging.info('{0}:{1}'.format(self.y_in_field, np.around(y, decimals=2)))
         return True
+
