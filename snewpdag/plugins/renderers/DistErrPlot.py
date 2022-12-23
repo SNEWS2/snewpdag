@@ -24,6 +24,7 @@ import logging
 import matplotlib.pyplot as plt
 import numpy as np
 from snewpdag.dag import Node
+from snewpdag.dag.lib import fill_filename
 
 class DistErrPlot(Node):
     def __init__(self, title, xlabel, ylabel, filename, **kwargs):
@@ -37,7 +38,8 @@ class DistErrPlot(Node):
 #        self.true_dist = np.linspace(self.xlow, self.xhigh, self.xno, endpoint=True)
         super().__init__(**kwargs)
 
-    def render(self, true_dist, rel_err, exp_rel_dist1_stats, exp_rel_dist2_stats, exp_rel_mdist_stats):
+    def render(self, fname, true_dist, rel_err, exp_rel_dist1_stats, \
+               exp_rel_dist2_stats, exp_rel_mdist_stats):
         fig, ax = plt.subplots()
         ax.plot(true_dist, rel_err, label="Data")
         ax.plot(true_dist, exp_rel_dist1_stats, label="Expected (dist1)")
@@ -48,7 +50,7 @@ class DistErrPlot(Node):
         ax.set_title('{0}'.format(self.title))
         ax.legend()
         fig.tight_layout()
-        fname = self.filename.format(self.name, 0, 0)
+        #fname = self.filename.format(self.name, 0, 0)
         plt.savefig(fname)
 
     def report(self, data):
@@ -60,5 +62,11 @@ class DistErrPlot(Node):
         exp_rel_dist1_stats = data["exp_rel_dist1_stats"]
         exp_rel_dist2_stats = data["exp_rel_dist2_stats"]
         exp_rel_mdist_stats = data["exp_rel_mdist_stats"]
-        self.render(true_dist, rel_err, exp_rel_dist1_stats, exp_rel_dist2_stats, exp_rel_mdist_stats)
+        fname = fill_filename(self.filename, self.name, 0, data)
+        if fname == None:
+          logging.error('{}: error interpreting {}', self.name, self.filename)
+        else:
+          self.render(fname, true_dist, rel_err, exp_rel_dist1_stats, \
+                      exp_rel_dist2_stats, exp_rel_mdist_stats)
         return True
+

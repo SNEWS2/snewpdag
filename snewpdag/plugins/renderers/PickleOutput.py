@@ -10,6 +10,7 @@ import logging
 import pickle
 
 from snewpdag.dag import Node
+from snewpdag.dag.lib import fill_filename
 
 class PickleOutput(Node):
   def __init__(self, filename, **kwargs):
@@ -18,8 +19,10 @@ class PickleOutput(Node):
     super().__init__(**kwargs)
 
   def write_pickle(self, data):
-    burst_id = data.get('burst_id', 0)
-    fname = self.filename.format(self.name, self.count, burst_id)
+    fname = fill_filename(self.filename, self.name, self.count, data)
+    if fname == None:
+      logging.error('{}: error interpreting {}', self.name, self.filename)
+      return False
     with open(fname, 'wb') as f:
       pickle.dump(data, f, pickle.HIGHEST_PROTOCOL)
     self.count += 1
