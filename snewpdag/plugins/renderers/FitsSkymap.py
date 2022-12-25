@@ -100,6 +100,7 @@ The following header came from the file bayestar_no_virgo.fits:
 """
 import logging
 import healpy as hp
+from datetime import datetime
 from astropy import units
 from astropy.io import fits
 from astropy.time import Time
@@ -113,13 +114,26 @@ class FitsSkymap(Node):
   def __init__(self, in_field, filename, **kwargs):
     self.in_field = in_field
     self.filename = filename
+    self.in_det_list_field = kwargs.pop('in_det_list_field', 'detector_names')
+    self.in_date_obs_field = kwargs.pop('in_date_obs_field', 'sent_time')
     self.count = 0
     super().__init__(**kwargs)
 
-  def write_file(self, m, burst_id, filename):
+  def write_file(self, data, m, filename):
     # assume m only has one dimension for now
     t = Table([m], names=('PROB',), copy=False)
     t['PROB'].unit = units.pix**-1
+
+    # gather information from payload for extra header
+    burst_id = data.get('burst_id', 0)
+    instruments = data.get(self.in_det_list_field, 'na')
+    date_field = datetime.utcnow().isoformat()
+    date_obs = data.get(self.in_date_obs_field, 'na')
+    if date_obs != 'na':
+      t_obs = Time(date_obs)
+      mjd_obs = t_obs.mjd
+    else:
+      mjd_obs = 0
 
     extra_header = [
       ('PIXTYPE', 'HEALPIX', 'HEALPIX pixelisation'),
@@ -129,10 +143,10 @@ class FitsSkymap(Node):
       ('INDXSCHM', 'IMPLICIT', 'Indexing: IMPLICIT or EXPLICIT'),
       ('OBJECT', str(burst_id), 'Unique identifier for this event'),
       ('REFERENC', 'na', 'URL of this event'),
-      ('INSTRUME', 'na', 'Instruments that triggered this event'),
-      ('DATE-OBS', 'na', 'UTC date of the observation'),
-      ('MJD-OBS', 'na', 'modified Julian date of the observation'),
-      ('DATE', 'na', 'UTC date of file creation'),
+      ('INSTRUME', ','.join(instruments), 'Coincident detectors'),
+      ('DATE-OBS', date_obs, 'UTC date of the observation'),
+      ('MJD-OBS', mjd_obs, 'modified Julian date of the observation'),
+      ('DATE', date_field, 'UTC date of file creation'),
       ('CREATOR', 'snewpdag', 'Program that created this file'),
       ('ORIGIN', 'SNEWS', 'Organization responsible for this FITS file'),
       ('RUNTIME', 'na', 'Runtime in seconds of the CREATOR program'),
