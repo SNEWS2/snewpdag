@@ -21,8 +21,9 @@ class LogLProb(Node):
   def alert(self, data):
     if self.in_field in data:
       m = np.array(data[self.in_field])
-      base = np.min(m)
-      v = np.exp((m - base) * self.prefactor)
+      #base = np.min(m)
+      #v = np.exp((m - base) * self.prefactor)
+      v = np.exp(m * self.prefactor)
       sv = np.sum(v)
       logging.info('Sum of probability map is {}'.format(sv))
       data[self.out_field] = v / sv

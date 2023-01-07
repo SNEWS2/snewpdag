@@ -1,5 +1,15 @@
 """
 TopDownSeries - top-down time series comparison, no background
+
+Arguments:
+  detector_location:  filename of detector database for DetectorDB
+  nside:  healpix nside parameter, i.e., skymap resolution
+  tnbins:  nbins for timing comparison between detectors
+  twidth:  timespan (s) for timing histogram
+  in_field:  input field for a new time series
+  in_det_field:  field containing detector identifier
+  in_det_list_field:  field containing list of detectors to match
+  method:  'poisson' (default) or 'gaussian' (optional approximation)
 """
 import logging
 import numpy as np
@@ -16,6 +26,7 @@ from snewpdag.values import Hist1D, TimeSeries
 class TopDownSeries(Node):
   def __init__(self, detector_location, nside, tnbins, twidth,
                in_field, in_det_field, in_det_list_field,
+               method='poisson',
                **kwargs):
     self.db = DetectorDB(detector_location)
     self.nside = nside
@@ -25,6 +36,7 @@ class TopDownSeries(Node):
     self.in_field = in_field
     self.in_det_field = in_det_field
     self.in_det_list_field = in_det_list_field
+    self.method = method
     self.cache = {} # { <det> : <TimeSeries> }
     super().__init__(**kwargs)
 
@@ -60,6 +72,8 @@ class TopDownSeries(Node):
       areas.append(a)
     nn = np.array(hs)
     aa = np.array(areas)
+    aa_sum = np.sum(aa)
+    f_t = aa / aa_sum # shape (nkeys,)
 
     # reference profile
     sigsum = np.sum(nn, 0) # sum within each time bin
@@ -75,9 +89,56 @@ class TopDownSeries(Node):
           pp = aa[i]*ref[j] # predicted area
           ppi = np.floor(pp)
           if pp > 0:
+            # unnormalized probability
             #x = nn[i,j] * np.log(pp) - pp - sc.gammaln(nn[i,j] + 1)
-            x = (nn[i,j] - ppi) * np.log(pp) + \
-                sc.gammaln(ppi + 1) - sc.gammaln(nn[i,j] + 1)
+
+            # logl1:
+            # probability normalized to 1 at maximum
+            #x = (nn[i,j] - ppi) * np.log(pp) + \
+            #    sc.gammaln(ppi + 1) - sc.gammaln(nn[i,j] + 1)
+
+            # logl2 ("gaussian"):
+            # probability with unknown true value, gaussian approx,
+            # norm to 1 at max
+            if self.method == 'gaussian':
+              d = nn[i,j] - pp
+              s = nn[i,j] + pp
+              x = 0.5 * np.log(2.0 * pp / s)
+              x -= 0.5 * d * d / s
+              x += np.log(sc.erfc( - np.sqrt(2.0 * nn[i,j] * pp / s) ) /
+                          sc.erfc( - np.sqrt(pp) ))
+
+            # logl3:
+            # probability with unknown true value, Poisson, norm to 1 at max
+            #ppr = (aa_sum - aa[i]) * ref[j]
+            #ppri = np.floor(ppr)
+            #x = (nn[i,j] - ppi) * np.log(aa[i])
+            #x += (sigsum[j] - nn[i,j] - ppri) * np.log(aa_sum - aa[i])
+            #x += sc.gammaln(ppi + 1) - sc.gammaln(nn[i,j] + 1)
+            #x += sc.gammaln(ppri + 1) - sc.gammaln(sigsum[j] - nn[i,j] + 1)
+
+            # logl4:
+            # binomial
+            # (actually looks the same as logl1,
+            # but why doesn't it give similar results?)
+            #pf = f_t[i] * sigsum[j]
+            #logging.debug('i = {}, j = {}, pp = {}, pf = {}'.format(i,j,pp,pf))
+            #pfi = np.floor(pf)
+            #x = (nn[i,j] - pfi) * np.log(f_t[i]) + \
+            #    sc.gammaln(pfi + 1) - sc.gammaln(nn[i,j] + 1)
+
+            # logl5:
+            # probability with unknown true value, Poisson, norm to 1 at max
+            elif self.method == 'poisson':
+              x = (pp - nn[i,j]) * np.log(2.0)
+              x += sc.gammaln(pp + 1.0) - sc.gammaln(nn[i,j] + 1.0)
+              x += sc.gammaln(pp + nn[i,j] + 1.0) - sc.gammaln(2.0 * pp + 1.0)
+
+            else:
+              # unrecognized
+              logging.debug('{}: unrecognized method {}'.format(self.name, self.method))
+              x = 0.0 # unrecognized
+
             chi2 += x
     chi2 *= -2.0
     return chi2
