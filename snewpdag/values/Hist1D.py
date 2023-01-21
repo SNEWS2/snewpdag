@@ -20,6 +20,16 @@ class Hist1D:
     self.sum2 = 0.0
     self.count = 0
 
+  def copy(self):
+    h = Hist1D(self.nbins, self.xlow, self.xhigh)
+    h.bins = self.bins.copy()
+    h.overflow = self.overflow
+    h.underflow = self.underflow
+    h.sum = self.sum
+    h.sum2 = self.sum2
+    h.count = self.count
+    return h
+
   def is_compatible(self, other):
     if isinstance(other, Hist1D):
       return self.nbins == other.nbins and \
