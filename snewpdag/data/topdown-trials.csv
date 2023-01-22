@@ -24,7 +24,7 @@
 ,,,,,
 "Test","Pass","SNOP-data,SK-data,IC-data","'line':1, 'dump':1"
 ,,,,,
-"makemap","TopDownSeries","SNOP-data,SK-data,IC-data","'detector_location':'snewpdag/data/detector_location.csv','nside':8,'tnbins':100,'twidth':10.0,'method':'poisson','in_field':'timeseries','in_det_field':'detector','in_det_list_field':'coincident_detectors'"
+"makemap","TopDownSeries","SNOP-data,SK-data,IC-data","'detector_location':'snewpdag/data/detector_location.csv','nside':8,'tnbins':200,'twidth':10.0,'method':'poisson','in_field':'timeseries','in_det_field':'detector','in_det_list_field':'coincident_detectors'"
 "makemap-out","Pass","makemap","'line':1,'dump':1"
 ,,,,,
 "prob","LogLProb","makemap","'in_field':'chi2', 'out_field':'probmap'"
@@ -39,16 +39,54 @@
 ,,,,,
 "Count","HistogramSkymap","makemap","'nside':8, 'in_field':'map_zeroes', 'out_field':'hist', 'out_err_field':'histerr'"
 "Count-out","Pass","Count","'line':1, 'dump':1"
-"Count-skymap","renderers.Mollview","Count","'on':['report'], 'in_field':'hist', 'title':'MC trials', 'units':'Counts', 'range':(0,), 'coord':['C'], 'filename':'output/tt-{}-{}-{}.png'"
+"Count-skymap","renderers.Mollview","Count","'on':['report'], 'in_field':'hist', 'title':'Counts of pixel mins', 'units':'Counts', 'range':(0,), 'coord':['C'], 'filename':'output/tt-{}-{}-{}.png'"
 "confCount","ProbCL","Count","'on':['report'],'in_field':'hist','out_field':'cclmap'"
-"confCountMap","renderers.Mollview","confCount","'on':['report'],'in_field':'cclmap', 'title':'CL from counts', 'units':'CL', 'range':(0,1), 'coord':['C'], 'filename':'output/tt-{}-{}-{}.png'"
-,,,,,
+"confCountMap","renderers.Mollview","confCount","'on':['report'],'in_field':'cclmap', 'title':'CL from counts of pixel mins', 'units':'CL', 'range':(0,1), 'coord':['C'], 'filename':'output/tt-{}-{}-{}.png'"
+,,,
+,,, target pixel
+,,,
 "targetCL","ops.FillHist1D","conf","'in_field':('clmap',749), 'out_field':'histcl','nbins':100,'xlow':0.0,'xhigh':1.0"
 "targetCL-render","renderers.Hist1D","targetCL","'on':['report'],'in_field':'histcl','title':'Pixel 749 CL','xlabel':'CL','ylabel':'entries','filename':'output/tt-{}-{}-{}.png'"
+"targetCL-json","renderers.JsonOutput","targetCL","'on':['report'],'fields':('histcl',),'filename':'output/tt-{}-{}-{}.json'"
+,,,
+,,, neighboring pixels
+,,,
+"tcl748","ops.FillHist1D","conf","'in_field':('clmap',748), 'out_field':'histcl','nbins':100,'xlow':0.0,'xhigh':1.0"
+"tcl748-render","renderers.Hist1D","tcl748","'on':['report'],'in_field':'histcl','title':'Pixel 748 CL','xlabel':'CL','ylabel':'entries','filename':'output/tt-{}-{}-{}.png'"
+"tcl748-json","renderers.JsonOutput","tcl748","'on':['report'],'fields':('histcl',),'filename':'output/tt-{}-{}-{}.json'"
+,,,
+"tcl750","ops.FillHist1D","conf","'in_field':('clmap',750), 'out_field':'histcl','nbins':100,'xlow':0.0,'xhigh':1.0"
+"tcl750-render","renderers.Hist1D","tcl750","'on':['report'],'in_field':'histcl','title':'Pixel 750 CL','xlabel':'CL','ylabel':'entries','filename':'output/tt-{}-{}-{}.png'"
+"tcl750-json","renderers.JsonOutput","tcl750","'on':['report'],'fields':('histcl',),'filename':'output/tt-{}-{}-{}.json'"
+,,,
+"tcl751","ops.FillHist1D","conf","'in_field':('clmap',751), 'out_field':'histcl','nbins':100,'xlow':0.0,'xhigh':1.0"
+"tcl751-render","renderers.Hist1D","tcl751","'on':['report'],'in_field':'histcl','title':'Pixel 751 CL','xlabel':'CL','ylabel':'entries','filename':'output/tt-{}-{}-{}.png'"
+"tcl751-json","renderers.JsonOutput","tcl751","'on':['report'],'fields':('histcl',),'filename':'output/tt-{}-{}-{}.json'"
+,,,
+"tcl762","ops.FillHist1D","conf","'in_field':('clmap',762), 'out_field':'histcl','nbins':100,'xlow':0.0,'xhigh':1.0"
+"tcl762-render","renderers.Hist1D","tcl762","'on':['report'],'in_field':'histcl','title':'Pixel 762 CL','xlabel':'CL','ylabel':'entries','filename':'output/tt-{}-{}-{}.png'"
+"tcl762-json","renderers.JsonOutput","tcl762","'on':['report'],'fields':('histcl',),'filename':'output/tt-{}-{}-{}.json'"
+,,,
+"tcl760","ops.FillHist1D","conf","'in_field':('clmap',760), 'out_field':'histcl','nbins':100,'xlow':0.0,'xhigh':1.0"
+"tcl760-render","renderers.Hist1D","tcl760","'on':['report'],'in_field':'histcl','title':'Pixel 760 CL','xlabel':'CL','ylabel':'entries','filename':'output/tt-{}-{}-{}.png'"
+"tcl760-json","renderers.JsonOutput","tcl760","'on':['report'],'fields':('histcl',),'filename':'output/tt-{}-{}-{}.json'"
+,,,
+"tcl754","ops.FillHist1D","conf","'in_field':('clmap',754), 'out_field':'histcl','nbins':100,'xlow':0.0,'xhigh':1.0"
+"tcl754-render","renderers.Hist1D","tcl754","'on':['report'],'in_field':'histcl','title':'Pixel 754 CL','xlabel':'CL','ylabel':'entries','filename':'output/tt-{}-{}-{}.png'"
+"tcl754-json","renderers.JsonOutput","tcl754","'on':['report'],'fields':('histcl',),'filename':'output/tt-{}-{}-{}.json'"
+,,,
+"tcl743","ops.FillHist1D","conf","'in_field':('clmap',743), 'out_field':'histcl','nbins':100,'xlow':0.0,'xhigh':1.0"
+"tcl743-render","renderers.Hist1D","tcl743","'on':['report'],'in_field':'histcl','title':'Pixel 743 CL','xlabel':'CL','ylabel':'entries','filename':'output/tt-{}-{}-{}.png'"
+"tcl743-json","renderers.JsonOutput","tcl743","'on':['report'],'fields':('histcl',),'filename':'output/tt-{}-{}-{}.json'"
+,,,
+"tcl742","ops.FillHist1D","conf","'in_field':('clmap',742), 'out_field':'histcl','nbins':100,'xlow':0.0,'xhigh':1.0"
+"tcl742-render","renderers.Hist1D","tcl742","'on':['report'],'in_field':'histcl','title':'Pixel 742 CL','xlabel':'CL','ylabel':'entries','filename':'output/tt-{}-{}-{}.png'"
+"tcl742-json","renderers.JsonOutput","tcl742","'on':['report'],'fields':('histcl',),'filename':'output/tt-{}-{}-{}.json'"
+
 ,,,,,
-"Norm","NormHistogram","conf","'in_field':'clmap', 'out_field':'weights'"
+"Norm","NormHistogram","prob","'in_field':'probmap', 'out_field':'weights'"
 "Accumulate","AccHistogram","Norm","'in_field':'weights', 'out_field':'hist'"
-"Weight-skymap","renderers.Mollview","Accumulate","'on':['report'], 'in_field':'hist', 'title':'Weighted MC trials', 'units':'Weights', 'range':(0,), 'coord':['C'], 'filename':'output/tt-{}-{}-{}.png'"
+"Weight-skymap","renderers.Mollview","Accumulate","'on':['report'], 'in_field':'hist', 'title':'Sum over probability maps', 'units':'Weights', 'range':(0,), 'coord':['C'], 'filename':'output/tt-{}-{}-{}.png'"
 ,,,,,
 ,,,,,"targetChi2","ops.FillHist1D","makemap","'in_field':('chi2',749),'out_field':'histchi2','nbins':100,'xlow':0.0,'xhigh':500.0"
 ,,,,,"targetChi2-render","renderers.Hist1D","targetChi2","'on':['report'],'in_field':'histchi2','title':'Pixel 749 raw chi2','xlabel':'chi2','ylabel':'entries','filename':'output/tt-{}-{}-{}.png'"

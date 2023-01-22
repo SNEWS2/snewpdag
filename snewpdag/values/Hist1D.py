@@ -49,6 +49,7 @@ class Hist1D:
           'overflow': self.overflow,
           'bins': self.bins.copy()
         }
+    return d
 
   def bin_index(self, x):
     """

@@ -134,6 +134,37 @@ class TopDownSeries(Node):
               x += sc.gammaln(pp + 1.0) - sc.gammaln(nn[i,j] + 1.0)
               x += sc.gammaln(pp + nn[i,j] + 1.0) - sc.gammaln(2.0 * pp + 1.0)
 
+            elif self.method == 'poisson1a':
+              a = areas[i]
+              y = aa_sum
+              n = nn[i,j]
+              m = sigsum[j] - n # sum over the other detectors
+              nu = m * a / (y - a) # prediction for n
+              x = (nu - n) * np.log(2.0)
+              x += sc.gammaln(nu + 1.0) - sc.gammaln(n + 1.0)
+              x += sc.gammaln(nu + n + 1.0) - sc.gammaln(2.0 * nu + 1.0)
+
+            elif self.method == 'poisson2':
+              a = areas[i]
+              y = aa_sum
+              n = nn[i,j]
+              m = sigsum[j] - n # sum over the other detectors
+              #x = (n - np.floor(a * m / (y - a))) * np.log(a)
+              #x -= (n + m - np.floor(y * m / (y - a))) * np.log(y)
+              #x += sc.gammaln(n + m + 1) - sc.gammaln(n + 1)
+              #x += sc.gammaln(np.floor(a * m / (y - a)) + 1)
+              #x -= sc.gammaln(np.floor(y * m / (y - a)) + 1)
+              #x += np.log(1.0 - sc.gammaincc(n + m + 1, y))
+              #x -= np.log(1.0 - sc.gammaincc(np.floor(y * m / (y - a)) + 1, y))
+              npred = a * m / (y - a)
+              nmpred = y * m / (y - a)
+              x = (n - npred) * np.log(a)
+              x -= (n + m - nmpred) * np.log(y)
+              x += sc.gammaln(n + m + 1.0) - sc.gammaln(nmpred + 1.0)
+              x -= sc.gammaln(n + 1.0) - sc.gammaln(npred + 1.0)
+              x += np.log(1.0 - sc.gammaincc(n + m + 1.0, y))
+              x -= np.log(1.0 - sc.gammaincc(nmpred + 1.0, y))
+
             else:
               # unrecognized
               logging.debug('{}: unrecognized method {}'.format(self.name, self.method))

@@ -21,13 +21,13 @@ import json
 import numpy as np
 
 from snewpdag.dag import Node
-from snewpdag.values import TimeSeries
+from snewpdag.values import TimeSeries, Hist1D
 from snewpdag.dag.lib import fetch_field, fill_filename
 
 def json_output_default(obj):
   if isinstance(obj, np.ndarray):
     return [ x for x in obj ]
-  elif isinstance(obj, TimeSeries):
+  elif isinstance(obj, (TimeSeries, Hist1D)):
     return obj.to_dict()
   else:
     raise TypeError("unjsonable type {}".format(obj))
