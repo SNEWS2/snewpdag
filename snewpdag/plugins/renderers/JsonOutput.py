@@ -18,6 +18,7 @@ with open(filename, 'r') as f:
 """
 import logging
 import json
+import numbers
 import numpy as np
 
 from snewpdag.dag import Node
@@ -29,6 +30,8 @@ def json_output_default(obj):
     return [ x for x in obj ]
   elif isinstance(obj, TimeSeries):
     return obj.to_dict()
+  elif isinstance(obj, numbers.Number):
+    return float(obj)
   else:
     raise TypeError("unjsonable type {}".format(obj))
 
