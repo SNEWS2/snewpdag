@@ -94,13 +94,14 @@ class TopDownSeries(Node):
 
             # logl1:
             # probability normalized to 1 at maximum
-            #x = (nn[i,j] - ppi) * np.log(pp) + \
-            #    sc.gammaln(ppi + 1) - sc.gammaln(nn[i,j] + 1)
+            if self.method == 'poisson-norm':
+              x = (nn[i,j] - ppi) * np.log(pp) + \
+                  sc.gammaln(ppi + 1) - sc.gammaln(nn[i,j] + 1)
 
             # logl2 ("gaussian"):
             # probability with unknown true value, gaussian approx,
             # norm to 1 at max
-            if self.method == 'gaussian':
+            elif self.method == 'gaussian':
               d = nn[i,j] - pp
               s = nn[i,j] + pp
               x = 0.5 * np.log(2.0 * pp / s)
@@ -164,6 +165,16 @@ class TopDownSeries(Node):
               x -= sc.gammaln(n + 1.0) - sc.gammaln(npred + 1.0)
               x += np.log(1.0 - sc.gammaincc(n + m + 1.0, y))
               x -= np.log(1.0 - sc.gammaincc(nmpred + 1.0, y))
+
+            elif self.method == 'binomial':
+              a = areas[i]
+              y = aa_sum
+              n = nn[i,j]
+              nj = sigsum[j]
+              fi = a / y
+              x = (n - fi*nj) * np.log(a)
+              x += sc.gammaln(fi*nj + 1.0)
+              x -= sc.gammaln(n + 1.0)
 
             else:
               # unrecognized
