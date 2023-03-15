@@ -18,7 +18,7 @@ import numpy as np
 import healpy as hp
 
 from snewpdag.dag import Node
-from snewpdag.dag.lib import fill_filename
+from snewpdag.dag.lib import fill_filename, fetch_field
 from snewpdag.values import LMap
 
 class Mollview(Node):
@@ -40,8 +40,8 @@ class Mollview(Node):
     if fname == None:
       logging.error('{}: error interpreting {}', self.name, self.filename)
       return False
-    if self.in_field in data:
-      m = data[self.in_field]
+    m, exists = fetch_field(data, self.in_field)
+    if exists:
       # replace a lot of these options later
       kwargs = {}
       if isinstance(self.range, (list, tuple, np.ndarray)):

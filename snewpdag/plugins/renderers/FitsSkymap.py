@@ -179,7 +179,7 @@ class FitsSkymap(Node):
     if fname == None:
       logging.error('{}: error interpreting {}', self.name, self.filename)
     else:
-      self.write_file(m, burst_id, fname)
+      self.write_file(data, m, fname)
       self.count += 1
     return True
 

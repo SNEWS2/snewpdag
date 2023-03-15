@@ -27,6 +27,7 @@ class TopDownSeries(Node):
   def __init__(self, detector_location, nside, tnbins, twidth,
                in_field, in_det_field, in_det_list_field,
                method='poisson',
+               debug_pixels=[],
                **kwargs):
     self.db = DetectorDB(detector_location)
     self.nside = nside
@@ -37,6 +38,7 @@ class TopDownSeries(Node):
     self.in_det_field = in_det_field
     self.in_det_list_field = in_det_list_field
     self.method = method
+    self.debug_pixels = debug_pixels
     self.cache = {} # { <det> : <TimeSeries> }
     super().__init__(**kwargs)
 
@@ -44,7 +46,7 @@ class TopDownSeries(Node):
     tm = [ np.min(self.cache[k].times) for k in self.cache.keys() ]
     return np.min(tm)
 
-  def compare(self, keys, tdelays):
+  def compare(self, keys, tdelays, debug):
     """
     Compare timing profiles for one sky position (set of time offsets)
     keys = list of detectors
@@ -77,9 +79,20 @@ class TopDownSeries(Node):
 
     # reference profile
     sigsum = np.sum(nn, 0) # sum within each time bin
-    ref = sigsum / np.sum(sigsum) # normalized reference profile
+    sigtotal = np.sum(sigsum)
+    ref = sigsum / sigtotal # normalized reference profile
 
-    logging.debug('nn = {}'.format(nn))
+    if debug:
+      logging.debug('method = {}, nn ='.format(self.method))
+      logging.debug(nn)
+      logging.debug('aa_sum = {}, aa ='.format(aa_sum))
+      logging.debug(aa)
+      logging.debug('f_t =')
+      logging.debug(f_t)
+      logging.debug('sigtotal = {}, sigsum ='.format(sigtotal))
+      logging.debug(sigsum)
+      logging.debug('ref =')
+      logging.debug(ref)
 
     # compare
     chi2 = 0.0
@@ -127,6 +140,20 @@ class TopDownSeries(Node):
             #x = (nn[i,j] - pfi) * np.log(f_t[i]) + \
             #    sc.gammaln(pfi + 1) - sc.gammaln(nn[i,j] + 1)
 
+            # binomial-unnorm:
+            elif self.method == 'binomial-unnorm':
+              x = nn[i,j] * np.log(aa[i]) - sc.gammaln(nn[i,j] + 1.0)
+              if debug:
+                logging.debug('  i,j = {}, {}:  nn={}, aa={}, x={}'.format(i,j,nn[i,j],aa[i],x))
+
+            # binbin:
+            # binomial over all i,j bins,
+            # probability estimated with A*N/Y^2
+            elif self.method == 'binbin':
+              x = nn[i,j] * np.log(f_t[i] * ref[j]) - sc.gammaln(nn[i,j] + 1.0)
+              if debug:
+                logging.debug('  i,j = {}, {}:  nn={}, f_t={}, ref={}, x={}'.format(i,j,nn[i,j],f_t[i],ref[j],x))
+
             # logl5:
             # probability with unknown true value, Poisson, norm to 1 at max
             elif self.method == 'poisson':
@@ -140,6 +167,24 @@ class TopDownSeries(Node):
               x = 0.0 # unrecognized
 
             chi2 += x
+            #if debug:
+            #  logging.debug('  i,j = {}, {}:  {}'.format(i,j,x))
+
+    if self.method == 'binomial-unnorm':
+      s1 = sigtotal * np.log(sigtotal)
+      s2 = np.sum(sc.gammaln(sigsum + 1.0))
+      chi2 += s2 - s1
+      if debug:
+        logging.debug('  s1 = {}, s2 = {}'.format(s1, s2))
+    elif self.method == 'binbin':
+      s1 = sc.gammaln(sigtotal + 1.0)
+      chi2 += s1
+      if debug:
+        logging.debug('  s1 = {}'.format(s1))
+
+    if debug:
+      logging.debug('logP = {}'.format(chi2))
+
     chi2 *= -2.0
     return chi2
 
@@ -168,11 +213,13 @@ class TopDownSeries(Node):
     # get reference signal profile for each pixel's hypothetical direction
     m = np.zeros(self.npix)
     for i in range(self.npix):
-      m[i] = self.compare(keys, tdet[...,i])
+      debug = (i in self.debug_pixels)
+      m[i] = self.compare(keys, tdet[...,i], debug)
+      if debug:
+        logging.debug('pixel m[{}] = {}'.format(i, m[i]))
 
-    #logging.debug('m = {}'.format(m))
     chi2_min = m.min()
-    logging.debug('min = {}, max = {}'.format(chi2_min, m.max()))
+    logging.debug('min = {} ({}), max = {} ({})'.format(chi2_min, np.argmin(m), m.max(), np.argmax(m)))
     data['chi2'] = m
     mm = m - chi2_min
     data['map'] = mm
