@@ -75,13 +75,15 @@ class TimeDistSource(Node):
           tt.append(float(tokens[tcol]))
           nn.append(float(tokens[ycol]))
           ee.append(float(tokens[ecol]))
-      self.t = np.array(tt[:-1])
-      self.thi = tt[-1]
+      #self.t = np.array(tt[:-1])
+      #self.thi = tt[-1]
       dt = np.ediff1d(tt)
       lum = np.array(nn[:-1])
       enu = np.array(ee[:-1])
       j = (enu > 0.0)
       self.mu = lum[j] * dt[j] / enu[j]
+      self.t = np.array(tt[:-1])[j]
+      self.thi = tt[-1]
 
     else:
       with open(sig_filename, 'r') as f:
