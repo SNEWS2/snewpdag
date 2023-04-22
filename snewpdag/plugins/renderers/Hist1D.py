@@ -22,12 +22,13 @@ Input data:
   bins - uniform bin contents
 """
 import logging
+import json
 import matplotlib.pyplot as plt
 import numpy as np
 import matplotlib.mlab as mlab
 
 from snewpdag.dag import Node
-from snewpdag.dag.lib import fill_filename
+from snewpdag.dag.lib import fill_filename, fetch_field
 
 class Hist1D(Node):
   def __init__(self, in_field, title, xlabel, ylabel, filename, **kwargs):
@@ -42,6 +43,17 @@ class Hist1D(Node):
 
   def plot(self, fname, burst_id, hist):
     logging.debug('Hist1D.plot called')
+    print('=====================')
+    print('H Filename:  {}'.format(fname))
+    print('H Title:     {}'.format(self.title))
+    print('H Entries:   {}'.format(hist.count))
+    #print('H Sum:       {}'.format(hist.sum))
+    print('H Mean:      {}'.format(hist.mean()))
+    print('H RMS:       {}'.format(np.sqrt(hist.variance())))
+    print('H Overflow:  {}'.format(hist.overflow))
+    print('H Underflow: {}'.format(hist.underflow))
+    print('=====================')
+
     step = (hist.xhigh - hist.xlow) / hist.nbins
     x = np.arange(hist.xlow, hist.xhigh, step)
 
@@ -57,20 +69,24 @@ class Hist1D(Node):
     fig.tight_layout()
 
     plt.savefig(fname)
-    logging.info('=====================')
-    logging.info('H Filename:  {}'.format(fname))
-    logging.info('H Title:     {}'.format(self.title))
-    logging.info('H Entries:   {}'.format(hist.count))
-    logging.info('H Sum:       {}'.format(hist.sum))
-    logging.info('H Overflow:  {}'.format(hist.overflow))
-    logging.info('H Underflow: {}'.format(hist.underflow))
-    logging.info('=====================')
+
+    # script to recreate the plot
+    print('x = np.arange({}, {}, {})'.format(hist.xlow, hist.xhigh, step))
+    print('bins = {}'.format(hist.bins.tolist()))
+    print('fig, ax = plt.subplots()')
+    print("ax.bar(x, bins, width={}, align='edge')".format(step))
+    print("ax.set_xlabel('{}', size=15)".format(self.xlabel))
+    print("ax.set_ylabel('{}', size=15)".format(self.ylabel))
+    print("ax.set_title('{} (burst {} count {})')".format(self.title, burst_id, self.count))
+    print('fig.tight_layout()')
+    print('=====================')
+
     self.count += 1
 
   def render(self, data):
     logging.debug('Hist1D.render called')
-    if self.in_field in data:
-      hist = data[self.in_field]
+    hist, exists = fetch_field(data, self.in_field)
+    if exists:
       # TODO: foregoing check that hist is a values.Hist1D
       # because I can't figure out how to use isinstance
       # for a class in a module (!)
