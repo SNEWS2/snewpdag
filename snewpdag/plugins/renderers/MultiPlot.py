@@ -9,6 +9,7 @@ Arguments:
   xlabel:  x axis label
   ylabel:  y axis label
   filename:  output filename, with fields
+  scriptname:  output script name, with fields; None if not used (default)
   on:  list of 'alert', 'reset', 'revoke', 'report' (default ['report'])
 """
 import logging
@@ -25,13 +26,24 @@ class MultiPlot(Node):
     self.xlabel = xlabel
     self.ylabel = ylabel
     self.filename = filename # include pattern to include index
+    self.scriptname = kwargs.pop('scriptname', None)
     self.on = kwargs.pop('on', ['report'])
     self.count = 0 # number of histograms made
     super().__init__(**kwargs)
 
-  def plots(self, data, fname, burst_id):
+  def plots(self, data, fname, sname, burst_id):
+    make_script = (sname != None)
+    if make_script:
+      sfile = open(fname, 'w')
+      sfile.write('import numpy as np\n')
+      sfile.write('import matplotlib.pyplot as plt\n')
+      sfile.write('# Script:    {}\n'.format(sname))
+      sfile.write('# Image:     {}\n'.format(fname))
+
     print('=====================')
     print('H Filename:  {}'.format(fname))
+    if make_script:
+      print('H Script:    {}'.format(sname))
     print('H Title:     {}'.format(self.title))
     fig, ax = plt.subplots()
     for f in self.in_fields:
@@ -44,10 +56,11 @@ class MultiPlot(Node):
             if exists:
               opt = f[2]
               ax.plot(x, y, opt)
-              print('x = np.array({})'.format(x.tolist()))
-              print('y = np.array({})'.format(y.tolist()))
-              print('fig, ax = plt.subplots()')
-              print("ax.plot(x, y, '{}')".format(opt))
+              if make_script:
+                sfile.write('x = np.array({})\n'.format(x.tolist()))
+                sfile.write('y = np.array({})\n'.format(y.tolist()))
+                sfile.write('fig, ax = plt.subplots()\n')
+                sfile.write("ax.plot(x, y, '{}')\n".format(opt))
             else:
               logging.error('{}: y field {} not found'.format(
                             self.name, f[1]))
@@ -65,13 +78,17 @@ class MultiPlot(Node):
           step = (m.xhigh - m.xlow) / m.nbins
           x = np.arange(m.xlow, m.xhigh, step)
           ax.bar(x, m.bins, width=step, align='edge')
-          print('x = np.arange({}, {}, {})'.format(m.xlow, m.xhigh, step))
-          print('bins = np.array({})'.format(m.bins))
-          print('fig, ax = plt.subplots()')
-          print("ax.bar(x, bins, width={}, align='edge')".format(step))
+          if make_script:
+            sfile.write('# count = {}, mean = {}, rms = {}\n'.format(m.count, m.mean(), np.sqrt(m.variance())))
+            sfile.write('# underflow = {}, overflow = {}\n'.format(m.underflow, m.overflow))
+            sfile.write('x = np.arange({}, {}, {})\n'.format(m.xlow, m.xhigh, step))
+            sfile.write('bins = np.array({})\n'.format(m.bins))
+            sfile.write('fig, ax = plt.subplots()\n')
+            sfile.write("ax.bar(x, bins, width={}, align='edge')\n".format(step))
         else:
           logging.error('{}: Hist1D field {} not found'.format(
                         self.name, f))
+    print('=====================')
 
     ax.set_xlabel(self.xlabel, size=15)
     ax.set_ylabel(self.ylabel, size=15)
@@ -79,11 +96,13 @@ class MultiPlot(Node):
                  self.title, burst_id, self.count))
     fig.tight_layout()
     plt.savefig(fname)
-    print("ax.set_xlabel('{}', size=15)".format(self.xlabel))
-    print("ax.set_ylabel('{}', size=15)".format(self.ylabel))
-    print("ax.set_title('{} (burst {} count {})')".format(self.title, burst_id, self.count))
-    print('fig.tight_layout()')
-    print('=====================')
+    if make_script:
+      sfile.write("ax.set_xlabel('{}', size=15)\n".format(self.xlabel))
+      sfile.write("ax.set_ylabel('{}', size=15)\n".format(self.ylabel))
+      sfile.write("ax.set_title('{} (burst {} count {})')\n".format(self.title, burst_id, self.count))
+      sfile.write('fig.tight_layout()\n')
+      sfile.write('plt.show()\n')
+      sfile.close()
     self.count += 1
 
   def render(self, data):
@@ -92,7 +111,9 @@ class MultiPlot(Node):
     if fname == None:
       logging.error('{}: error interpreting {}', self.name, self.filename)
       return False
-    self.plots(data, fname, burst_id)
+    sname = None if self.scriptname == None else \
+            fill_filename(self.scriptname, self.name, self.count, data)
+    self.plots(data, fname, sname, burst_id)
     return True
 
   def alert(self, data):

@@ -10,6 +10,7 @@ Arguments:
              {0} renderer name
              {1} count index, starting from 0
              {2} burst_id from update data (default 0 if no such field)
+  scriptname:  output script name, with fields; None if not used (default)
   on (optional): list of 'alert', 'reset', 'revoke', 'report'
     (default ['report'])
 Might be nice to allow options to be configured here as well.
@@ -37,12 +38,22 @@ class Hist1D(Node):
     self.xlabel = xlabel
     self.ylabel = ylabel
     self.filename = filename # include pattern to include index
+    self.scriptname = kwargs.pop('scriptname', None)
     self.on = kwargs.pop('on', ['report'])
     self.count = 0 # number of histograms made
     super().__init__(**kwargs)
 
-  def plot(self, fname, burst_id, hist):
+  def plot(self, fname, sname, burst_id, hist):
     logging.debug('Hist1D.plot called')
+    make_script = (sname != None)
+    if make_script:
+      sfile = open(sname, 'w')
+      sfile.write('import numpy as np\n')
+      sfile.write('import matplotlib.pyplot as plt\n')
+      sfile.write('# Script:    {}\n'.format(sname))
+      sfile.write('# Image:     {}\n'.format(fname))
+      sfile.write('# count = {}, mean = {}, rms = {}\n'.format(hist.count, hist.mean(), np.sqrt(hist.variance())))
+      sfile.write('# underflow = {}, overflow = {}\n'.format(hist.underflow, hist.overflow))
     print('=====================')
     print('H Filename:  {}'.format(fname))
     print('H Title:     {}'.format(self.title))
@@ -70,16 +81,19 @@ class Hist1D(Node):
 
     plt.savefig(fname)
 
-    # script to recreate the plot
-    print('x = np.arange({}, {}, {})'.format(hist.xlow, hist.xhigh, step))
-    print('bins = {}'.format(hist.bins.tolist()))
-    print('fig, ax = plt.subplots()')
-    print("ax.bar(x, bins, width={}, align='edge')".format(step))
-    print("ax.set_xlabel('{}', size=15)".format(self.xlabel))
-    print("ax.set_ylabel('{}', size=15)".format(self.ylabel))
-    print("ax.set_title('{} (burst {} count {})')".format(self.title, burst_id, self.count))
-    print('fig.tight_layout()')
-    print('=====================')
+    if make_script:
+      sfile.write("plt.rcParams.update({'font.size': 12})\n")
+      sfile.write('x = np.arange({}, {}, {})\n'.format(hist.xlow, hist.xhigh, step))
+      sfile.write('bins = {}\n'.format(hist.bins.tolist()))
+      sfile.write('fig, ax = plt.subplots()\n')
+      sfile.write("ax.bar(x, bins, width={}, align='edge')\n".format(step))
+      sfile.write("ax.set_xlabel('{}', size=15)\n".format(self.xlabel))
+      sfile.write("ax.set_ylabel('{}', size=15)\n".format(self.ylabel))
+      sfile.write("ax.set_title('{} (burst {} count {})')\n".format(self.title, burst_id, self.count))
+      sfile.write('fig.tight_layout()\n')
+      sfile.write('plt.show()\n')
+      #sfile.write('plt.savefig("{}")\n'.format(fname))
+      sfile.close()
 
     self.count += 1
 
@@ -95,7 +109,9 @@ class Hist1D(Node):
       if fname == None:
         logging.error('{}: error interpreting {}', self.name, self.filename)
         return False
-      self.plot(fname, burst_id, hist)
+      sname = None if self.scriptname == None else \
+              fill_filename(self.scriptname, self.name, self.count, data)
+      self.plot(fname, sname, burst_id, hist)
     return True # always return True
 
   def alert(self, data):
