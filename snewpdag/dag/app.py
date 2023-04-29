@@ -187,7 +187,9 @@ def csv_eval(infile):
         if len(row[i]) > 0:
           # replace special marks which might stand in for single quotes
           r = row[i].replace("’","'").replace("‘","'").replace("`","'")
-          s.append(r)
+          # expand environment variables if they exist
+          e = os.path.expandvars(r)
+          s.append(e)
       try:
         node['kwargs'] = ast.literal_eval('{' + ','.join(s) + '}')
       except:
