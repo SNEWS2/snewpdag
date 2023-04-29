@@ -19,8 +19,10 @@ Constructor arguments:
 '''
 
 import logging
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
+from matplotlib.figure import Figure
 
 from snewpdag.dag import Node
 from snewpdag.values import TimeSeries
@@ -42,7 +44,10 @@ class ScatterPlot(Node):
         super().__init__(**kwargs)
 
     def render(self, fname, x, y):
-        fig, ax = plt.subplots()
+        #fig, ax = plt.subplots()
+        fig = Figure()
+        canvas = FigureCanvas(fig)
+        ax = fig.add_subplot(111)
         ax.plot(x, y, 'x')
         if self.line != None:
             y_line = eval(self.line)
@@ -55,7 +60,8 @@ class ScatterPlot(Node):
         if self.logy: ax.set_yscale('log')
         if self.line != None: plt.legend()
         fig.tight_layout()
-        plt.savefig(fname)        
+        #plt.savefig(fname)        
+        canvas.print_png(fname)
 
     def report(self, data):
         x = data[self.x_in_field][self.x_in_field2] if self.x_in_field2 != None else data[self.x_in_field]

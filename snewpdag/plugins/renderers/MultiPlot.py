@@ -13,8 +13,10 @@ Arguments:
   on:  list of 'alert', 'reset', 'revoke', 'report' (default ['report'])
 """
 import logging
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
+from matplotlib.figure import Figure
 
 from snewpdag.dag import Node
 from snewpdag.dag.lib import fill_filename, fetch_field
@@ -45,7 +47,10 @@ class MultiPlot(Node):
     if make_script:
       print('H Script:    {}'.format(sname))
     print('H Title:     {}'.format(self.title))
-    fig, ax = plt.subplots()
+    #fig, ax = plt.subplots()
+    fig = Figure()
+    canvas = FigureCanvas(fig)
+    ax = fig.add_subplot(111)
     for f in self.in_fields:
       if isinstance(f, list):
         # assume list is of form [x,y,opt] names
@@ -95,7 +100,8 @@ class MultiPlot(Node):
     ax.set_title('{0} (burst {1} count {2})'.format(
                  self.title, burst_id, self.count))
     fig.tight_layout()
-    plt.savefig(fname)
+    #plt.savefig(fname)
+    canvas.print_png(fname)
     if make_script:
       sfile.write("ax.set_xlabel('{}', size=15)\n".format(self.xlabel))
       sfile.write("ax.set_ylabel('{}', size=15)\n".format(self.ylabel))

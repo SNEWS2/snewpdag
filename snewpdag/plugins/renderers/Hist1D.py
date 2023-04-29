@@ -24,9 +24,11 @@ Input data:
 """
 import logging
 import json
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 import numpy as np
 import matplotlib.mlab as mlab
+from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
+from matplotlib.figure import Figure
 
 from snewpdag.dag import Node
 from snewpdag.dag.lib import fill_filename, fetch_field
@@ -68,9 +70,12 @@ class Hist1D(Node):
     step = (hist.xhigh - hist.xlow) / hist.nbins
     x = np.arange(hist.xlow, hist.xhigh, step)
 
-    plt.rcParams.update({'font.size': 12})
+    #plt.rcParams.update({'font.size': 12})
+    fig = Figure()
+    canvas = FigureCanvas(fig)
+    ax = fig.add_subplot(111)
 
-    fig, ax = plt.subplots()
+    #fig, ax = plt.subplots()
     ax.bar(x, hist.bins, width=step, align='edge')
     #ax.plot(x, bins)
     ax.set_xlabel(self.xlabel,size=15)
@@ -79,7 +84,8 @@ class Hist1D(Node):
                  self.title, burst_id, self.count))
     fig.tight_layout()
 
-    plt.savefig(fname)
+    #plt.savefig(fname)
+    canvas.print_png(fname)
 
     if make_script:
       sfile.write("plt.rcParams.update({'font.size': 12})\n")
