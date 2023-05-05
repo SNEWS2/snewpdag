@@ -95,12 +95,15 @@ class Hist1D:
     self.fill(x, weight)
 
   def mean(self):
-    return self.sum / self.count
+    return 0.0 if self.count == 0 else self.sum / self.count
 
   def variance(self):
-    x = self.mean()
-    xx = self.sum2 / self.count
-    return xx - x*x
+    if self.count == 0:
+      return 0.0
+    else:
+      x = self.mean()
+      xx = self.sum2 / self.count
+      return xx - x*x
 
   def histogram(self, nbins, xlow=None, xhigh=None):
     """

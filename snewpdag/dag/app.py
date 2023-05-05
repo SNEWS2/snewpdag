@@ -187,7 +187,9 @@ def csv_eval(infile):
         if len(row[i]) > 0:
           # replace special marks which might stand in for single quotes
           r = row[i].replace("’","'").replace("‘","'").replace("`","'")
-          s.append(r)
+          # expand environment variables if they exist
+          e = os.path.expandvars(r)
+          s.append(e)
       try:
         node['kwargs'] = ast.literal_eval('{' + ','.join(s) + '}')
       except:
@@ -271,13 +273,13 @@ def inject_one(dags, data, nodespecs):
   # add an action if none already exists (default 'alert')
   if 'action' not in data:
     data['action'] = args.action
-  try:
+  if 'sub list number' in data:
     index_coincidence = str(data['sub list number'])
     if 'dag_coinc' + index_coincidence not in dags: # e.g. dag_coinc1, dag_coinc2
       dags['dag_coinc' + index_coincidence] = configure(nodespecs)
     dag = dags['dag_coinc' + index_coincidence]
     dag[data['name']].update(data)
-  except:
+  else:
     burst_id = 0
     if 'burst_id' in data:
       burst_id = data['burst_id']
