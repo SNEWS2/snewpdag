@@ -36,7 +36,7 @@ class MultiPlot(Node):
   def plots(self, data, fname, sname, burst_id):
     make_script = (sname != None)
     if make_script:
-      sfile = open(fname, 'w')
+      sfile = open(sname, 'w')
       sfile.write('import numpy as np\n')
       sfile.write('import matplotlib.pyplot as plt\n')
       sfile.write('# Script:    {}\n'.format(sname))
