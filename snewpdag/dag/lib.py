@@ -41,6 +41,21 @@ def fetch_field(data, fields):
     else:
       return None, False
 
+def store_field(data, field, value):
+  fs = field.split('/') if isinstance(field, str) else field
+  if isinstance(fs, (list, tuple)):
+    d = data
+    for f in fs[:-1]:
+      if isinstance(d, dict) and f in d:
+        d = d[f]
+      else:
+        d[f] = {}
+        d = d[f]
+    d[fs[-1]] = value
+  else:
+    data[fs] = value
+  return True
+
 def fill_filename(pattern, module_name, count, data):
   """
   Get filename, and fill out the details.
