@@ -1,0 +1,60 @@
+"Control","Pass",,"'line': 100"
+,,,,,
+,,,,,"Cross covariance, signal only"
+,,,,,"Outputs scans for first event"
+,,,,,"Environment variables:"
+,,,,,"  NBINS = number of time bins for lightcurve comparison"
+,,,,,"  WINDOW = timespan (sec) for lightcurve comparison"
+,,,,,"  TAG = text to add to output filenames"
+,,,,,"  YIELD_SNOPLUS = mean number of events at SNO+"
+,,,,,"  YIELD_SK = mean number of events at SK"
+,,,,,"  YIELD_IC = mean number of events at IC"
+,,,,,"  YIELD_JUNO = mean number of events at JUNO"
+,,,,,
+"SN-times","gen.TrueTimes","Control","'detector_location':'snewpdag/data/detector_location.csv', 'detectors': ['SNOP','SK','IC','JUNO'], 'ra':-60.0, 'dec':-30.0, 'time':'2021-11-01 05:22:36.328'"
+"SN","Write","SN-times","'on':['alert','report'],'write':(('png_pattern','output/xcov-q$NBINS-w$WINDOW-t$TAG-{}-{}-{}.png'),('py_pattern','output/xcov-q$NBINS-w$WINDOW-t$TAG-{}-{}-{}.py'),('coincident_detectors',['SNOP','SK','IC','JUNO']),)"
+"SN-out","Pass","SN","'line':1, 'dump':1"
+,,,,,
+"M27-SNOP-new","ops.NewTimeSeries","SN","'out_field':'timeseries','start':'2021-11-01 05:22:34'"
+"M27-SNOP-signal","gen.GenTimeDist","M27-SNOP-new","'field':'timeseries','sig_mean':$YIELD_SNOPLUS,'sig_t0':('truth','dets','SNOP','true_t'),'sig_filetype':'tng','sig_filename':'/home/tseng/dev/snews/numodels/ls220-s27.0co/neutrino_signal_nubar_e-LS220-s27.0co.data'"
+,,,,,"M27-SNOP-hist","ops.TimeSeriesToHist1D","M27-SNOP-signal","'in_field':'timeseries','out_field':'timeserieshist','start':'2021-11-01 05:22:34','stop':'2021-11-01 05:22:44','nbins':100"
+,,,,,"M27-SNOP-render","renderers.Hist1D","M27-SNOP-hist","'on':['alert'],'in_field':'timeserieshist','title':'M27 SNO+','xlabel':'t [s]','ylabel':'entries/10ms','filename':'[png_pattern]','scriptname':'[py_pattern]'"
+"SNOP-data","Write","M27-SNOP-signal","'on':['alert'],'write':(('detector','SNOP'),)"
+,,,,,
+"M27-SK-new","ops.NewTimeSeries","SN","'out_field':'timeseries','start':'2021-11-01 05:22:34'"
+"M27-SK-signal","gen.GenTimeDist","M27-SK-new","'field':'timeseries','sig_mean':$YIELD_SK,'sig_t0':('truth','dets','SK','true_t'),'sig_filetype':'tng','sig_filename':'/home/tseng/dev/snews/numodels/ls220-s27.0co/neutrino_signal_nubar_e-LS220-s27.0co.data'"
+,,,,,"M27-SK-hist","ops.TimeSeriesToHist1D","M27-SK-signal","'in_field':'timeseries','out_field':'timeserieshist','start':'2021-11-01 05:22:34','stop':'2021-11-01 05:22:44','nbins':100"
+,,,,,"M27-SK-render","renderers.Hist1D","M27-SK-hist","'on':['alert'],'in_field':'timeserieshist','title':'M27 SK','xlabel':'t [s]','ylabel':'entries/10ms','filename':'[png_pattern]','scriptname':'[py_pattern]'"
+"SK-data","Write","M27-SK-signal","'on':['alert'],'write':(('detector','SK'),)"
+,,,,,
+"M27-IC-new","ops.NewTimeSeries","SN","'out_field':'timeseries','start':'2021-11-01 05:22:34'"
+"M27-IC-signal","gen.GenTimeDist","M27-IC-new","'field':'timeseries','sig_mean':$YIELD_IC,'sig_t0':('truth','dets','IC','true_t'),'sig_filetype':'tng','sig_filename':'/home/tseng/dev/snews/numodels/ls220-s27.0co/neutrino_signal_nubar_e-LS220-s27.0co.data'"
+,,,,,"M27-IC-hist","ops.TimeSeriesToHist1D","M27-IC-signal","'in_field':'timeseries','out_field':'timeserieshist','start':'2021-11-01 05:22:34','stop':'2021-11-01 05:22:44','nbins':100"
+,,,,,"M27-IC-render","renderers.Hist1D","M27-IC-hist","'on':['alert'],'in_field':'timeserieshist','title':'M27 IceCube','xlabel':'t [s]','ylabel':'entries/10ms','filename':'[png_pattern]','scriptname':'[py_pattern]'"
+"IC-data","Write","M27-IC-signal","'on':['alert'],'write':(('detector','IC'),)"
+,,,,,
+"M27-JUNO-new","ops.NewTimeSeries","SN","'out_field':'timeseries','start':'2021-11-01 05:22:34'"
+"M27-JUNO-signal","gen.GenTimeDist","M27-JUNO-new","'field':'timeseries','sig_mean':$YIELD_JUNO,'sig_t0':('truth','dets','JUNO','true_t'),'sig_filetype':'tng','sig_filename':'/home/tseng/dev/snews/numodels/ls220-s27.0co/neutrino_signal_nubar_e-LS220-s27.0co.data'"
+,,,,,"M27-JUNO-hist","ops.TimeSeriesToHist1D","M27-JUNO-signal","'in_field':'timeseries','out_field':'timeserieshist','start':'2021-11-01 05:22:34','stop':'2021-11-01 05:22:44','nbins':100"
+,,,,,"M27-JUNO-render","renderers.Hist1D","M27-JUNO-hist","'on':['alert'],'in_field':'timeserieshist','title':'M27 JUNO','xlabel':'t [s]','ylabel':'entries/10ms','filename':'[png_pattern]','scriptname':'[py_pattern]'"
+"JUNO-data","Write","M27-JUNO-signal","'on':['alert'],'write':(('detector','JUNO'),)"
+,,,,,
+"Test","Pass","SNOP-data,SK-data,IC-data,JUNO-data","'line':1, 'dump':1"
+,,,,,
+"dt1","XCovLag","SNOP-data,SK-data,IC-data,JUNO-data","'tnbins':$NBINS,'twidth':$WINDOW,'in_field':'timeseries','in_det_field':'detector','in_det_list_field':'coincident_detectors','out_lags_field':'lags'"
+,,,,,"dt1-pass","Pass","dt1","'line':1,'dump':1"
+,,,,,
+,,,,,"dt scan - only do for trial_id=0"
+,,,,,
+"First","FilterValue","dt1","'in_field':'trial_id', 'value':0"
+"dt1-scan","renderers.MultiPlot","First","'on':['alert'],'in_fields':[ [('lags',('SNOP','SK'),2),('lags',('SNOP','SK'),3), 'b.'], ],'title':'dt1 scan','xlabel':'sec','ylabel':'logL','filename':'[png_pattern]'"
+"dt2-scan","renderers.MultiPlot","First","'on':['alert'],'in_fields':[ [('lags',('IC','SK'),2),('lags',('IC','SK'),3), 'g.'], ],'title':'dt2 scan','xlabel':'sec','ylabel':'logL','filename':'[png_pattern]'"
+"dt3-scan","renderers.MultiPlot","First","'on':['alert'],'in_fields':[ [('lags',('JUNO','SK'),2),('lags',('JUNO','SK'),3), 'g.'], ],'title':'dt3 scan','xlabel':'sec','ylabel':'logL','filename':'[png_pattern]'"
+,,,,,
+"dt1-acc","ops.FillHist1D","dt1","'nbins':160,'xlow':-0.04,'xhigh':0.04,'in_field':('lags',('SNOP','SK'),0), 'out_field':'hist1'"
+"dt1-render","renderers.Hist1D","dt1-acc","'on':['report'],'in_field':'hist1','title':'dt1','xlabel':'sec','ylabel':'entries','filename':'[png_pattern]','scriptname':'[py_pattern]'"
+"dt2-acc","ops.FillHist1D","dt1","'nbins':160,'xlow':-0.04,'xhigh':0.04,'in_field':('lags',('IC','SK'),0), 'out_field':'hist2'"
+"dt2-render","renderers.Hist1D","dt2-acc","'on':['report'],'in_field':'hist2','title':'dt2','xlabel':'sec','ylabel':'entries','filename':'[png_pattern]','scriptname':'[py_pattern]'"
+"dt3-acc","ops.FillHist1D","dt1","'nbins':160,'xlow':-0.04,'xhigh':0.04,'in_field':('lags',('JUNO','SK'),0), 'out_field':'hist3'"
+"dt3-render","renderers.Hist1D","dt3-acc","'on':['report'],'in_field':'hist3','title':'dt3','xlabel':'sec','ylabel':'entries','filename':'[png_pattern]','scriptname':'[py_pattern]'"
+,,,,,

@@ -8,6 +8,15 @@ Arguments:
   in_det_field:  field containing detector identifier
   in_det_list_field:  field containing list of detectors to match
   out_lags_field:  output field for { det: lag(s) } dict
+  lead_time:  start time relative to first event time of first time series
+  fixed_ref:  default None, otherwise calculate all lags relative to
+    identified detector
+
+lead_time should be -0.1s for signal-only, to make sure one always includes
+all of the signal.  When we can assume first event is background,
+lead_time can be +0.1s to make sure both start in background.
+
+Default lead_time = -0.1s, i.e., assumes signal-only.
 """
 import logging
 import numpy as np
@@ -26,6 +35,8 @@ class XCovLag(Node):
     self.in_det_field = in_det_field
     self.in_det_list_field = in_det_list_field
     self.out_lags_field = out_lags_field
+    self.lead_time = kwargs.pop('lead_time', -0.1) # 100ms before
+    self.fixed_ref = kwargs.pop('fixed_ref', None)
     self.cache = {} # { <det>: <TimeSeries> }
     self.last_burst_report = -1 # only forward one report per burst id
     super().__init__(**kwargs)
@@ -35,8 +46,8 @@ class XCovLag(Node):
     w2 = self.cache[kref]
     #st1 = np.min(w1.times) - dt
     #st2 = np.min(w2.times)
-    st1 = np.min(w1.times) - 0.100 # 100ms lead time
-    st2 = np.min(w2.times)
+    st1 = np.min(w1.times) + self.lead_time # 100ms lead time
+    #st2 = np.min(w2.times)
     #st1 = w1.start - dt
     #st2 = w2.start
     #start = np.min(w2.times)
@@ -66,10 +77,15 @@ class XCovLag(Node):
     return (dt[yb], 0.0, dt, y)
 
   def reevaluate(self, data):
-    # choose the detector with the most events as the reference
+    iref = -1
     ks = [ k for k in self.cache.keys() ]
-    ys = [ self.cache[ks[i]].integral() for i in range(len(ks)) ]
-    iref = np.argmax(ys) # index of reference detector
+    if self.fixed_ref != None:
+      if self.fixed_ref in ks:
+        iref = ks.index(self.fixed_ref)
+    if iref < 0:
+      # choose the detector with the most events as the reference
+      ys = [ self.cache[ks[i]].integral() for i in range(len(ks)) ]
+      iref = np.argmax(ys) # index of reference detector
     lags = { (ks[j],ks[iref]):self.lag(ks[j], ks[iref]) for j in range(len(ks)) }
     data[self.out_lags_field] = lags
     return data

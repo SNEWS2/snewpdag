@@ -59,6 +59,7 @@ from .DiffPointing import DiffPointing
 
 from .XCovLag import XCovLag
 from .NLogLag import NLogLag
+from .NBLag import NBLag
 
 from .PickleInput import PickleInput
 from .JsonAlertInput import JsonAlertInput
