@@ -19,7 +19,7 @@
 "makemap","EvalMap","SNOP-data,SK-data,IC-data","'detector_location':'snewpdag/data/detector_location.csv','nside':8,'in_field':'timeseries','in_det_field':'detector','in_det_list_field':'coincident_detectors'"
 "makemap-out","Pass","makemap","'line':1,'dump':1"
 ,,,,,
-"conf","Chi2CL","makemap","'in_field':'map', 'out_field':'clmap'"
+"conf","Chi2CL","makemap","'in_field':'map', 'in_ndof_field':'ndof', 'out_field':'clmap'"
 "conf-out","Pass","conf","'line':1, 'dump':1"
 "Norm","NormHistogram","conf","'in_field':'clmap', 'out_field':'weights'"
 "Accumulate","AccHistogram","Norm","'in_field':'weights', 'out_field':'hist'"

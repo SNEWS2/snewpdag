@@ -103,31 +103,7 @@ def run():
 
   dags = {}
 
-  if args.input:
-    with open(args.input) as f:
-      if args.jsonlines:
-        for jsonline in f:
-          try:
-            #data = ast.literal_eval(jsonline)
-            data = json.loads(jsonline)
-          except:
-            logging.error('While parsing json line: {}'.format(sys.exc_info()))
-          else:
-            inject(dags, data, nodespecs)
-      else:
-        try:
-          #data = ast.literal_eval(f.read())
-          data = json.load(f) # JSON (rather than python) for data!
-        except:
-          logging.error('While parsing input: {}'.format(sys.exc_info()))
-        else:
-          if 'action' not in data:
-            data['action'] = args.action
-          if 'name' not in data:
-            data['name'] = args.inject
-          inject(dags, data, nodespecs)
-
-  elif args.stream:
+  if args.stream:
       s = stream.open(alert_topic, "r")
       for message in s:
         save_message(message)
@@ -140,24 +116,32 @@ def run():
           else:
             # Injecting this data into a dag:
             inject(dags, data['coinc' + str(message['sub list number'])], nodespecs)
+  elif args.input:
+    with open(args.input) as f:
+      json_input(dags, nodespecs, f)
+
   else:
-    if args.jsonlines:
-      for jsonline in sys.stdin:
-        try:
-          #data = ast.literal_eval(jsonline)
-          data = json.loads(jsonline)
-        except:
-          logging.error('While parsing stdin json line: {}'.format(sys.exc_info()))
-        else:
-          inject(dags, data, nodespecs)
-    else:
+    json_input(dags, nodespecs, sys.stdin)
+
+def json_input(dags, nodespecs, file):
+  if args.jsonlines:
+    for jsonline in file:
       try:
-        #data = ast.literal_eval(sys.stdin.read())
-        data = json.loads(sys.stdin.read())
+        #data = ast.literal_eval(jsonline)
+        data = json.loads(jsonline)
       except:
-        logging.error('While parsing stdin: {}'.format(sys.exc_info()))
+        logging.error('While parsing json line: {}'.format(sys.exc_info()))
       else:
         inject(dags, data, nodespecs)
+  else:
+    try:
+      #data = ast.literal_eval(f.read())
+      data = json.load(file) # JSON (rather than python) for data!
+      # or use json.loads(file.read())
+    except:
+      logging.error('While parsing input: {}'.format(sys.exc_info()))
+    else:
+      inject(dags, data, nodespecs)
 
 def csv_eval(infile):
   # name, class, observe
@@ -273,6 +257,8 @@ def inject_one(dags, data, nodespecs):
   # add an action if none already exists (default 'alert')
   if 'action' not in data:
     data['action'] = args.action
+  if 'name' not in data:
+    data['name'] = args.inject
   if 'sub list number' in data:
     index_coincidence = str(data['sub list number'])
     if 'dag_coinc' + index_coincidence not in dags: # e.g. dag_coinc1, dag_coinc2
