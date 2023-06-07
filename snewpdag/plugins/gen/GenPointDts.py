@@ -35,6 +35,7 @@ individual event times to get the detector locations, and those
 won't change much.
 """
 import logging
+import numbers
 import numpy as np
 import healpy as hp
 import csv
@@ -53,7 +54,7 @@ class GenPointDts(Node):
     self.dec = np.radians(dec)
     self.tc = Time(time)
     self.tc_unix = self.tc.to_value('unix', 'long') # float, unix epoch
-    self.epoch_base = kwargs.popp('epoch_base', 0.0)
+    self.epoch_base = kwargs.pop('epoch_base', 0.0)
 
     if not isinstance(self.epoch_base, (numbers.Number, str, list, tuple)):
       logging.error('GenPointDts.__init__: unrecognized epoch_base {}. Set to 0.'.format(self.epoch_base))
@@ -86,8 +87,11 @@ class GenPointDts(Node):
     # record truth information
     if 'truth' not in data:
       data['truth'] = {}
+    if 'dets' not in data['truth']:
+      data['truth']['dets'] = {}
     data['truth']['sn_ra'] = self.ra # radians
     data['truth']['sn_dec'] = self.dec # radians
+    data['truth']['time_center'] = self.tc # astropy.Time object
 
     # calculate arrival of SN time at Earth center in local epoch
     # i.e. subtracting epoch_base
@@ -101,17 +105,17 @@ class GenPointDts(Node):
     else:
       logging.error('{}: unrecognized epoch_base field {}'.format(self.name, self.epoch_base))
       return False
-    tc_local = self.tc_unix - t0
+    tc_local = self.tc_unix - t_epoch
 
     # generate dt for each detector, including bias
     dts = {}
-    g = ns_per_second / u.second
     for p in self.pairs:
       # detector 1 time
       det1 = self.db.get(p['det1'])
       pos1 = det1.get_xyz(self.tc) # detector in GCRS at given time
       t1 = - np.dot(pos1, self.snr) / const.c # intersect
       tt1 = tc_local + t1.to(u.s).value # s
+      data['truth']['dets'][p['det1']] = { 'true_t': tt1 }
 
       # detector 2 nominal time, with bias
       det2 = self.db.get(p['det2'])
@@ -123,6 +127,7 @@ class GenPointDts(Node):
       if self.smear:
         t2 += p['dtsig'] * Node.rng.normal() * u.second
       tt2 = tc_local + t2.to(u.s).value
+      data['truth']['dets'][p['det2']] = { 'true_t': tt2 }
 
       dts[(p['det1'],p['det2'])] = {
                  'dt': tt1 - tt2, # s
