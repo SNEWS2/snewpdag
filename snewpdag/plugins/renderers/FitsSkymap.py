@@ -100,6 +100,7 @@ The following header came from the file bayestar_no_virgo.fits:
 """
 import logging
 import healpy as hp
+import numpy as np
 from datetime import datetime
 from astropy import units
 from astropy.io import fits
@@ -145,7 +146,7 @@ class FitsSkymap(Node):
       ('REFERENC', 'na', 'URL of this event'),
       ('INSTRUME', ','.join(instruments), 'Coincident detectors'),
       ('DATE-OBS', date_obs, 'UTC date of the observation'),
-      ('MJD-OBS', mjd_obs, 'modified Julian date of the observation'),
+      ('MJD-OBS', str(mjd_obs), 'modified Julian date of the observation'),
       ('DATE', date_field, 'UTC date of file creation'),
       ('CREATOR', 'snewpdag', 'Program that created this file'),
       ('ORIGIN', 'SNEWS', 'Organization responsible for this FITS file'),
@@ -154,6 +155,30 @@ class FitsSkymap(Node):
       ('VCSREV', 'na', 'Software revision (Git)'),
       ('DATE-BLD', 'na', 'Software build date'),
     ]
+
+    # more headers
+    if 'dist' in data:
+      # distance:  'dist' and 'dist_err'
+      # snewpdag generally uses kpc, but GW community uses Mpc
+      extra_header.append(('DISTMEAN', data['dist'] / 1000.0, \
+                           'Posterior mean distance (Mpc)'))
+      extra_header.append(('DISTSTD', data['dist_err'] / 1000.0, \
+                           'Posterior standard deviation of distance (Mpc)'))
+    if 'truth' in data:
+      td = data['truth']
+      if 'sn_ra' in td:
+        extra_header.append(('TRUERA', str(np.rad2deg(td['sn_ra'])), \
+                             'True source RA (deg)'))
+      if 'sn_dec' in td:
+        extra_header.append(('TRUEDEC', str(np.rad2deg(td['sn_dec'])), \
+                             'True source dec (deg)'))
+
+      if 'time_center' in td:
+        tt = Time(td['time_center'])
+        extra_header.append(('TRUEDATE', tt.utc.isot, \
+                             'True arrival time at Earth center (UTC)'))
+
+    logging.debug('extra_header = {}'.format(extra_header))
 
     hdu = fits.table_to_hdu(t)
     hdu.header.extend(extra_header)

@@ -16,14 +16,14 @@
 ,,,
 "Hires","DiffPointing","Truth","'detector_location':'snewpdag/data/detector_location.csv', 'nside':32, 'min_dts':3"
 "Hires-out","Pass","Hires","'line':1, 'dump':1"
-"Hires-CL","Chi2CL","Hires","'in_field':'map', 'out_field':'clmap'"
+"Hires-CL","Chi2CL","Hires","'in_field':'map', 'in_ndof_field':'ndof', 'out_field':'clmap'"
 "Hires-skymap","renderers.Mollview","Hires-CL","'in_field':'clmap', 'title':'High resolution truth map', 'units':'CL', 'range':(0,1), 'coord':['C'], 'filename':'output/pointing-{}-{}-{}.png'"
 ,,,
 ,,,"low-resolution truth map"
 ,,,
 "Lores","DiffPointing","Truth","'detector_location':'snewpdag/data/detector_location.csv', 'nside':8, 'min_dts':3"
 "Lores-out","Pass","Lores","'line':1, 'dump':1"
-"Lores-CL","Chi2CL","Lores","'in_field':'map', 'out_field':'clmap'"
+"Lores-CL","Chi2CL","Lores","'in_field':'map', 'in_ndof_field':'ndof', 'out_field':'clmap'"
 "Lores-skymap","renderers.Mollview","Lores-CL","'in_field':'clmap', 'title':'Low resolution truth map', 'units':'CL', 'range':(0,1), 'coord':['C'], 'filename':'output/pointing-{}-{}-{}.png'"
 ,,,
 ,,,"MC trials processing"

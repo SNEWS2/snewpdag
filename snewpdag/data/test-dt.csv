@@ -6,12 +6,12 @@
 "Diff","DiffPointing","Gen","'detector_location':'snewpdag/data/detector_location.csv', 'nside':32, 'min_dts':3"
 "Diff-out","Pass","Diff","'line':1, 'dump':1"
 ,,,
-"prob","Chi2Prob","Diff","'in_field':'map', 'out_field':'probmap'"
+"prob","Chi2Prob","Diff","'in_field':'map', 'in_ndof_field':'ndof', 'out_field':'probmap'"
 "prob-out","Pass","prob","'line':1, 'dump':1"
 "probmap","renderers.Mollview","prob","'in_field':'probmap', 'title':'DiffPointing', 'units':'probability', 'coord':['C'], 'filename':'output/test-dt-{}-{}-{}.png'"
 "fits","renderers.FitsSkymap","prob","'in_field':'probmap', 'filename':'output/test-dt-{}-{}-{}.fits'"
 ,,,
-"conf","Chi2CL","Diff","'in_field':'map', 'out_field':'clmap'"
+"conf","Chi2CL","Diff","'in_field':'map', 'in_ndof_field':'ndof', 'out_field':'clmap'"
 "conf-out","Pass","conf","'line':1, 'dump':1"
 "confmap","renderers.Mollview","conf","'in_field':'clmap', 'title':'DiffPointing', 'units':'CL', 'range':(0,1), 'coord':['C'], 'filename':'output/test-dt-{}-{}-{}.png'"
 "conffits","renderers.FitsSkymap","conf","'in_field':'clmap', 'filename':'output/test-dt-{}-{}-{}.fits'"

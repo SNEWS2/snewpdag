@@ -30,7 +30,7 @@
     "kwargs": { "line": 1, "dump": 1 }
   },
   { "name": "conf", "class": "Chi2CL", "observe": [ "Diff" ],
-    "kwargs": { "in_field": "map", "out_field": "clmap" }
+    "kwargs": { "in_field": "map", "in_ndof_field": "ndof", "out_field": "clmap" }
   },
   { "name": "skymap", "class": "renderers.Mollview", "observe": [ "conf" ],
     "kwargs": { "in_field": "clmap",

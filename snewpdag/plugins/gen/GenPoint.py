@@ -21,6 +21,7 @@ Input:
 Output:
   truth/sn_ra: right ascension (radians), ICRS
   truth/sn_dec: declination (radians), ICRS
+  truth/time_center: arrival time at center of Earth, astropy.Time object
   truth/dets/<det>/true_t: arrival time of core bounce for det, no bias
   dts/(<det1>,<det2>)/dt: time difference between detectors
   dts/(<det1>,<det2>)/t1: arrival time for det1
@@ -76,6 +77,7 @@ class GenPoint(Node):
       data['truth']['dets'] = {}
     data['truth']['sn_ra'] = self.ra # radians
     data['truth']['sn_dec'] = self.dec # radians
+    data['truth']['time_center'] = self.tc # astropy.Time object
 
     # calculate arrival of SN time at Earth center in local epoch
     # i.e. subtracting epoch_base
