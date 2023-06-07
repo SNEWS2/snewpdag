@@ -5,9 +5,13 @@ Arguments:
   rate:  number of events per second
   tmin:  starting time (seconds) of the generator.
   tmax:  stopping time (seconds).
+
+If tmin/tmax are floats, use the number as a timestamp.
+If they're strings, interpret as a unix time string.
 """
 import logging
 import numpy as np
+from astropy.time import Time
 
 from snewpdag.dag import Node
 from snewpdag.values import TimeSeries, Hist1D
@@ -17,9 +21,11 @@ class Uniform (Node):
   def __init__(self, field, rate, tmin, tmax, **kwargs):
     self.field = field
     self.rate = rate
-    self.tmin = tmin
-    self.tmax = tmax
-    self.mean_total = (tmax - tmin) * rate
+    self.tmin = Time(tmin).to_value('unix', 'long') if isinstance(tmin, str) \
+                else tmin
+    self.tmax = Time(tmax).to_value('unix', 'long') if isinstance(tmax, str) \
+                else tmax
+    self.mean_total = (self.tmax - self.tmin) * self.rate
     super().__init__(**kwargs)
 
   def alert(self, data):

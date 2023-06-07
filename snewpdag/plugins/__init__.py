@@ -41,6 +41,9 @@ from .ValidateSort import ValidateSort
 from .FilterValue import FilterValue
 
 from .TrueVsFit import TrueVsFit
+from .LagPull import LagPull
+from .SmoothPoly import SmoothPoly
+from .PolyError import PolyError
 
 from .Chi2Calculator import Chi2Calculator
 from .Chi2CL import Chi2CL
@@ -52,7 +55,11 @@ from .ProbCL import ProbCL
 from .DiffTimes import DiffTimes
 from .DiffPointing import DiffPointing
 #from .EvalMap import EvalMap
-from .TopDownSeries import TopDownSeries
+#from .TopDownSeries import TopDownSeries
+
+from .XCovLag import XCovLag
+from .NLogLag import NLogLag
+from .NBLag import NBLag
 
 from .PickleInput import PickleInput
 from .JsonAlertInput import JsonAlertInput
