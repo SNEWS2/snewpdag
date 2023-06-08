@@ -38,7 +38,7 @@ class Mollview(Node):
   def plot(self, data):
     fname = fill_filename(self.filename, self.name, self.count, data)
     if fname == None:
-      logging.error('{}: error interpreting {}', self.name, self.filename)
+      logging.error('{}: error interpreting {}'.format(self.name, self.filename))
       return False
     m, exists = fetch_field(data, self.in_field)
     if exists:
