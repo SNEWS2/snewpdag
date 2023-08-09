@@ -51,6 +51,8 @@ from .Chi2Prob import Chi2Prob
 from .LogLProb import LogLProb
 from .ProbCL import ProbCL
 
+from .FirstEventTime import FirstEventTime
+
 #from .DtsCalculator import DtsCalculator # needs to be updated
 from .DiffTimes import DiffTimes
 from .DiffPointing import DiffPointing

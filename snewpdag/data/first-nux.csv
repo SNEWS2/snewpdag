@@ -1,0 +1,15 @@
+"Control","Pass",,"'line': 10"
+,,,,,
+"SN-times","gen.TrueTimes","Control","'detector_location':'snewpdag/data/detector_location.csv', 'detectors': ['SNOP','SK','IC','JUNO'], 'ra':-60.0, 'dec':-30.0, 'time':'2021-11-01 05:22:36.328'"
+"SN","Write","SN-times","'on':['alert','report'],'write':(('png_pattern','output/first-nux-y$YIELD_SNOPLUS-{}-{}-{}.png'),('py_pattern','output/first-nux-y$YIELD_SNOPLUS-{}-{}-{}.py'),('coincident_detectors',['SNOP','SK','IC','JUNO']),)"
+"SN-out","Pass","SN","'line':100, 'dump':0"
+,,,,,
+"M27-SNOP-new","ops.NewTimeSeries","SN","'out_field':'timeseries','start':'2021-11-01 05:22:34'"
+"M27-SNOP-signal","gen.GenTimeDist","M27-SNOP-new","'field':'timeseries','sig_mean':$YIELD_SNOPLUS,'sig_t0':('truth','dets','SNOP','true_t'),'sig_filetype':'tng','sig_filename':'/home/tseng/dev/snews/numodels/ls220-s27.0co/neutrino_signal_nu_x-LS220-s27.0co.data'"
+"SNOP-data","Write","M27-SNOP-signal","'on':['alert'],'write':(('detector','SNOP'),)"
+,,,,,
+"first","FirstEventTime","SNOP-data","'in_field':'timeseries','in_truth_field':('truth','dets','SNOP','true_t'),'out_field':'neutrino_time','out_delta_field':'neutrino_time_delta'"
+,,,,,
+"first-acc","ops.FillHist1D","first","'nbins':100,'xlow':-0.1,'xhigh':0.1,'in_field':'neutrino_time_delta','out_field':'hist1'"
+"first-render","renderers.Hist1D","first-acc","'on':['report'],'in_field':'hist1','title':'burst - true time','xlabel':'sec','ylabel':'entries','filename':'[png_pattern]','scriptname':'[py_pattern]'"
+,,,,,
