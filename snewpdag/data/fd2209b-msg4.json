@@ -1,0 +1,8 @@
+{
+  "detector_name": "IceCube",
+  "machine_time": "2022-06-14T20:00:03.4", 
+  "neutrino_time": "2022-06-14T20:00:00.158116", 
+  "p_val": 0.05,
+  "extra_key": "test extra",
+  "is_test": "True"
+}

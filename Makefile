@@ -83,6 +83,12 @@ fd2210:
 	# alternative (need to format the json lines for input):
 	# python -m snewpdag --log INFO --jsonlines snewpdag/data/fd2209.csv < snewpdag/data/fd2209b-data.json
 
+snews_pt_subscribe:
+	snews_pt subscribe --no-firedrill -p '-m snewpdag snewpdag/data/fd2210.csv --input'
+
+snews_pt_publish:
+	for n in 1 2 3 4 5 6 7; do snews_pt publish --no-firedrill fd2209b-msg$n.json; sleep 1; done
+
 init:
 	pip install -r requirements.txt
 

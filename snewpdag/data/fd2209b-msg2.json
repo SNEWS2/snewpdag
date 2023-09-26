@@ -1,0 +1,8 @@
+{
+  "detector_name": "KM3NeT",
+  "machine_time": "2022-06-14T20:00:02.4", 
+  "neutrino_time": "2022-06-14T20:00:00.159496", 
+  "p_val": 0.1,
+  "extra_key": "test extra",
+  "is_test": "True"
+}
