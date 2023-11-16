@@ -1,0 +1,8 @@
+{
+  "detector_name": "NOvA",
+  "machine_time": "2022-06-14T20:00:06.4", 
+  "neutrino_time": "2022-06-14T20:00:00.135288", 
+  "p_val": 0.1,
+  "extra_key": "test extra",
+  "is_test": "True"
+}
