@@ -54,6 +54,9 @@ from .ProbCL import ProbCL
 from .FirstEventTime import FirstEventTime
 from .FirstPairTime import FirstPairTime
 from .BurstTime import BurstTime
+from .BiasTest import BiasTest
+from .FirstEventDebias import FirstEventDebias
+from .CoincSeries import CoincSeries
 
 #from .DtsCalculator import DtsCalculator # needs to be updated
 from .DiffTimes import DiffTimes
