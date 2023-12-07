@@ -7,6 +7,10 @@ configuration:
              If it's a number, use the number itself.  Default is the
                area of the histogram read from the input spectrum.
              If it's a field designator, read from the payload.
+  sig_distance:  distance in kpc.  Default is 10.
+             Signal is scaled by (10/d)^2.
+             If it's a number, use the number itself.
+             If it's a field designator, read from the payload.
   sig_smear: True if apply Poisson fluctuation to mean (optional, def True)
   sig_t0:    observed core bounce time. This will correspond to the t=0
              of the input distribution.  Optional, default 1658580450.0,
@@ -41,14 +45,15 @@ class GenTimeDist(TimeDistSource):
   one_series = () # shared time series, if self.sig_once is True
   one_mean = 0 # intended mean of shared time series
 
-  def __init__(self, sig_mean, field, **kwargs):
-    self.sig_mean = sig_mean
+  def __init__(self, field, **kwargs):
     self.field = field
     ts = kwargs.pop('sig_t0', 0.0)
     if isinstance(ts, (list, tuple, str)): # field specifier
       self.sig_t0 = ts
     elif isinstance(ts, numbers.Number): # literal
       self.sig_t0 = ts
+    self.sig_mean = kwargs.pop('sig_mean', 0.0)
+    self.sig_distance = kwargs.pop('sig_distance', 10.0)
     self.sig_smear = kwargs.pop('sig_smear', True)
     self.sig_once = kwargs.pop('sig_once', False)
     self.epoch_base = kwargs.pop('epoch_base', 0.0)
@@ -61,6 +66,11 @@ class GenTimeDist(TimeDistSource):
     self.area = np.sum(self.mu)
     self.mu_norm = self.mu / self.area
     self.tedges = np.append(self.t, self.thi) # append high end to t array
+
+    # if sig_mean is 0 or an empty string, set it to self.area
+    if self.sig_mean == 0 or self.sig_mean == "":
+      self.sig_mean = self.area
+      logging.info('{}:  mean set to area {}'.format(self.name, self.area))
 
     # pre-generate single series
     if self.sig_once and np.shape(GenTimeDist.one_series) == (0,):
@@ -109,6 +119,18 @@ class GenTimeDist(TimeDistSource):
           mean, flag = fetch_field(data, self.sig_mean)
           if not flag:
             mean = self.area # area of source histogram
+            logging.error('{}:  sig_mean field {} not found'.format(self.name, self.sig_mean))
+        # scale mean number of events by distance
+        if isinstance(self.sig_distance, numbers.Number):
+          f = 10.0 / self.sig_distance
+        else:
+          d, flag = fetch_field(data, self.sig_distance)
+          if flag:
+            f = 10.0 / d
+          else:
+            f = 1.0
+            logging.error('{}:  sig_distance field {} not found'.format(self.name, self.sig_distance))
+        mean = mean * f * f
 
         # Poisson fluctuation in mean, if requested
         nev = Node.rng.poisson(mean) if self.sig_smear else mean
