@@ -11,22 +11,30 @@ Constructor arguments:
 import logging
 
 from snewpdag.dag import Node
+from snewpdag.dag.lib import fetch_field
 
 class FilterValue(Node):
   def __init__(self, in_field, value, **kwargs):
     self.in_field = in_field
     self.value = value
-    self.on_alert = kwargs.pop('on_alert', True)
-    self.on_reset = kwargs.pop('on_reset', False)
-    self.on_revoke = kwargs.pop('on_revoke', False)
-    self.on_report = kwargs.pop('on_report', False)
+    on_list = kwargs.pop('on', ['alert'])
+    self.on_alert = kwargs.pop('on_alert', 'alert' in on_list)
+    self.on_reset = kwargs.pop('on_reset', 'reset' in on_list)
+    self.on_revoke = kwargs.pop('on_revoke', 'revoke' in on_list)
+    self.on_report = kwargs.pop('on_report', 'report' in on_list)
+    op = kwargs.pop('op', '=')
+    self.eq = op in ['=', '>=', '<=', 'eq', 'ge', 'le']
+    self.gt = op in ['>', '>=', 'gt', 'ge']
+    self.lt = op in ['<', '<=', 'lt', 'le']
     super().__init__(**kwargs)
 
   def check_value(self, data):
-    if self.in_field in data:
-      return data[self.in_field] == self.value
-    else:
+    v, valid = fetch_field(data, self.in_field)
+    if not valid:
       return False
+    return (self.gt and v > self.value) or \
+           (self.lt and v < self.value) or \
+           (self.eq and v == self.value)
 
   def alert(self, data):
     return self.check_value(data) if self.on_alert else True

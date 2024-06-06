@@ -57,6 +57,7 @@ from .BurstTime import BurstTime
 from .BiasTest import BiasTest
 from .FirstEventDebias import FirstEventDebias
 from .CoincSeries import CoincSeries
+from .FirstEventDiff import FirstEventDiff
 
 #from .DtsCalculator import DtsCalculator # needs to be updated
 from .DiffTimes import DiffTimes

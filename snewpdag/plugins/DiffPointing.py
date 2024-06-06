@@ -26,6 +26,7 @@ Output payload:
   ndof: 2
   map_zeroes: indices of bins with 0 value (min chi2)
 """
+import sys
 import logging
 import numpy as np
 import healpy as hp
@@ -148,7 +149,19 @@ class DiffPointing(Node):
       i += 1
     # then invert the matrix
     logging.info('covariance matrix = {}'.format(v))
-    return np.linalg.inv(v)
+    try:
+      res = np.linalg.inv(v)
+    except:
+      logging.error('{}:  exception {}'.format(self.name, sys.exc_info()))
+      logging.error('{}:  dim = {}'.format(self.name, dim))
+      logging.error('{}:  v = {}'.format(self.name, v))
+      for k in keys:
+        d = self.cache[k]
+        logging.error('{}:  key = {}'.format(self.name, k))
+        logging.error('{}:    dt = {}, bias = {}'.format(self.name, d['dt'], d['bias']))
+        logging.error('{}:    var = {}, dsig1 = {}, dsig2 = {}'.format(self.name, d['var'], d['dsig1'], d['dsig2']))
+      res = 0
+    return res
 
   def reevaluate(self, data):
     """
@@ -234,4 +247,8 @@ class DiffPointing(Node):
       return self.reevaluate()
     else:
       return True
+
+  def reset(self, data):
+    self.cache = {}
+    return True
 

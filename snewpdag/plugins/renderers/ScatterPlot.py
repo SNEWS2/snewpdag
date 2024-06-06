@@ -25,6 +25,7 @@ from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from matplotlib.figure import Figure
 
 from snewpdag.dag import Node
+from snewpdag.dag.lib import fill_filename
 from snewpdag.values import TimeSeries
 
 class ScatterPlot(Node):

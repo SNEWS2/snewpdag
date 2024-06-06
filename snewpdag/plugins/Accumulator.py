@@ -6,8 +6,10 @@ In general, assumes only a single source, so revoke and reset are
 the same.
 """
 import logging
+import numpy as np
 
 from snewpdag.dag import Node
+from snewpdag.dag.lib import fetch_field
 
 class Accumulator(Node):
   def __init__(self, title, in_field, **kwargs):
@@ -15,17 +17,21 @@ class Accumulator(Node):
     self.in_field = in_field
     self.out_field = kwargs.pop('out_field', None)
     self.index = kwargs.pop('in_index', None)
+    self.alert_pass = kwargs.pop('alert_pass', False)
+    self.clear_on = kwargs.pop('clear_on', ['revoke','reset'])
     super().__init__(**kwargs)
     self.series = []
 
   def alert(self, data):
     if self.index:
-      x = data[self.field][self.index]
+      x = data[self.in_field][self.index]
     else:
-      x = data[self.field]
+      x, exists = fetch_field(data, self.in_field)
+      if not exists:
+        return False
     # append
     self.series.append(x)
-    return False # consume - only emit on report
+    return self.alert_pass != False
 
   def report(self, data):
     a = np.array(self.series)
@@ -33,7 +39,7 @@ class Accumulator(Node):
     d = {
           'name': self.name,
           'title': self.title,
-          'in_field': self.field,
+          'in_field': self.in_field,
           'in_index': self.index,
           'series': a,
         }
@@ -44,10 +50,12 @@ class Accumulator(Node):
     return True
 
   def revoke(self, data):
-    self.series = []
+    if 'revoke' in self.clear_on:
+      self.series = []
     return True
 
   def reset(self, data):
-    self.series = []
+    if 'reset' in self.clear_on:
+      self.series = []
     return True
 

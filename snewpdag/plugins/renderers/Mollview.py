@@ -32,14 +32,27 @@ class Mollview(Node):
     #self.min = kwargs.pop('min', 0)
     #self.max = kwargs.pop('max', -1)
     self.on = kwargs.pop('on', ['alert'])
+    self.scriptname = kwargs.pop('scriptname', None)
     self.count = 0
     super().__init__(**kwargs)
 
   def plot(self, data):
+    sname = None if self.scriptname == None else \
+            fill_filename(self.scriptname, self.name, self.count, data)
+    make_script = (sname != None)
     fname = fill_filename(self.filename, self.name, self.count, data)
     if fname == None:
       logging.error('{}: error interpreting {}'.format(self.name, self.filename))
       return False
+
+    if make_script:
+      sfile = open(sname, 'w')
+      sfile.write('import numpy as np\n')
+      sfile.write('import healpy as hp\n')
+      sfile.write('import matplotlib.pyplot as plt\n')
+      sfile.write('# Script:    {}\n'.format(sname))
+      sfile.write('# Image:     {}\n'.format(fname))
+
     m, exists = fetch_field(data, self.in_field)
     if exists:
       # replace a lot of these options later
@@ -60,6 +73,16 @@ class Mollview(Node):
                  )
       hp.graticule()
       plt.savefig(fname)
+      plt.close()
+
+      if make_script:
+        sfile.write('kwargs = {}\n'.format(kwargs))
+        sfile.write('m = np.array({})\n'.format(m.tolist()))
+        sfile.write("hp.mollview(m, coord={}, title='{}', unit='{}', nest=True, **kwargs)\n".format(self.coord, self.title, self.units))
+        sfile.write('hp.graticule()\n')
+        sfile.write('plt.show()\n')
+        sfile.close()
+
       self.count += 1
     return True
 
