@@ -1,0 +1,27 @@
+"Control","Pass",,"'line': 10"
+,,,,,
+,,,,,"Analysis of first event times"
+,,,,,"Environment variables:"
+,,,,,"  MODEL = SN model, e.g., s27.0co or s11.2c"
+,,,,,"  SPECIES = neutrino species, e.g., nu_e, nu_x, nubar_e, nubar_x"
+,,,,,"  YIELD_SNOPLUS = event yields over model"
+,,,,,"  BIAS_LOW = bias histogram low limit"
+,,,,,"  BIAS_HIGH = bias histogram high limit"
+,,,,,"  BACKGROUND_RATE = background rate per second"
+,,,,,
+"SN-times","gen.TrueTimes","Control","'detector_location':'snewpdag/data/detector_location.csv', 'detectors': ['SNOP','SK','IC','JUNO'], 'ra':-60.0, 'dec':-30.0, 'time':'2021-11-01 05:22:36.328'"
+"SN","Write","SN-times","'on':['alert','report'],'write':(('png_pattern','output/debias-$MODEL-$SPECIES-y$YIELD_SNOPLUS-{}-{}-{}.png'),('py_pattern','output/debias-$MODEL-$SPECIES-y$YIELD_SNOPLUS-{}-{}-{}.py'),('coincident_detectors',['SNOP','SK','IC','JUNO']),)"
+"SN-out","Pass","SN","'line':100, 'dump':0"
+,,,,,
+"M27-SNOP-new","ops.NewTimeSeries","SN","'out_field':'timeseries','start':'2021-11-01 05:22:35'"
+"M27-SNOP-signal","gen.GenTimeDist","M27-SNOP-new","'field':'timeseries','sig_mean':$YIELD_SNOPLUS,'sig_t0':('truth','dets','SNOP','true_t'),'sig_filetype':'tng','sig_filename':'/home/tseng/dev/snews/numodels/ls220-$MODEL/neutrino_signal_$SPECIES-LS220-$MODEL.data'"
+"M27-SNOP-bg","gen.Uniform","M27-SNOP-signal","'field':'timeseries','rate':$BACKGROUND_RATE,'tmin':'2021-11-01 05:22:35','tmax':'2021-11-01 05:22:55'"
+"M27-SNOP-hist","ops.TimeSeriesToHist1D","M27-SNOP-bg","'in_field':'timeseries','out_field':'timeserieshist','start':'2021-11-01 05:22:36','stop':'2021-11-01 05:22:37','nbins':100"
+"M27-SNOP-render","renderers.Hist1D","M27-SNOP-hist","'on':['alert'],'in_field':'timeserieshist','title':'$MODEL $SPECIES SNO+','xlabel':'t [s]','ylabel':'entries/10ms','filename':'[png_pattern]'"
+"SNOP-data","Write","M27-SNOP-bg","'on':['alert'],'write':(('detector','SNOP'),)"
+,,,,,
+"first","FirstEventDebias","SNOP-data","'in_field':'timeseries','in_truth_field':('truth','dets','SNOP','true_t'),'out_field':'neutrino_time','out_delta_field':'neutrino_time_delta'"
+,,,,,
+"first-acc","ops.FillHist1D","first","'nbins':100,'xlow':$BIAS_LOW,'xhigh':$BIAS_HIGH,'in_field':'neutrino_time_delta','out_field':'hist1'"
+"first-render","renderers.Hist1D","first-acc","'on':['report'],'in_field':'hist1','title':'burst - true time','xlabel':'sec','ylabel':'entries','filename':'[png_pattern]','scriptname':'[py_pattern]'"
+,,,,,

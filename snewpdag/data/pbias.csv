@@ -1,0 +1,34 @@
+"Control","Pass",,"'line': 100"
+,,,,,
+,,,,,"Environment variables:"
+,,,,,"  MODEL = SN model, e.g., s27.0co or s11.2c"
+,,,,,"  SPECIES = neutrino species, e.g., nu_e, nu_x, nubar_e, nubar_x"
+,,,,,"  YIELD1 = yield for larger experiment"
+,,,,,"  YIELD2 = yield for smaller experiment"
+,,,,,
+"SN-times","gen.TrueTimes","Control","'detector_location':'snewpdag/data/detector_location.csv', 'detectors': ['SNOP','SK','IC','JUNO'], 'ra':-60.0, 'dec':-30.0, 'time':'2021-11-01 05:22:36.328'"
+"SN","Write","SN-times","'on':['alert','report'],'write':(('png_pattern','output/pbias-$MODEL-$SPECIES-y$YIELD1-y$YIELD2-{}-{}-{}.png'),('py_pattern','output/pbias-$MODEL-$SPECIES-y$YIELD1-y$YIELD2-{}-{}-{}.py'),('coincident_detectors',['SNOP','SK','IC','JUNO']),)"
+"SN-out","Pass","SN","'line':100, 'dump':0"
+,,,,,
+"D1-new","ops.NewTimeSeries","SN","'out_field':'timeseries1','start':'2021-11-01 05:22:34'"
+"D1-signal","gen.GenTimeDist","D1-new","'field':'timeseries1','sig_mean':$YIELD1,'sig_t0':('truth','dets','SNOP','true_t'),'sig_filetype':'tng','sig_filename':'/home/tseng/dev/snews/numodels/ls220-$MODEL/neutrino_signal_$SPECIES-LS220-$MODEL.data'"
+"D1-data","Write","D1-signal","'on':['alert'],'write':(('detector','D1'),)"
+,,,,,
+"D2-new","ops.NewTimeSeries","D1-data","'out_field':'timeseries2','start':'2021-11-01 05:22:34'"
+"D2-signal","gen.GenTimeDist","D2-new","'field':'timeseries2','sig_mean':$YIELD2,'sig_t0':('truth','dets','SNOP','true_t'),'sig_filetype':'tng','sig_filename':'/home/tseng/dev/snews/numodels/ls220-$MODEL/neutrino_signal_$SPECIES-LS220-$MODEL.data'"
+"D2-data","Write","D2-signal","'on':['alert'],'write':(('detector','D2'),)"
+,,,,,
+"pairs1","CoincSeries","D2-data","'in_series_field':'timeseries1','out_series_field':'ptimes1','pair_time':0.015"
+"pairs2","CoincSeries","pairs1","'in_series_field':'timeseries2','out_series_field':'ptimes2','pair_time':0.015"
+,,,,,
+"bias","BiasTest","pairs2","'in_series1_field':'ptimes1','in_series2_field':'ptimes2','out_delta_field':'bias_delta','out_exp_field':'bias_exp','out_dev_field':'bias_dev'"
+,,,,,
+"delta-acc","ops.FillHist1D","bias","'nbins':100,'xlow':-0.1,'xhigh':0.1,'in_field':'bias_delta','out_field':'delta_hist'"
+"delta-render","renderers.Hist1D","delta-acc","'on':['report'],'in_field':'delta_hist','title':'first event difference','xlabel':'sec','ylabel':'entries','filename':'[png_pattern]','scriptname':'[py_pattern]'"
+,,,,,
+"exp-acc","ops.FillHist1D","bias","'nbins':100,'xlow':-0.1,'xhigh':0.1,'in_field':'bias_exp','out_field':'exp_hist'"
+"exp-render","renderers.Hist1D","exp-acc","'on':['report'],'in_field':'exp_hist','title':'expected bias','xlabel':'sec','ylabel':'entries','filename':'[png_pattern]','scriptname':'[py_pattern]'"
+,,,,,
+"dev-acc","ops.FillHist1D","bias","'nbins':100,'xlow':-0.1,'xhigh':0.1,'in_field':'bias_dev','out_field':'dev_hist'"
+"dev-render","renderers.Hist1D","dev-acc","'on':['report'],'in_field':'dev_hist','title':'difference - expected bias','xlabel':'sec','ylabel':'entries','filename':'[png_pattern]','scriptname':'[py_pattern]'"
+,,,,,

@@ -58,8 +58,9 @@ class JsonOutput(Node):
 
     fname = fill_filename(self.filename, self.name, self.count, data)
     if fname == None:
-      logging.error('{}: error interpreting {}', self.name, self.filename)
+      logging.error('{}: error interpreting {}'.format(self.name, self.filename))
     else:
+      logging.info('{}: writing json to {}'.format(self.name, fname))
       with open(fname, "w") as outfile:
         json.dump(d, outfile, default=json_output_default)
 

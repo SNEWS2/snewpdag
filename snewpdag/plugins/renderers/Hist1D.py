@@ -113,7 +113,7 @@ class Hist1D(Node):
       burst_id = data.get('burst_id', 0)
       fname = fill_filename(self.filename, self.name, self.count, data)
       if fname == None:
-        logging.error('{}: error interpreting {}', self.name, self.filename)
+        logging.error('{}: error interpreting {}'.format(self.name, self.filename))
         return False
       sname = None if self.scriptname == None else \
               fill_filename(self.scriptname, self.name, self.count, data)

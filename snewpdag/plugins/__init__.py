@@ -51,6 +51,14 @@ from .Chi2Prob import Chi2Prob
 from .LogLProb import LogLProb
 from .ProbCL import ProbCL
 
+from .FirstEventTime import FirstEventTime
+from .FirstPairTime import FirstPairTime
+from .BurstTime import BurstTime
+from .BiasTest import BiasTest
+from .FirstEventDebias import FirstEventDebias
+from .CoincSeries import CoincSeries
+from .FirstEventDiff import FirstEventDiff
+
 #from .DtsCalculator import DtsCalculator # needs to be updated
 from .DiffTimes import DiffTimes
 from .DiffPointing import DiffPointing
