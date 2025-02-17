@@ -6,13 +6,14 @@ Arguments:
   detector_location: filename of detector database for DetectorDB
   nside: healpix nside parameter, i.e., skymap resolution
   min_dts: minimum number of time differences in order to do calculation
+  dt_field_name: default time difference field, default 'dt'
 
 Input payload:
   dts: a dictionary of time differences. Keys are of form (det1,det2),
     a list or tuple of detector names (as given in DetectorDB).  The values
     are themselves dictionaries with the following keys:
     required:
-      dt: time tuple (s,ns) of t1-t2.
+      dt: time tuple (s,ns) of t1-t2. (Field name override above)
       t1: burst time tuple (s,ns) of det1.
       t2: burst time tuple (s,ns) of det2.
     optional (values derived from DetectorDB if not present):
@@ -41,14 +42,15 @@ class DiffPointing(Node):
     self.nside = nside
     self.npix = hp.nside2npix(nside)
     self.min_dts = min_dts
+    self.dt_field_name = kwargs.pop('dt_field_name', 'dt')
     self.cache = {} # (det1, det2): dt, t1, t2, bias, var, dsig1, dsig2
     super().__init__(**kwargs)
 
   def cache_values(self, k1, k2, dts):
     d1 = self.db.get(k1)
     d2 = self.db.get(k2)
-    if 'dt' in dts and 't1' in dts and 't2' in dts:
-      dt = dts['dt'] # s
+    if self.dt_field_name in dts and 't1' in dts and 't2' in dts:
+      dt = dts[self.dt_field_name] # s (default 'dt'; 'delta' is uncorrected)
       t1 = dts['t1'] # s
       t2 = dts['t2'] # s
     else:

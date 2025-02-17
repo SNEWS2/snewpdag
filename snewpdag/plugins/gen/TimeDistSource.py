@@ -81,7 +81,12 @@ class TimeDistSource(Node):
       lum = np.array(nn[:-1])
       enu = np.array(ee[:-1])
       j = (enu > 0.0)
+      # old formula for mean number of events produced
       self.mu = lum[j] * dt[j] / enu[j]
+      # new formula:  we want mean number of events observed,
+      # noting that cross section ~ E^2
+      # (normalization must be taken care of in subclass)
+      #self.mu = lum[j] * dt[j] * enu[j]
       self.t = np.array(tt[:-1])[j]
       self.thi = tt[-1]
 

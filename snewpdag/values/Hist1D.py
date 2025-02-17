@@ -18,6 +18,7 @@ class Hist1D:
     self.underflow = 0.0
     self.sum = 0.0
     self.sum2 = 0.0
+    self.sum3 = 0.0
     self.count = 0
 
   def copy(self):
@@ -27,6 +28,7 @@ class Hist1D:
     h.underflow = self.underflow
     h.sum = self.sum
     h.sum2 = self.sum2
+    h.sum3 = self.sum3
     h.count = self.count
     return h
 
@@ -45,6 +47,7 @@ class Hist1D:
           'count': self.count,
           'sum': self.sum,
           'sum2': self.sum2,
+          'sum3': self.sum3,
           'underflow': self.underflow,
           'overflow': self.overflow,
           'bins': self.bins.copy()
@@ -67,7 +70,7 @@ class Hist1D:
     """
     Return low edge of bin
     """
-    dx = self.width / len(self.bins)
+    dx = self.xwidth / len(self.bins)
     return self.xlow + index * dx
 
   def fill(self, x, weight=1.0):
@@ -85,7 +88,10 @@ class Hist1D:
     self.underflow += weight * np.sum(ix < 0)
     self.overflow += weight * np.sum(ix >= self.nbins)
     self.sum += np.sum(v)
-    self.sum2 += np.sum(v*v)
+    v2 = v * v
+    v3 = v * v2
+    self.sum2 += np.sum(v2)
+    self.sum3 += np.sum(v3)
     self.count += weight * v.size
 
   def add(self, x, weight=1.0):
@@ -93,6 +99,28 @@ class Hist1D:
     Synonym of fill(), same signature as in TimeSeries
     """
     self.fill(x, weight)
+
+  def median_bin(self):
+    """
+    Return median bin number.  Get low bin edge with bin_edge(bin number).
+    Returns -1 if in underflow, self.nbins if in overflow.
+    """
+    nev = self.underflow + self.sum + self.overflow
+    half = nev / 2
+    s = self.underflow
+    if half < s:
+      return -1 # median is in underflow
+    for i in range(self.nbins):
+      s = s + self.bins[i]
+      if s > half:
+        return i # median is in within this bin
+    return self.nbins # median is in the overflow
+
+  def mode_bin(self):
+    """
+    Return mode bin number.  Doesn't count underflow or overflow.
+    """
+    return np.argmax(self.bins)
 
   def mean(self):
     return 0.0 if self.count == 0 else self.sum / self.count
@@ -104,6 +132,19 @@ class Hist1D:
       x = self.mean()
       xx = self.sum2 / self.count
       return xx - x*x
+
+  def skewness(self):
+    """
+    return skewness (unnormalized).
+    To get normalized skewness, divide by variance^1.5
+    """
+    if self.count == 0:
+      return 0.0
+    else:
+      x = self.mean()
+      v = self.variance()
+      xx = self.sum3 / self.count - 3.0*x*v
+      return xx - x*x*x
 
   def histogram(self, nbins, xlow=None, xhigh=None):
     """
