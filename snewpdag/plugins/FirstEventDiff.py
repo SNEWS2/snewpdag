@@ -23,6 +23,8 @@ class FirstEventDiff(Node):
     self.in_series2_field = in_series2_field
     self.out_field = out_field
     self.true_lag = kwargs.pop('true_lag', 0.0)
+    self.true_t1 = kwargs.pop('true_t1', 0.0)
+    self.true_t2 = kwargs.pop('true_t2', 0.0)
     self.out_key = kwargs.pop('out_key', ('D1','D2')) # usually names the detectors
     self.sigma_fudge = kwargs.pop('sigma_fudge', 1.0) # scale up sigma
     super().__init__(**kwargs)
@@ -35,10 +37,21 @@ class FirstEventDiff(Node):
     if not valid:
       return False
 
+    true_t1 = 0.0
+    true_t2 = 0.0
+    if self.true_t1 != 0.0:
+      true_t1, valid = fetch_field(data, self.true_t1)
+    if self.true_t2 != 0.0:
+      true_t2, valid = fetch_field(data, self.true_t2)
+    true_dt12 = true_t1 - true_t2
+
     # difference between first times
     tf1 = np.min(tsr1.times)
     tf2 = np.min(tsr2.times)
     dtf = tf1 - tf2
+
+    logging.info('{}: t1 = {}, true = {}, relative = {}'.format(self.name, tf1, true_t1, tf1 - true_t1))
+    logging.info('{}: t2 = {}, true = {}, relative = {}'.format(self.name, tf2, true_t2, tf2 - true_t2))
 
     # subtract off one of the first times
     base = tf1 if tf1 < tf2 else tf2
@@ -88,10 +101,12 @@ class FirstEventDiff(Node):
     logging.debug('{}: et1sq = {}, et2sq = {}, et1asq = {}'.format(self.name, et1sq, et2sq, et1asq))
     logging.debug('{}: et1 = {}, et2 = {}, et1a = {}'.format(self.name, et1, et2, et1a))
 
-    # pull
-    dt_true = dev - self.true_lag
-    pull = (dev - self.true_lag) / rms
-    pull_fudge = (dev - self.true_lag) / rms_fudge
+    # pull (either self.true_lag or true_dt12 could be zero if not set before)
+    dt_true = dev - self.true_lag - true_dt12
+    pull = dt_true / rms
+    pull_fudge = dt_true / rms_fudge
+
+    dtf_true = dtf - self.true_lag - true_dt12 # uncorrected diff - true
 
     # assemble output dictionary
     #d = { 'delta': dtf, 'exp_delta': dte, 'diff': dev, 'sigma_diff': rms, 'pull': pull }
@@ -106,6 +121,7 @@ class FirstEventDiff(Node):
                           'delta': dtf, # not needed by DiffPointing
                           'exp_delta': dte, # not needed by DiffPointing
                           'dt_true': dt_true, # not needed by DiffPointing
+                          'dtf_true': dtf_true, # not needed by DiffPointing
                           'pull': pull, # not needed by DiffPointing
                           'var1': et1sq - et1*et1, # not needed by DiffPointing
                           'var2': et2sq - et2*et2, # not needed by DiffPointing
