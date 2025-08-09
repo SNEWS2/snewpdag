@@ -83,6 +83,9 @@ fd2210:
 	# alternative (need to format the json lines for input):
 	# python -m snewpdag --log INFO --jsonlines snewpdag/data/fd2209.csv < snewpdag/data/fd2209b-data.json
 
+fd2508:
+	python -m snewpdag --log INFO snewpdag/data/fd2508.csv --input snewpdag/data/fd_sep_alert.json
+
 snews_pt_subscribe:
 	snews_pt subscribe --no-firedrill -p '-m snewpdag snewpdag/data/fd2210.csv --input'
 
